@@ -28,6 +28,8 @@ int crypto_dh_keypair(unsigned char *pk, unsigned char *sk) {
   if (EC_POINT_point2oct(EC_KEY_get0_group(key), public_key, POINT_CONVERSION_UNCOMPRESSED, pk, ECDHE_PUBLICKEYBYTES, NULL) == 0)
     return -1;
 
+  EC_KEY_free(key);
+
   return 0;
 }
 
