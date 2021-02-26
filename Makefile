@@ -1,7 +1,12 @@
 # Disable echoing of commands
 MAKEFLAGS += --silent
 
-.PHONY: ecdh
+.PHONY: perf ecdh
+
+all: perf ecdh
+
+perf:
+	$(MAKE) -C perf
 
 ecdh:
 	$(MAKE) -C ecdh

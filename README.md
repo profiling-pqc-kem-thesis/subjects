@@ -17,17 +17,37 @@ All implementations have been instrumented for measuring CPU cycles, instruction
 To build all samples, simply run the following command.
 
 ```sh
-make build
+make all
+```
+
+To build a single set of samples, run a command like the following.
+
+```sh
+make ecdh
+```
+
+To build tests for a set of samples, run a command like the following.
+
+```sh
+make -C ecdh tests
+```
+
+To build benchmarks for a set of samples, run a command like the following.
+
+```sh
+make -C ecdh benchmarks
 ```
 
 Each sample is then available in the corresponding subject's directory. ECDH(E) samples, for example, is available under `ecdh/build`.
 
-Each binary is named according to the following format: `algorithm_parameter-set_implementations_compiler-flags`.
+Each binary for a benchmark is named according to the following format: `algorithm_parameter-set_implementations_compiler-flags`.
 
 * `algorithm`: the algorithm, such as ecdh, dh, ntru or mceliece
 * `parameter-set`: the parameter set as applicable for the algorithm, such as p256, hrss701
 * `implementations`: the various implementations used, such as avx2 for an AVX2 optimized implementation, aes for an OpenSSL AES implementation and so on
 * `compiler-flags`: a label for the set of compiler flags used, such as `minimal` or `optimized`
+
+Each binary for a test is named according to the following format: `algorithm_parameter-set`.
 
 ## Table of contents
 
@@ -49,7 +69,7 @@ The implementations are assumed to be optimized for the underlying platform via 
 
 Refer to [the report](https://github.com/profiling-pqc-kem-thesis/report) for further details.
 
-The resulting binaries are documented in the table below.
+The resulting binaries for benchmarks are documented in the table below.
 
 | Name | Description |
 | :--: | ----------- |

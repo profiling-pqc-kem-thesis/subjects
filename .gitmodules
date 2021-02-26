@@ -1,0 +1,3 @@
+[submodule "perf"]
+	path = perf
+	url = https://github.com/profiling-pqc-kem-thesis/perf.git
