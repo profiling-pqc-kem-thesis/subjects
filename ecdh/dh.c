@@ -1,14 +1,21 @@
+#include "params.h"
+
+#if ECDH_CURVE == ECDH_CURVE_P256
+#include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
-#include <openssl/bn.h>
-#include <openssl/sha.h>
+#elif ECDH_CURVE == ECDH_CURVE_25519
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#endif
 
-#include "params.h"
+#include <openssl/sha.h>
 
 #include "dh.h"
 
 int crypto_dh_keypair(unsigned char *pk, unsigned char *sk) {
-  EC_KEY *key = EC_KEY_new_by_curve_name(OPENSSL_ECDH_CURVE);
+#if ECDH_CURVE == ECDH_CURVE_P256
+  EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
   if (key == NULL)
     return -1;
 
@@ -28,10 +35,37 @@ int crypto_dh_keypair(unsigned char *pk, unsigned char *sk) {
   EC_KEY_free(key);
 
   return 0;
+#elif ECDH_CURVE == ECDH_CURVE_25519
+  EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_X25519, NULL);
+  if (ctx == NULL)
+    return -1;
+
+  if (EVP_PKEY_keygen_init(ctx) == 0)
+    return -1;
+
+  EVP_PKEY *key = NULL;
+  if (EVP_PKEY_keygen(ctx, &key) == 0)
+    return -1;
+
+  EVP_PKEY_CTX_free(ctx);
+
+  size_t private_key_length = CRYPTO_SECRETKEYBYTES;
+  if (EVP_PKEY_get_raw_private_key(key, sk, &private_key_length) == 0)
+    return -1;
+
+  size_t public_key_length = CRYPTO_PUBLICKEYBYTES;
+  if (EVP_PKEY_get_raw_public_key(key, pk, &public_key_length) == 0)
+    return -1;
+
+  EVP_PKEY_free(key);
+
+  return 0;
+#endif
 }
 
 int crypto_dh_enc(unsigned char *k, const unsigned char *sk, const unsigned char *pk) {
-  EC_KEY *key = EC_KEY_new_by_curve_name(OPENSSL_ECDH_CURVE);
+#if ECDH_CURVE == ECDH_CURVE_P256
+  EC_KEY *key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
   if (key == NULL)
     return -1;
 
@@ -59,4 +93,7 @@ int crypto_dh_enc(unsigned char *k, const unsigned char *sk, const unsigned char
   SHA256_Final(k, &shasum);
 
   return 0;
+#elif ECDH_CURVE == ECDH_CURVE_25519
+  return 0;
+#endif
 }
