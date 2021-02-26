@@ -1,4 +1,4 @@
-.PHONY: build clean
+.PHONY: all tests benchmarks clean
 
 all: tests benchmarks
 
