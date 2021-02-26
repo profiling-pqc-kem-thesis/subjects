@@ -1,12 +1,18 @@
 # Disable echoing of commands
 MAKEFLAGS += --silent
 
+CCFLAGS += -I $(CURDIR)/perf/build/include -L $(CURDIR)/perf/build/lib
+
 .PHONY: perf ecdh
 
 all: perf ecdh
 
 perf:
+ifeq ($(shell uname), Linux)
 	$(MAKE) -C perf
+else
+	echo "Warning: skipping Linux-only task 'perf' - may result in later build failure"
+endif
 
 ecdh:
 	$(MAKE) -C ecdh
