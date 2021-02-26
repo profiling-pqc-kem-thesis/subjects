@@ -4,9 +4,9 @@ MAKEFLAGS += --silent
 CPPFLAGS += -I $(CURDIR)/perf/build/include
 LDFLAGS += -L $(CURDIR)/perf/build/lib
 
-.PHONY: perf ecdh
+.PHONY: perf ecdh ntru
 
-all: perf ecdh
+all: perf ecdh ntru
 
 perf:
 ifeq ($(shell uname), Linux)
@@ -18,6 +18,9 @@ endif
 ecdh:
 	$(MAKE) -C ecdh
 
+ntru:
+	$(MAKE) -C ntru
+
 # Create the compilation database for llvm tools
 compile_commands.json: Makefile
 	# compiledb is installed using: pip install compiledb
@@ -26,3 +29,4 @@ compile_commands.json: Makefile
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
 	$(MAKE) -C ecdh clean
+	$(MAKE) -C ntru clean
