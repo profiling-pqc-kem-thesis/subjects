@@ -52,6 +52,6 @@ Refer to [the report](https://github.com/profiling-pqc-kem-thesis/report) for fu
 The resulting binaries are documented in the table below.
 
 | Name | Description |
-| :--: | :---------: |
+| :--: | ----------- |
 | `ecdh_p256_plain_optimized` | ECDH on P-256 implemented using OpenSSL and compiled with `-O3`, `-march=native` |
 | `ecdh_25519_plain_optimized` | ECDH (x25519) on Curve25519 implemented using OpenSSL and compiled with `-O3`, `-march=native` |
