@@ -48,3 +48,10 @@ The curves implemented are `P-256` and `Curve25519` (in some contexts known as `
 The implementations are assumed to be optimized for the underlying platform via OpenSSL and the compiler.
 
 Refer to [the report](https://github.com/profiling-pqc-kem-thesis/report) for further details.
+
+The resulting binaries are documented in the table below.
+
+| Name | Description |
+| :--: | :---------: |
+| `ecdh_p256_plain_optimized` | ECDH on P-256 implemented using OpenSSL and compiled with `-O3`, `-march=native` |
+| `ecdh_25519_plain_optimized` | ECDH (x25519) on Curve25519 implemented using OpenSSL and compiled with `-O3`, `-march=native` |
