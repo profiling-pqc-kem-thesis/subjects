@@ -1,5 +1,5 @@
-#ifndef ECDHE_H
-#define ECDHE_H
+#ifndef ECDH_H
+#define ECDH_H
 
 #include "params.h"
 

@@ -1,5 +1,5 @@
-#ifndef ECDHE_H
-#define ECDHE_H
+#ifndef ECDH_H
+#define ECDH_H
 
 int crypto_dh_keypair(unsigned char *pk, unsigned char *sk);
 

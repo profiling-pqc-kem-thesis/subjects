@@ -8,14 +8,14 @@
 
 #include "dh.h"
 
-#if ECDHE_CURVE == ECDHE_CURVE_P256
-#define OPENSSL_ECDHE_CURVE NID_X9_62_prime256v1
+#if ECDH_CURVE == ECDH_CURVE_P256
+#define OPENSSL_ECDH_CURVE NID_X9_62_prime256v1
 #else
-#error "incorrect choice for ECDHE_CURVE"
+#error "incorrect choice for ECDH_CURVE"
 #endif
 
 int crypto_dh_keypair(unsigned char *pk, unsigned char *sk) {
-  EC_KEY *key = EC_KEY_new_by_curve_name(OPENSSL_ECDHE_CURVE);
+  EC_KEY *key = EC_KEY_new_by_curve_name(OPENSSL_ECDH_CURVE);
   if (key == NULL)
     return -1;
 
@@ -36,7 +36,7 @@ int crypto_dh_keypair(unsigned char *pk, unsigned char *sk) {
 }
 
 int crypto_dh_enc(unsigned char *k, const unsigned char *sk, const unsigned char *pk) {
-  EC_KEY *key = EC_KEY_new_by_curve_name(OPENSSL_ECDHE_CURVE);
+  EC_KEY *key = EC_KEY_new_by_curve_name(OPENSSL_ECDH_CURVE);
   if (key == NULL)
     return -1;
 

@@ -1,10 +1,10 @@
 # Disable echoing of commands
 MAKEFLAGS += --silent
 
-.PHONY: ecdhe
+.PHONY: ecdh
 
-ecdhe:
-	$(MAKE) -C ecdhe
+ecdh:
+	$(MAKE) -C ecdh
 
 # Create the compilation database for llvm tools
 compile_commands.json: Makefile
@@ -13,4 +13,4 @@ compile_commands.json: Makefile
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
-	$(MAKE) -C ecdhe clean
+	$(MAKE) -C ecdh clean
