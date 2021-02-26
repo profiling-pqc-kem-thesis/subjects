@@ -89,11 +89,43 @@ int crypto_dh_enc(unsigned char *k, const unsigned char *sk, const unsigned char
   // Derive the session key
   SHA256_CTX shasum;
   SHA256_Init(&shasum);
-  SHA256_Update(&shasum, secret, CRYPTO_SECRETKEYBYTES);
+  SHA256_Update(&shasum, secret, secret_size);
   SHA256_Final(k, &shasum);
 
   return 0;
 #elif ECDH_CURVE == ECDH_CURVE_25519
+  // Read the private key from the input buffer
+  EVP_PKEY *private_key = EVP_PKEY_new_raw_private_key(NID_X25519, NULL, sk, CRYPTO_SECRETKEYBYTES);
+  if (private_key == NULL)
+    return -1;
+
+  // Read the public key from the input buffer
+  EVP_PKEY *public_key = EVP_PKEY_new_raw_public_key(NID_X25519, NULL, pk, CRYPTO_PUBLICKEYBYTES);
+  if (public_key == NULL)
+    return -1;
+
+  // Perform the exchange, calculating the shared secret
+  unsigned char secret[CRYPTO_SECRETBYTES] = {0};
+  size_t secret_size = CRYPTO_SECRETBYTES;
+  EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(private_key, NULL);
+  if (ctx == NULL)
+    return -1;
+
+  if (EVP_PKEY_derive_init(ctx) <= 0)
+    return -1;
+
+  if (EVP_PKEY_derive_set_peer(ctx, public_key) <= 0)
+    return -1;
+
+  if (EVP_PKEY_derive(ctx, secret, &secret_size) <= 0)
+    return -1;
+
+  // Derive the session key
+  SHA256_CTX shasum;
+  SHA256_Init(&shasum);
+  SHA256_Update(&shasum, secret, secret_size);
+  SHA256_Final(k, &shasum);
+
   return 0;
 #endif
 }
