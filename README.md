@@ -1,5 +1,5 @@
 <p align="center">
-  <strong><a href="#quickstart">Quick Start</a></strong>
+  <strong><a href="#quickstart">Quick Start</a> | <a href="#documentation">Documentation</a> </strong>
 </p>
 
 # subjects
