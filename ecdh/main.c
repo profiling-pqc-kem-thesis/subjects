@@ -17,7 +17,7 @@ void test_keypair() {
   unsigned char sk[CRYPTO_SECRETKEYBYTES] = {0};
   if (crypto_dh_keypair(pk, sk) < 0) {
     unsigned long error = ERR_peek_error();
-    printf("Unable to generate keypair: %lu", error);
+    printf("Unable to generate keypair: %lu\n", error);
     ERR_print_errors_fp(stdout);
     exit(EXIT_FAILURE);
   }
@@ -34,7 +34,7 @@ void test_roundtrip() {
   unsigned char alice_sk[CRYPTO_SECRETKEYBYTES] = {0};
   if (crypto_dh_keypair(alice_pk, alice_sk) < 0) {
     unsigned long error = ERR_peek_error();
-    printf("Unable to generate keypair: %lu", error);
+    printf("Unable to generate keypair: %lu\n", error);
     ERR_print_errors_fp(stdout);
     exit(EXIT_FAILURE);
   }
@@ -48,7 +48,7 @@ void test_roundtrip() {
   unsigned char bob_sk[CRYPTO_SECRETKEYBYTES] = {0};
   if (crypto_dh_keypair(bob_pk, bob_sk) < 0) {
     unsigned long error = ERR_peek_error();
-    printf("Unable to generate keypair: %lu", error);
+    printf("Unable to generate keypair: %lu\n", error);
     ERR_print_errors_fp(stdout);
     exit(EXIT_FAILURE);
   }
