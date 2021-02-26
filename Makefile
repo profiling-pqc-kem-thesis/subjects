@@ -1,7 +1,8 @@
 # Disable echoing of commands
 MAKEFLAGS += --silent
 
-CCFLAGS += -I $(CURDIR)/perf/build/include -L $(CURDIR)/perf/build/lib
+CPPFLAGS += -I $(CURDIR)/perf/build/include
+LDFLAGS += -L $(CURDIR)/perf/build/lib
 
 .PHONY: perf ecdh
 
