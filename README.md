@@ -80,7 +80,7 @@ To build the ECDH implementations, OpenSSL is required. It is also required that
 
 #### NTRU
 
-NTRU is implemented as a post-quantum algorithm as submitted to NIST's standardization process. The implementation is based solely on the reference implementation.
+NTRU is implemented as a post-quantum algorithm as submitted to NIST's standardization process. The implementation is based solely on the [reference implementation](https://github.com/profiling-pqc-kem-thesis/ntru).
 
 The implemented parameter sets are `HRSS701`, `HPS2048509`, `HPS2048677` and `HPS4096821`, although only `HRSS701` and `HPS4096821` is exposed via the Makefile.
 
