@@ -1,5 +1,4 @@
-#include "poly.h"
-
+#include "../../poly.h"
 
 void poly_Sq_tobytes(unsigned char *r, const poly *a)
 {

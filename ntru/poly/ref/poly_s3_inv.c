@@ -1,6 +1,6 @@
 /* Based on supercop-20200702/crypto_core/invhrss701/simpler/core.c */
 
-#include "poly.h"
+#include "../../poly.h"
 
 static inline uint8_t mod3(uint8_t a) /* a between 0 and 9 */
 {

@@ -1,4 +1,4 @@
-#include "poly.h"
+#include "../../poly.h"
 
 static uint16_t mod3(uint16_t a)
 {
@@ -53,4 +53,3 @@ void poly_Rq_to_S3(poly *r, const poly *a)
 
   poly_mod_3_Phi_n(r);
 }
-

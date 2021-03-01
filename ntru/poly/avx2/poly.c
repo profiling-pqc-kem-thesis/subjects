@@ -1,4 +1,4 @@
-#include "poly.h"
+#include "../../poly.h"
 
 /* Map {0, 1, 2} -> {0,1,q-1} in place */
 void poly_Z3_to_Zq(poly *r)

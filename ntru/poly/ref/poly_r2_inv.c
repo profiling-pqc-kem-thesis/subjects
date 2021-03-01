@@ -1,6 +1,6 @@
 /* Based on supercop-20200702/crypto_core/invhrss701/simpler/core.c */
 
-#include "poly.h"
+#include "../../poly.h"
 
 /* return -1 if x<0 and y<0; otherwise return 0 */
 static inline int16_t both_negative_mask(int16_t x,int16_t y)

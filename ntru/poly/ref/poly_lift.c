@@ -1,4 +1,4 @@
-#include "poly.h"
+#include "../../poly.h"
 
 #ifdef NTRU_HPS
 void poly_lift(poly *r, const poly *a)
@@ -65,4 +65,3 @@ void poly_lift(poly *r, const poly *a)
   }
 }
 #endif
-

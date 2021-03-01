@@ -1,4 +1,4 @@
-#include "sample.h"
+#include "../../sample.h"
 
 static uint16_t mod3(uint16_t a)
 {

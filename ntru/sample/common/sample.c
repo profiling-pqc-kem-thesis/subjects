@@ -1,4 +1,4 @@
-#include "sample.h"
+#include "../../sample.h"
 
 void sample_fg(poly *f, poly *g, const unsigned char uniformbytes[NTRU_SAMPLE_FG_BYTES])
 {

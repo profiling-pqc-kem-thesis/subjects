@@ -1,4 +1,4 @@
-#include "poly.h"
+#include "../../poly.h"
 
 void poly_S3_tobytes(unsigned char msg[NTRU_OWCPA_MSGBYTES], const poly *a)
 {
@@ -55,4 +55,3 @@ void poly_S3_frombytes(poly *r, const unsigned char msg[NTRU_OWCPA_MSGBYTES])
   r->coeffs[NTRU_N-1] = 0;
   poly_mod_3_Phi_n(r);
 }
-
