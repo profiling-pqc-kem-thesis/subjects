@@ -4,7 +4,7 @@ MAKEFLAGS += --silent
 CPPFLAGS += -I $(CURDIR)/perf/build/include
 LDFLAGS += -L $(CURDIR)/perf/build/lib
 
-.PHONY: perf ecdh ntru
+.PHONY: perf ecdh ntru test clean
 
 all: perf ecdh ntru
 
@@ -25,6 +25,9 @@ ntru:
 compile_commands.json: Makefile
 	# compiledb is installed using: pip install compiledb
 	compiledb -n make
+
+test:
+	$(MAKE) -C ntru test
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true

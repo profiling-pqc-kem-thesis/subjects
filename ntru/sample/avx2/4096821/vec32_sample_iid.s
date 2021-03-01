@@ -85,10 +85,10 @@ mask_3:
 .word 0x03
 .word 0x03
 .text
-.global ntru_vec32_sample_iid
-.global _ntru_vec32_sample_iid
-ntru_vec32_sample_iid:
-_ntru_vec32_sample_iid:
+.global vec32_sample_iid
+.global _vec32_sample_iid
+vec32_sample_iid:
+_vec32_sample_iid:
 vmovdqa 0(%rsi), %ymm3
 vextracti128 $0, %ymm3, %xmm1
 vpermq $216, %ymm1, %ymm1
@@ -1035,8 +1035,188 @@ vpandn %ymm14, %ymm15, %ymm1
 vpand %ymm15, %ymm2, %ymm14
 vpxor %ymm14, %ymm1, %ymm2
 vmovdqa %ymm2, 1376(%rdi)
-movw $0, 1400(%rdi)
-movw $0, 1402(%rdi)
-movw $0, 1404(%rdi)
-movw $0, 1406(%rdi)
+vmovdqa 704(%rsi), %ymm3
+vextracti128 $0, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1408(%rdi)
+vextracti128 $1, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1440(%rdi)
+vmovdqa 736(%rsi), %ymm3
+vextracti128 $0, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1472(%rdi)
+vextracti128 $1, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1504(%rdi)
+vmovdqa 768(%rsi), %ymm3
+vextracti128 $0, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1536(%rdi)
+vextracti128 $1, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1568(%rdi)
+vmovdqa 800(%rsi), %ymm3
+vextracti128 $0, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1600(%rdi)
+vextracti128 $1, %ymm3, %xmm1
+vpermq $216, %ymm1, %ymm1
+vpshufb cast8_to_16(%rip), %ymm1, %ymm1
+vpsrlw $8, %ymm1, %ymm2
+vpand mask_ff(%rip), %ymm1, %ymm1
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_f(%rip), %ymm2, %ymm1
+vpsrlw $4, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpand mask_3(%rip), %ymm2, %ymm1
+vpsrlw $2, %ymm2, %ymm2
+vpaddw %ymm2, %ymm1, %ymm2
+vpsubw mask_3(%rip), %ymm2, %ymm14
+vpsraw $15, %ymm14, %ymm15
+vpandn %ymm14, %ymm15, %ymm1
+vpand %ymm15, %ymm2, %ymm14
+vpxor %ymm14, %ymm1, %ymm2
+vmovdqa %ymm2, 1632(%rdi)
+movw $0, 1640(%rdi)
+movw $0, 1642(%rdi)
+movw $0, 1644(%rdi)
+movw $0, 1646(%rdi)
+movw $0, 1648(%rdi)
+movw $0, 1650(%rdi)
+movw $0, 1652(%rdi)
+movw $0, 1654(%rdi)
+movw $0, 1656(%rdi)
+movw $0, 1658(%rdi)
+movw $0, 1660(%rdi)
+movw $0, 1662(%rdi)
 ret
