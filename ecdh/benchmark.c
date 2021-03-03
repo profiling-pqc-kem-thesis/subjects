@@ -36,7 +36,6 @@ void benchmark_roundtrip() {
   if (crypto_dh_keypair(bob_pk, bob_sk) < 0)
     exit(EXIT_FAILURE);
 
-
   if (crypto_dh_enc(alice_k, alice_sk, bob_pk) < 0)
     exit(EXIT_FAILURE);
 

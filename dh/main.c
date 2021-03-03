@@ -21,9 +21,9 @@ void test_keypair() {
     exit(EXIT_FAILURE);
   }
 
-  const BIGNUM* exportPublic = DH_get0_pub_key(dh);
+  const BIGNUM *exportPublic = DH_get0_pub_key(dh);
   printf("pk: %s\n", BN_bn2hex(exportPublic));
-  const BIGNUM* exportPrivate = DH_get0_priv_key(dh);
+  const BIGNUM *exportPrivate = DH_get0_priv_key(dh);
   printf("sk: %s\n", BN_bn2hex(exportPrivate));
 
   printf("size: %d\n", DH_size(dh));
@@ -39,9 +39,9 @@ void test_roundtrip() {
     ERR_print_errors_fp(stdout);
     exit(EXIT_FAILURE);
   }
-  const BIGNUM* exportPublic = DH_get0_pub_key(alice_dh);
+  const BIGNUM *exportPublic = DH_get0_pub_key(alice_dh);
   printf("alice_pk: %s\n", BN_bn2hex(exportPublic));
-  const BIGNUM* exportPrivate = DH_get0_priv_key(alice_dh);
+  const BIGNUM *exportPrivate = DH_get0_priv_key(alice_dh);
   printf("alice_sk: %s\n", BN_bn2hex(exportPrivate));
 
   DH *bob_dh = DH_new();
@@ -55,7 +55,6 @@ void test_roundtrip() {
   printf("bob_pk: %s\n", BN_bn2hex(exportPublic));
   exportPrivate = DH_get0_priv_key(bob_dh);
   printf("bob_sk: %s\n", BN_bn2hex(exportPrivate));
-
 
   unsigned char alice_k[CRYPTO_BYTES] = {0};
   if (crypto_dh_enc(alice_k, alice_dh, DH_get0_pub_key(bob_dh)) < 0) {

@@ -1,10 +1,9 @@
 #include "params.h"
 
-#include <openssl/sha.h>
 #include <openssl/dh.h>
+#include <openssl/sha.h>
 
 #include "dh.h"
-
 
 int crypto_dh_keypair(DH *dh) {
   // todo The pseudo-random number generator "must" be seeded before calling it
@@ -21,7 +20,6 @@ int crypto_dh_keypair(DH *dh) {
 }
 
 int crypto_dh_enc(unsigned char *k, DH *dh, const BIGNUM *pk) {
-
   // Perform the exchange, calculating the shared secret
   size_t secret_size = 0;
   unsigned char secret[256] = {0}; // todo: should this be hard coded size?

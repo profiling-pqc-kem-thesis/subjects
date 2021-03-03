@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MODQ(X) ((X) & (NTRU_Q-1))
+#define MODQ(X) ((X) & (NTRU_Q - 1))
 
 #ifdef USE_AVX2
 #include <immintrin.h>
@@ -15,7 +15,7 @@ typedef union { /* align to 32 byte boundary for vmovdqa */
   __m256i coeffs_x16[PAD32(NTRU_N) / 16];
 } poly;
 #else
-typedef struct{
+typedef struct {
   uint16_t coeffs[NTRU_N];
 } poly;
 #endif
