@@ -101,7 +101,7 @@ make compile_commands.json
 
 #### ECDH(E)
 
-Elliptic-Curve Diffie-Hellman (Ephemeral) is implemented as a modern-day algorithm as recommended by NIST, IETF and the EU. The implementation builds exclusively on the OpenSSL library.
+Ephemeral Elliptic-Curve Diffie-Hellman is implemented as a modern-day algorithm as recommended by NIST, MDN, IETF and the EU-funded PQCRYPTO. The implementation builds exclusively on the OpenSSL library.
 
 The curves implemented are `P-256` and `Curve25519` (in some contexts known as `x25519`).
 
