@@ -57,6 +57,46 @@ Each binary for a test is named according to the following format: `algorithm_pa
 <a id="documentation"></a>
 ## Documentation
 
+### Building
+
+To build, the following prerequisites are required:
+
+* `make`
+* `gcc` 8 or newer
+
+The various implementations may have further requirements. If so, these are documented in the corresponding section below, under "Available Implementations".
+
+To build all samples and run all tests, simply run the following command.
+
+```sh
+make
+```
+
+To build and test a specific group of samples, such as ECDH(E), run the following command.
+
+```sh
+make ecdh
+```
+
+To only run the tests or build a specific version of the algorithm, run one of the following commands.
+
+```sh
+make -C ecdh test
+make -C ecdh build/ntru_hrss701_ref_test
+```
+
+To format all the code, run the following command. The command requires `clang-format` which is easily installed via `brew install clang-format` or `apt install clang-format`.
+
+```sh
+make format
+```
+
+To use a language server such as `clangd`, run the following command. The command requires `compiledb` which is installed via `pip install compiledb`.
+
+```sh
+make compile_commands.json
+```
+
 ### Available Implementations
 
 #### ECDH(E)
