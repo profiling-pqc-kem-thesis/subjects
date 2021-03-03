@@ -20,7 +20,7 @@ reference_sample_source := $(shell find sample/common -type f -iname "*.c")
 avx2_sample_source_hps701 := $(shell find sample/common -type f -iname "*.c") sample/avx2/701/vec32_sample_iid.s
 avx2_sample_source_hrss4096821 := $(shell find sample/common -type f -iname "*.c") sample/avx2/4096821/vec32_sample_iid.s
 
-all: tests benchmarks
+all: tests benchmarks test
 
 tests: build/ntru_hrss701_ref_test build/ntru_hps4096821_ref_test build/ntru_hrss701_avx_test build/ntru_hps4096821_avx_test
 
