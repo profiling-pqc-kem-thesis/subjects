@@ -34,6 +34,7 @@ format: $(source)
 
 test:
 	$(MAKE) -C ntru test
+	$(MAKE) -C ecdh test
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
