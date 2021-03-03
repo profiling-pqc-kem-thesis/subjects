@@ -48,6 +48,12 @@
 #define CRYPTO_BYTES 32
 #endif
 
+#define CRYPTO_SUBJECT_NAME CRYPTO_ALGNAME
+#ifdef USE_AVX2
+#undef CRYPTO_SUBJECT_NAME
+#define CRYPTO_SUBJECT_NAME CRYPTO_ALGNAME " (AVX2)"
+#endif
+
 #define CRYPTO_BYTES 32
 
 /* Do not modify below this line */

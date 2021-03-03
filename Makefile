@@ -6,7 +6,7 @@ LDFLAGS += -L $(CURDIR)/perf/build/lib
 
 source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 
-.PHONY: perf ecdh ntru test clean
+.PHONY: perf ecdh ntru test benchmark clean
 
 all: perf ecdh ntru
 
@@ -35,6 +35,9 @@ format: $(source)
 test:
 	$(MAKE) -C ntru test
 	$(MAKE) -C ecdh test
+
+benchmark:
+	$(MAKE) -C ntru benchmark
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
