@@ -26,8 +26,6 @@ void test_keypair() {
   const BIGNUM *exportPrivate = DH_get0_priv_key(dh);
   printf("sk: %s\n", BN_bn2hex(exportPrivate));
 
-  printf("size: %d\n", DH_size(dh));
-  DHparams_print_fp(stdout, dh);
   DH_free(dh);
 }
 
@@ -84,6 +82,9 @@ void test_roundtrip() {
       exit(EXIT_FAILURE);
     }
   }
+
+  DH_free(alice_dh);
+  DH_free(bob_dh);
 }
 
 int main(int argc, char **argv) {
