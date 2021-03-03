@@ -32,7 +32,7 @@ To build tests for a set of samples, run a command like the following.
 make -C ecdh tests
 ```
 
-To build benchmarks for a set of samples, run a command like the following. Note: building the benchmarks rely on [perf](https://github.com/profiling-pqc-kem-thesis/perf) and in turn Linux. The tests are however inteded to be buildable on non-linux systems.
+To build benchmarks for a set of samples, run a command like the following. Note: building the benchmarks rely on [perf](https://github.com/profiling-pqc-kem-thesis/perf) and in turn Linux. The tests are however inteded to be buildable on non-Linux systems.
 
 ```sh
 make -C ecdh benchmarks
