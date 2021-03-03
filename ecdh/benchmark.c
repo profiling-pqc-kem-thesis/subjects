@@ -3,6 +3,7 @@
 #include <time.h>
 
 #include "api.h"
+#include "params.h"
 
 void benchmark_keypair() {
   struct timespec start, stop;
@@ -15,7 +16,7 @@ void benchmark_keypair() {
     exit(EXIT_FAILURE);
   clock_gettime(CLOCK_MONOTONIC, &stop);
 
-  printf("keypair: %fms\n", ((stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec)) / 1e6);
+  printf("%s keypair: %fms\n", CRYPTO_SUBJECT_NAME, ((stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec)) / 1e6);
 }
 
 void benchmark_roundtrip() {
@@ -43,7 +44,7 @@ void benchmark_roundtrip() {
     exit(EXIT_FAILURE);
   clock_gettime(CLOCK_MONOTONIC, &stop);
 
-  printf("roundtrip: %fms\n", ((stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec)) / 1e6);
+  printf("%s roundtrip: %fms\n", CRYPTO_SUBJECT_NAME, ((stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec)) / 1e6);
 }
 
 int main(int argc, char **argv) {

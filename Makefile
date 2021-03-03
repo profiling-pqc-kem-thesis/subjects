@@ -38,6 +38,7 @@ test:
 
 benchmark:
 	$(MAKE) -C ntru benchmark
+	$(MAKE) -C ecdh benchmark
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true

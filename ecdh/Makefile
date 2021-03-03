@@ -1,4 +1,4 @@
-.PHONY: all tests benchmarks test clean
+.PHONY: all tests benchmarks test benchmark clean
 
 all: tests benchmarks test
 
@@ -25,6 +25,10 @@ build/ecdh_25519_test: test.c dh.c dh.h params.h
 test:
 	build/ecdh_p256_test
 	build/ecdh_25519_test
+
+benchmark: benchmarks
+	build/ecdh_p256_plain_optimized
+	build/ecdh_25519_plain_optimized
 
 clean:
 	rm -rf build &> /dev/null || true
