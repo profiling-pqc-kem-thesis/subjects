@@ -1,14 +1,24 @@
-.PHONY: build clean
+.PHONY: all tests benchmarks test benchmark clean
 
-OPENSSL ?= /usr/local/Cellar/openssl@1.1/1.1.1i
+all: tests benchmarks test
 
-CCFLAGS += -I $(OPENSSL)/include -L $(OPENSSL)/lib
+tests: build/dh_test
 
-build: build/dh
+benchmarks: build/dh_plain_optimized
 
-build/dh: main.c dh.c dh.h params.h
+build/dh_plain_optimized: benchmark.c dh.c dh.h params.h
 	mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) -g3 -o $@ main.c dh.c -l crypto # TODO: remove -g3 flag
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ benchmark.c dh.c -l crypto
+
+build/dh_test: test.c dh.c dh.h params.h
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ test.c dh.c -l crypto
+
+test:
+	build/dh_test
+
+benchmark: benchmarks
+	build/dh_plain_optimized
 
 clean:
 	rm -rf build &> /dev/null || true

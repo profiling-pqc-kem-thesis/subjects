@@ -6,9 +6,9 @@ LDFLAGS += -L $(CURDIR)/perf/build/lib
 
 source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 
-.PHONY: perf ecdh ntru test benchmark clean
+.PHONY: perf dh ecdh ntru test benchmark clean
 
-all: perf ecdh ntru
+all: perf dh ecdh ntru
 
 perf:
 ifeq ($(shell uname), Linux)
@@ -16,6 +16,9 @@ ifeq ($(shell uname), Linux)
 else
 	echo "Warning: skipping Linux-only task 'perf' - may result in later build failure"
 endif
+
+dh:
+	$(MAKE) -C dh
 
 ecdh:
 	$(MAKE) -C ecdh
@@ -34,13 +37,16 @@ format: $(source)
 
 test:
 	$(MAKE) -C ntru test
+	$(MAKE) -C dh test
 	$(MAKE) -C ecdh test
 
 benchmark:
 	$(MAKE) -C ntru benchmark
+	$(MAKE) -C dh benchmark
 	$(MAKE) -C ecdh benchmark
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
+	$(MAKE) -C dh clean
 	$(MAKE) -C ecdh clean
 	$(MAKE) -C ntru clean

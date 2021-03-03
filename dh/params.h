@@ -4,6 +4,7 @@
 #include <openssl/obj_mac.h>
 
 #define CRYPTO_ALGNAME "DH"
+#define CRYPTO_SUBJECT_NAME "DH"
 
 // The number of bytes required to store the derived session key
 #define CRYPTO_BYTES 32
