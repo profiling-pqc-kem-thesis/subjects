@@ -4,6 +4,8 @@ MAKEFLAGS += --silent
 CPPFLAGS += -I $(CURDIR)/perf/build/include
 LDFLAGS += -L $(CURDIR)/perf/build/lib
 
+source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
+
 .PHONY: perf ecdh ntru test clean
 
 all: perf ecdh ntru
@@ -25,6 +27,10 @@ ntru:
 compile_commands.json: Makefile
 	# compiledb is installed using: pip install compiledb
 	compiledb -n make
+
+# Format code according to .clang-format
+format: $(source)
+	clang-format -style=file -i $(source)
 
 test:
 	$(MAKE) -C ntru test
