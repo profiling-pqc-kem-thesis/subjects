@@ -36,11 +36,23 @@ format: $(source)
 	clang-format -style=file -i $(source)
 
 test:
+	# Build tests
+	$(MAKE) -C ntru tests
+	$(MAKE) -C dh tests
+	$(MAKE) -C ecdh tests
+
+	# Run tests
 	$(MAKE) -C ntru test
 	$(MAKE) -C dh test
 	$(MAKE) -C ecdh test
 
 benchmark:
+	# Build benchmarks
+	$(MAKE) -C ntru benchmarks
+	$(MAKE) -C dh benchmarks
+	$(MAKE) -C ecdh benchmarks
+
+	# Run benchmarks
 	$(MAKE) -C ntru benchmark
 	$(MAKE) -C dh benchmark
 	$(MAKE) -C ecdh benchmark
