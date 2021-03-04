@@ -1,6 +1,6 @@
 .PHONY: all tests benchmarks test benchmark clean
 
-all: tests benchmarks test
+all: tests benchmarks
 
 tests: build/dh_test
 

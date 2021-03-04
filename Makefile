@@ -6,15 +6,23 @@ LDFLAGS += -L $(CURDIR)/perf/build/lib
 
 source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 
-.PHONY: perf dh ecdh ntru test benchmark clean
+.PHONY: perf xkcp dh ecdh ntru test benchmark clean
 
-all: perf dh ecdh ntru
+all: perf xkcp dh ecdh ntru
 
 perf:
 ifeq ($(shell uname), Linux)
 	$(MAKE) -C perf
 else
 	echo "Warning: skipping Linux-only task 'perf' - may result in later build failure"
+endif
+
+xkcp:
+	$(MAKE) -C xkcp plain-64bits/ua
+ifeq ($(shell uname), Linux)
+	$(MAKE) -C xkcp AVX2
+else
+	echo "Warning: skipping Linux-only tasks for xkcp - may result in later build failure"
 endif
 
 dh:
@@ -59,6 +67,7 @@ benchmark:
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
-	$(MAKE) -C dh clean
-	$(MAKE) -C ecdh clean
-	$(MAKE) -C ntru clean
+	$(MAKE) -C dh clean || true
+	$(MAKE) -C ecdh clean || true
+	$(MAKE) -C ntru clean || true
+	$(MAKE) -C xkcp clean || true

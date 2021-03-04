@@ -1,6 +1,6 @@
 .PHONY: all tests benchmarks test benchmark clean
 
-all: tests benchmarks test
+all: tests benchmarks
 
 tests: build/ecdh_p256_test build/ecdh_25519_test
 
