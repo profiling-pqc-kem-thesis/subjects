@@ -94,6 +94,7 @@ ifneq ($(TARGET),none)
 	else ifeq ($(TARGET),test)
 		source += test.c
 		target_name := $(target_name)_test
+		CFLAGS += -g
 	endif
 
 	# Format the constant for controlling the implementation. Will look like
@@ -167,6 +168,11 @@ benchmark: benchmarks
 	build/ntru_hps4096821_avx2
 	build/ntru_hps4096821_ref_optimized
 	build/ntru_hps4096821_avx2_optimized
+
+# Analyze the hot paths of the algorithm
+hotpaths: ntru_hrss701_ref_test ntru_hps4096821_ref_test
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/ntru_hrss701_ref_test.profile build/ntru_hrss701_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/ntru_hps4096821_ref_test.profile build/ntru_hps4096821_ref_test > /dev/null
 
 clean:
 	rm -rf build &> /dev/null || true

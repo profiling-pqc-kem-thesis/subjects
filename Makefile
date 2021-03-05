@@ -65,6 +65,9 @@ benchmark:
 	$(MAKE) -C dh benchmark
 	$(MAKE) -C ecdh benchmark
 
+hotpaths:
+	$(MAKE) -C ntru hotpaths
+
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
 	$(MAKE) -C dh clean || true

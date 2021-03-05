@@ -97,6 +97,39 @@ To use a language server such as `clangd`, run the following command. The comman
 make compile_commands.json
 ```
 
+### Identifying hot paths
+
+To identify hot paths, first make sure you've installed Valgrind and KCachegrind:
+
+* `apt install valgrind kcachegrind`
+* `brew install --HEAD LouisBrunner/valgrind/valgrind`, `brew install qcachegrind`
+
+Then, build and run the test files (reference implementation) using Valgrind (Callgrind).
+
+```sh
+make hotpaths
+```
+
+The profiles will be created under the respective implementation's build directory like so:
+
+```
+.
+└── ntru
+    └── build
+        ├── ntru_hps4096821_ref_test.profile
+        └── ntru_hrss701_ref_test.profile
+```
+
+These profiles can be loaded using the following command:
+
+```sh
+# Linux
+kcachegrind ntru/build/ntru_hps4096821_ref_test.profile
+
+# macOS
+qcachegrind ntru/build/ntru_hps4096821_ref_test.profile
+```
+
 ### Available Implementations
 
 #### ECDH(E)
