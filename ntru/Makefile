@@ -26,12 +26,12 @@ ifneq ($(TARGET),none)
 	parameter_set := $(GROUP)$(PARAMETERS)
 
 	# Add common source and headers
-	source := $(shell find * -maxdepth 1 -type f -iname "*.c" -not -iname "crypto_sort_int32.c" -not -iname "test.c" -not -iname "benchmark.c" -not -iname "fips202.c")
-	headers := $(shell find * -maxdepth 1 -type f -iname "*.h" -not -iname "crypto_sort_int32.h")
+	source := $(shell find lib -maxdepth 1 -type f -iname "*.c" -not -iname "crypto_sort_int32.c" -not -iname "fips202.c")
+	headers := $(shell find lib -maxdepth 1 -type f -iname "*.h" -not -iname "crypto_sort_int32.h")
 
 	# Add common poly and sample source
-	source += $(shell find poly/common -type f -iname "*.c")
-	source += $(shell find sample/common -type f -iname "*.c")
+	source += $(shell find lib/poly/common -type f -iname "*.c")
+	source += $(shell find lib/sample/common -type f -iname "*.c")
 
 	# Enabled features (avx2, keccak, optimized compiler flags etc.)
 	features :=
@@ -49,28 +49,28 @@ ifneq ($(TARGET),none)
 			LDFLAGS += -L ../xkcp/build/plain-64bitsua/keccak
 		endif
 	else
-		source += fips202.c
+		source += lib/fips202.c
 	endif
 
 	ifeq ($(USE_AVX2),true)
 		# Add the target-specific AVX2 poly implementation
-		source += $(shell find poly/avx2 -maxdepth 1 -type f -iname "*.c" -or -iname "*.s")
-		source += $(shell find poly/avx2/$(parameter_set) -type f -iname "*.c" -or -iname "*.s")
-		headers += poly/avx2/poly_r2_inv.h
+		source += $(shell find lib/poly/avx2 -maxdepth 1 -type f -iname "*.c" -or -iname "*.s")
+		source += $(shell find lib/poly/avx2/$(parameter_set) -type f -iname "*.c" -or -iname "*.s")
+		headers += lib/poly/avx2/poly_r2_inv.h
 		# Add the target-specific AVX2 sample implementation
-		source += sample/avx2/$(parameter_set)/vec32_sample_iid.s
+		source += lib/sample/avx2/$(parameter_set)/vec32_sample_iid.s
 		CFLAGS += -mavx2
 		CPPFLAGS += -DUSE_AVX2
 		features += avx2
 	else
 		# Add the reference poly implementation
-		source += $(shell find poly/ref -type f -iname "*.c")
+		source += $(shell find lib/poly/ref -type f -iname "*.c")
 	endif
 
 	# Add source only used by the HPS family
 	ifeq ($(GROUP),hps)
-		source += crypto_sort_int32.c
-		headers += crypto_sort_int32.h
+		source += lib/crypto_sort_int32.c
+		headers += lib/crypto_sort_int32.h
 	endif
 
 	ifeq ($(USE_OPTIMIZATION_FLAGS),true)

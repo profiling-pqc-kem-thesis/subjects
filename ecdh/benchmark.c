@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "api.h"
-#include "params.h"
+#include "lib/api.h"
 
 void benchmark_keypair() {
   struct timespec start, stop;
