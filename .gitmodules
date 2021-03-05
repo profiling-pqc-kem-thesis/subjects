@@ -3,4 +3,4 @@
 	url = https://github.com/profiling-pqc-kem-thesis/perf.git
 [submodule "xkcp"]
 	path = xkcp
-	url = git@github.com:profiling-pqc-kem-thesis/XKCP.git
+	url = https://github.com/profiling-pqc-kem-thesis/XKCP.git
