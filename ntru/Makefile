@@ -85,12 +85,12 @@ ifneq ($(TARGET),none)
 
 	# Define the target name like so:
 	# build/ntru_hrss701_keccak-avx2-optimized
-	target_name := build/ntru_$(parameter_set)_$(shell echo "$(features)" | tr ' ' '-')
+	target_name := build/ntru_$(parameter_set)_$(shell echo "$(strip $(features))" | tr ' ' '-')
 
 	# Set the main target to either test or benchmark
 	ifeq ($(TARGET),benchmark)
 		source += benchmark.c
-		target_name := $(target_name)_test
+		target_name := $(target_name)
 	else ifeq ($(TARGET),test)
 		source += test.c
 		target_name := $(target_name)_test
@@ -98,7 +98,7 @@ ifneq ($(TARGET),none)
 
 	# Format the constant for controlling the implementation. Will look like
 	# NTRU_HPS_2048677. Possible values are defined in params.h
-	NTRU_PARAMETER_SET := NTRU_$(shell echo $(GROUP) | tr  '[:lower:]' '[:upper:]')_$(PARAMETERS)
+	NTRU_PARAMETER_SET := NTRU_$(shell echo $(GROUP) | tr '[:lower:]' '[:upper:]')_$(PARAMETERS)
 	CPPFLAGS += -D NTRU_PARAMETER_SET=$(NTRU_PARAMETER_SET)
 endif
 
