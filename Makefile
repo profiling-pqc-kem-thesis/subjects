@@ -6,7 +6,7 @@ LDFLAGS += -L $(CURDIR)/perf/build/lib
 
 source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 
-.PHONY: perf xkcp dh ecdh ntru test benchmark clean
+.PHONY: perf xkcp dh ecdh ntru classic-mceliece test benchmark clean
 
 all: perf xkcp dh ecdh ntru
 
@@ -34,6 +34,9 @@ ecdh:
 ntru:
 	$(MAKE) -C ntru
 
+classic-mceliece:
+	$(MAKE) -C classic-mceliece
+
 # Create the compilation database for llvm tools
 compile_commands.json: Makefile
 	# compiledb is installed using: pip install compiledb
@@ -46,31 +49,37 @@ format: $(source)
 test:
 	# Build tests
 	$(MAKE) -C ntru tests
+	$(MAKE) -C classic-mceliece tests
 	$(MAKE) -C dh tests
 	$(MAKE) -C ecdh tests
 
 	# Run tests
 	$(MAKE) -C ntru test
+	$(MAKE) -C classic-mceliece test
 	$(MAKE) -C dh test
 	$(MAKE) -C ecdh test
 
 benchmark:
 	# Build benchmarks
 	$(MAKE) -C ntru benchmarks
+	$(MAKE) -C classic-mceliece benchmarks
 	$(MAKE) -C dh benchmarks
 	$(MAKE) -C ecdh benchmarks
 
 	# Run benchmarks
 	$(MAKE) -C ntru benchmark
+	$(MAKE) -C classic-mceliece benchmark
 	$(MAKE) -C dh benchmark
 	$(MAKE) -C ecdh benchmark
 
 hotpaths:
 	$(MAKE) -C ntru hotpaths
+	$(MAKE) -C classic-mceliece hotpaths
 
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
 	$(MAKE) -C dh clean || true
 	$(MAKE) -C ecdh clean || true
 	$(MAKE) -C ntru clean || true
+	$(MAKE) -C classic-mceliece clean || true
 	$(MAKE) -C xkcp clean || true

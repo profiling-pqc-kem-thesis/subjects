@@ -2,7 +2,6 @@
 #define API_H
 
 #include "params.h"
-//#include "crypto_kem.h"
 
 int crypto_kem_keypair(unsigned char *pk, unsigned char *sk);
 

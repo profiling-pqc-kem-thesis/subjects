@@ -19,10 +19,10 @@ void test_keypair() {
   }
 
   printf("pk:");
-  print_byte_string(pk, CRYPTO_PUBLICKEYBYTES);
-  printf("\nsk:");
-  print_byte_string(sk, CRYPTO_SECRETKEYBYTES);
-  printf("\n");
+  print_byte_string(pk, 64);
+  printf("...\nsk:");
+  print_byte_string(sk, 64);
+  printf("...\n");
 }
 
 void test_roundtrip() {
@@ -33,10 +33,10 @@ void test_roundtrip() {
     exit(EXIT_FAILURE);
   }
   printf("alice_pk:");
-  print_byte_string(alice_pk, CRYPTO_PUBLICKEYBYTES);
-  printf("\nalice_sk:");
-  print_byte_string(alice_sk, CRYPTO_SECRETKEYBYTES);
-  printf("\n");
+  print_byte_string(alice_pk, 64);
+  printf("...\nalice_sk:");
+  print_byte_string(alice_sk, 64);
+  printf("...\n");
 
   unsigned char bob_pk[CRYPTO_PUBLICKEYBYTES] = {0};
   unsigned char bob_sk[CRYPTO_SECRETKEYBYTES] = {0};
@@ -45,10 +45,10 @@ void test_roundtrip() {
     exit(EXIT_FAILURE);
   }
   printf("bob_pk:");
-  print_byte_string(bob_pk, CRYPTO_PUBLICKEYBYTES);
-  printf("\nbob_sk:");
-  print_byte_string(bob_sk, CRYPTO_SECRETKEYBYTES);
-  printf("\n");
+  print_byte_string(bob_pk, 64);
+  printf("...\nbob_sk:");
+  print_byte_string(bob_sk, 64);
+  printf("...\n");
 
   unsigned char c[CRYPTO_CIPHERTEXTBYTES] = {0};
   unsigned char alice_k[CRYPTO_BYTES] = {0};

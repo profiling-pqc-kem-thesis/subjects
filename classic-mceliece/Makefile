@@ -3,10 +3,7 @@
 # The build type, 'none', 'test' or 'benchmark'
 TARGET ?= none
 
-# The group to build, '8192128' or '6960119'
-GROUP ?=
-
-# The parameters, such as 'f'
+# The parameters, such as '8192128' or '6960119f'
 PARAMETERS ?=
 
 # Whether or not (true/false) to use AVX2
@@ -15,12 +12,11 @@ USE_AVX2 ?= false
 # Whether or not (true/false) to use optimization flags
 USE_OPTIMIZATION_FLAGS ?= false
 
+# Liberties to load
 LDLIBS += -lcrypto -lkeccak
 
 # If the target is not none, define all required parameters for building a target
 ifneq ($(TARGET),none)
-	# The name of the parameter set, such as hrss701
-	parameter_set := $(GROUP)
 
 	# Add common source and headers
 	source := $(shell find * -maxdepth 1 -type f -iname "*.c" -not -iname "test.c" -not -iname "benchmark.c")
@@ -57,12 +53,6 @@ ifneq ($(TARGET),none)
 		#source += $(shell find poly/ref -type f -iname "*.c")
 	endif
 
-	# Add source only used by the HPS family
-	#ifeq ($(GROUP),hps)
-	#	source += crypto_sort_int32.c
-	#	headers += crypto_sort_int32.h
-	#endif
-
 	ifeq ($(USE_OPTIMIZATION_FLAGS),true)
 		CFLAGS += -march=native
 		features += optimized
@@ -74,20 +64,21 @@ ifneq ($(TARGET),none)
 	endif
 
 	# Define the target name like so:
-	# build/ntru_hrss701_keccak-avx2-optimized
-	target_name := build/mceliece_$(PARAMETERS)_$(shell echo "$(features)" | tr ' ' '-')
+	# build/mceliece_8192128-avx2-optimized
+	target_name := build/mceliece_$(PARAMETERS)_$(shell echo "$(strip $(features))" | tr ' ' '-')
 
 	# Set the main target to either test or benchmark
 	ifeq ($(TARGET),benchmark)
 		source += benchmark.c
-		target_name := $(target_name)_test
+		target_name := $(target_name)
 	else ifeq ($(TARGET),test)
 		source += test.c
 		target_name := $(target_name)_test
+		CFLAGS += -g
 	endif
 
 	# Format the constant for controlling the implementation. Will look like
-	# NTRU_HPS_2048677. Possible values are defined in params.h
+	# MCELIECE_8192128. Possible values are defined in params.h
 	MCELIECE_PARAMETER_SET := MCELIECE_$(PARAMETERS)
 	CPPFLAGS += -D MCELIECE_PARAMETER_SET=$(MCELIECE_PARAMETER_SET)
 endif
@@ -101,20 +92,19 @@ endef
 all: tests benchmarks
 
 # Build all tests
-# first line is HRS701 targets, the second HPS4096821
 #tests: mceliece_8192128_ref_test mceliece_8192128_avx2n_test \
 #	mceliece_8192128f_ref_test mceliece_8192128f_avx2_test
 
 tests:  mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test
 
 # Build all benchmarks
-# first line is HRS701 targets, the second HPS4096821
 #benchmarks: mceliece_8192128_ref mceliece_8192128_avx2 mceliece_8192128_ref_optimized mceliece_8192128_avx2_optimized \
 #	mceliece_8192128f_ref mceliece_8192128f_avx2 mceliece_8192128f_ref_optimized mceliece_8192128f_avx2_optimized
 
-benchmarks: mceliece_8192128_ref mceliece_8192128_ref_optimized	mceliece_8192128f_ref mceliece_8192128f_ref_optimized
+benchmarks: mceliece_8192128_ref mceliece_8192128_ref_optimized	mceliece_8192128f_ref mceliece_8192128f_ref_optimized \
+						mceliece_6960119_ref mceliece_6960119_ref_optimized	mceliece_6960119f_ref mceliece_6960119f_ref_optimized
 
-# Define all HRSS701 targets
+# Define all mceliece8192128 targets
 #                            rule name                         target     parameter-set  avx2   optimize
 $(eval $(call create-target, mceliece_8192128_ref,             benchmark, 8192128,       false, false))
 #$(eval $(call create-target, mceliece_8192128_avx2,           benchmark, 8192128,       true,  false))
@@ -123,7 +113,7 @@ $(eval $(call create-target, mceliece_8192128_ref_optimized,   benchmark, 819212
 $(eval $(call create-target, mceliece_8192128_ref_test,        test,      8192128,       false, false))
 #$(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128,       true,  false))
 
-# Define all HPS4096821 targets
+# Define all mceliece8192128f targets
 #                            rule name                          target     parameter-set avx2   optimize
 $(eval $(call create-target, mceliece_8192128f_ref,             benchmark, 8192128f,     false, false))
 #$(eval $(call create-target, mceliece_8192128f_avx2,           benchmark, 8192128f,     true,  false))
@@ -132,7 +122,7 @@ $(eval $(call create-target, mceliece_8192128f_ref_optimized,   benchmark, 81921
 $(eval $(call create-target, mceliece_8192128f_ref_test,        test,      8192128f,     false, false))
 #$(eval $(call create-target, mceliece_8192128f_avx2_test,      test,      8192128f,     true,  false))
 
-# Define all HRSS701 targets
+# Define all mceliece6960119 targets
 #                            rule name                         target     parameter-set  avx2   optimize
 $(eval $(call create-target, mceliece_6960119_ref,             benchmark, 6960119,       false, false))
 #$(eval $(call create-target, mceliece_8192128_avx2,           benchmark, 8192128,       true,  false))
@@ -141,7 +131,7 @@ $(eval $(call create-target, mceliece_6960119_ref_optimized,   benchmark, 696011
 $(eval $(call create-target, mceliece_6960119_ref_test,        test,      6960119,       false, false))
 #$(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128,       true,  false))
 
-# Define all HPS4096821 targets
+# Define all mceliece6960119f targets
 #                            rule name                          target     parameter-set avx2   optimize
 $(eval $(call create-target, mceliece_6960119f_ref,             benchmark, 6960119f,     false, false))
 #$(eval $(call create-target, mceliece_8192128f_avx2,           benchmark, 8192128f,     true,  false))
@@ -152,30 +142,48 @@ $(eval $(call create-target, mceliece_6960119f_ref_test,        test,      69601
 
 # Run all tests
 test: tests
-	# Test the HRSS701 implementation
+	# Test the mceliece8192128 implementations
 	build/mceliece_8192128_ref_test
 	build/mceliece_8192128f_ref_test
 #	bash -c 'diff <(build/mceliece_8192128_ref_test) <(build/mceliece_8192128_avx2_test)'
 
-	# Test the HPS4086821 implementation
-
+	# Test the mceliece6960119 implementations
 	build/mceliece_6960119_ref_test
 	build/mceliece_6960119f_ref_test
 #	bash -c 'diff <(build/mceliece_8192128f_ref_test) <(build/mceliece_8192128f_avx2_test)'
 
 # Run all benchmarks
 benchmark: benchmarks
-	# Benchmark the HRSS701 implementation
+	# Benchmark the mceliece8192128 implementations
 	build/mceliece_8192128_ref
 #	build/mceliece_8192128_avx2
-	build/mceliece_8192128_ref_optimized
+	build/mceliece_8192128_optimized
 #	build/mceliece_8192128_avx2_optimized
 
-	# Benchmark the HPS4096821 implementation
+	# Benchmark the mceliece8192128f implementations
 	build/mceliece_8192128f_ref
 #	build/mceliece_8192128f_avx2
-	build/mceliece_8192128f_ref_optimized
+	build/mceliece_8192128f_optimized
 #	build/mceliece_8192128f_avx2_optimized
+
+	# Benchmark the mceliece6960119 implementations
+	build/mceliece_6960119_ref
+#	build/mceliece_6960119_avx2
+	build/mceliece_6960119_optimized
+#	build/mceliece_6960119_avx2_optimized
+
+	# Benchmark the mceliece6960119f implementations
+	build/mceliece_6960119f_ref
+#	build/mceliece_6960119f_avx2
+	build/mceliece_6960119f_optimized
+#	build/mceliece_6960119f_avx2_optimized
+
+# Analyze the hot paths of the algorithm
+hotpaths: mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_8192128_ref_test.profile build/mceliece_8192128_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_8192128f_ref_test.profile build/mceliece_8192128f_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_6960119_ref_test.profile build/mceliece_6960119_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_6960119f_ref_test.profile build/mceliece_6960119f_ref_test > /dev/null
 
 clean:
 	rm -rf build &> /dev/null || true
