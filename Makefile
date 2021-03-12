@@ -46,7 +46,7 @@ compile_commands.json: Makefile
 format: $(source)
 	clang-format -style=file -i $(source)
 
-test:
+test: xkcp
 	# Build tests
 	$(MAKE) -C ntru tests
 	$(MAKE) -C classic-mceliece tests
@@ -59,7 +59,7 @@ test:
 	$(MAKE) -C dh test
 	$(MAKE) -C ecdh test
 
-benchmark:
+benchmark: xkcp
 	# Build benchmarks
 	$(MAKE) -C ntru benchmarks
 	$(MAKE) -C classic-mceliece benchmarks
@@ -72,7 +72,7 @@ benchmark:
 	$(MAKE) -C dh benchmark
 	$(MAKE) -C ecdh benchmark
 
-hotpaths:
+hotpaths: xkcp
 	$(MAKE) -C ntru hotpaths
 	$(MAKE) -C classic-mceliece hotpaths
 
