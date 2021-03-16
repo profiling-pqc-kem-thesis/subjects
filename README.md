@@ -186,3 +186,13 @@ To build the NTRU implementations, OpenSSL is required. It is also required that
 ## Disclaimer
 
 The implementations are not tested nor validated in terms of security. It is possible that security features of the implementations have been limited after changes made by us. The focus in this context is on the performance behavior of the algorithms, not the security. The implemented tests only test the general function of the algorithms in this context and are not extensive.
+
+## License
+
+For details on the NTRU implementation, please refer to this repository: <https://github.com/profiling-pqc-kem-thesis/ntru>.
+
+For details on the Classic McEliece implementation, please refer to this repository: <https://github.com/profiling-pqc-kem-thesis/classic-mceliece>.
+
+For details on the XKCP library, please refer to this repository: <https://github.com/profiling-pqc-kem-thesis/XKCP>.
+
+For details on the perf library, please refer to this repository: <https://github.com/profiling-pqc-kem-thesis/perf>.
