@@ -182,3 +182,7 @@ NTRU is implemented as a post-quantum algorithm as submitted to NIST's standardi
 The implemented parameter sets are `HRSS701`, `HPS2048509`, `HPS2048677` and `HPS4096821`, although only `HRSS701` and `HPS4096821` is exposed via the Makefile.
 
 To build the NTRU implementations, OpenSSL is required. It is also required that the include headers and libraries are in the correct location, or that their paths are specified in the `CPPFLAGS` and `LDFLAGS` environment variables.
+
+## Disclaimer
+
+The implementations are not tested nor validated in terms of security. It is possible that security features of the implementations have been limited after changes made by us. The focus in this context is on the performance behavior of the algorithms, not the security. The implemented tests only test the general function of the algorithms in this context and are not extensive.
