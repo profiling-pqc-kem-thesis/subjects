@@ -6,9 +6,7 @@
 typedef struct {
   pthread_t tid;
   int id;
-  const int *values;
-  int offset;
-  int count;
+  int (*benchmark)(const int *, int, int);
 } worker_thread_t;
 
 typedef struct {
@@ -16,15 +14,13 @@ typedef struct {
   int id;
   int thread_count;
   worker_thread_t **threads;
-  const int *values;
-  int offset;
-  int count;
+  int (*benchmark)(const int *, int, int);
 } worker_process_t;
 
 // Create a worker process. If thread count is 0, the process will perform the work
-worker_process_t *worker_process_create(const int *values, int id, int offset, int count, int thread_count);
+worker_process_t *worker_process_create(int (*benchmark)(const int *, int, int), int id, int thread_count);
 // Start a worker in a separate process
-int worker_process_start(worker_process_t *process);
+int worker_process_start(worker_process_t *process, const int *values, int offset, int count);
 // Send SIGTERM to the worker, making it exit gracefully as soon as possible
 void worker_process_shutdown(worker_process_t *process);
 // Send SIGKILL to the worker, exiting it immediately
@@ -35,9 +31,9 @@ int worker_process_wait_for_exit(worker_process_t *process);
 void worker_process_free(worker_process_t *process);
 
 // Create a worker thread
-worker_thread_t *worker_thread_create(const int *values, int id, int offset, int count);
+worker_thread_t *worker_thread_create(int (*benchmark)(const int *, int, int), int id);
 // Start a worker in a separate thread
-int worker_thread_start(worker_thread_t *thread);
+int worker_thread_start(worker_thread_t *thread, const int *values, int offset, int count);
 // Close the worker thread, exiting it immediately
 void worker_thread_kill(worker_thread_t *thread);
 // Wait for a worker thread to exit, returning its exit code or -1 if failed

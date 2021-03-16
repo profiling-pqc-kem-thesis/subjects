@@ -4,20 +4,18 @@
 #include <string.h>
 #include <time.h>
 
-#include "benchmark.h"
-
 #include "worker.h"
 
-int worker_process_main(const worker_process_t *process) {
+int worker_process_main(const worker_process_t *process, const int *values, int offset, int count) {
   struct timespec start, stop;
   clock_gettime(CLOCK_MONOTONIC, &start);
 
   if (process->thread_count == 0) {
-    benchmark(process->values, process->offset, process->count);
+    process->benchmark(values, offset, count);
   } else {
     // Start the worker threads
     for (int i = 0; i < process->thread_count; i++) {
-      if (worker_thread_start(process->threads[i]))
+      if (worker_thread_start(process->threads[i], values, offset, count))
         return EXIT_FAILURE;
     }
 
@@ -33,12 +31,12 @@ int worker_process_main(const worker_process_t *process) {
 
   // Print the duration of the worker
   unsigned long long duration = (stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec);
-  printf("%d: %llu\n", process->id, duration);
+  printf("%d: %lluns\n", process->id, duration);
 
   return EXIT_SUCCESS;
 }
 
-worker_process_t *worker_process_create(const int *values, int id, int offset, int count, int thread_count) {
+worker_process_t *worker_process_create(int (*benchmark)(const int *, int, int), int id, int thread_count) {
   worker_process_t *process = malloc(sizeof(worker_process_t));
   if (process == NULL)
     return NULL;
@@ -49,15 +47,13 @@ worker_process_t *worker_process_create(const int *values, int id, int offset, i
     return NULL;
   }
 
+  process->benchmark = benchmark;
   process->id = id;
   process->thread_count = thread_count;
-  process->values = values;
-  process->offset = offset;
-  process->count = count;
 
   for (int i = 0; i < thread_count; i++) {
     // TODO: rework id and offset?
-    process->threads[i] = worker_thread_create(values, i, offset, count);
+    process->threads[i] = worker_thread_create(benchmark, i);
     if (process->threads[i] == NULL) {
       worker_process_free(process);
       return NULL;
@@ -67,7 +63,7 @@ worker_process_t *worker_process_create(const int *values, int id, int offset, i
   return process;
 }
 
-int worker_process_start(worker_process_t *process) {
+int worker_process_start(worker_process_t *process, const int *values, int offset, int count) {
   pid_t pid = fork();
 
   // Fork failed
@@ -80,7 +76,7 @@ int worker_process_start(worker_process_t *process) {
   if (pid > 0)
     return 0;
 
-  int exit_code = worker_process_main(process);
+  int exit_code = worker_process_main(process, values, offset, count);
   exit(exit_code);
 }
 
