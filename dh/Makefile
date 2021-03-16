@@ -14,7 +14,7 @@ build/dh_test: test.c lib/dh.c lib/dh.h lib/params.h
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ test.c lib/dh.c -l crypto
 
-test:
+test: tests
 	build/dh_test
 
 benchmark: benchmarks
