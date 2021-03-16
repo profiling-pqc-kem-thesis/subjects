@@ -53,10 +53,37 @@ void test_single_process() {
   worker_process_free(process);
 }
 
+void test_multiple_processes() {
+  worker_process_t *processes[5] = {0};
+  for (int i = 0; i < 5; i++) {
+    processes[i] = worker_process_create(&calculate, i, 0);
+    if (processes[i] == NULL) {
+      printf("Unable to create process\n");
+      return;
+    }
+
+    if (worker_process_start(processes[i], values, i * 2, 2)) {
+      printf("Unable to start process\n");
+      return;
+    }
+  }
+
+  for (int i = 0; i < 5; i++) {
+    int exit_code = worker_process_wait_for_exit(processes[i]);
+    if (exit_code != 0) {
+      printf("Failed to run process, exited with code %d\n", exit_code);
+      return;
+    }
+
+    worker_process_free(processes[i]);
+  }
+}
+
 int main(int argc, char **argv) {
   int core_count = get_available_cores();
   printf("There are %d logical cores available\n", core_count);
 
   test_single_thread();
   test_single_process();
+  test_multiple_processes();
 }
