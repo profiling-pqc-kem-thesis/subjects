@@ -159,6 +159,22 @@ The resulting binaries for benchmarks are documented in the table below.
 
 To build the ECDH implementations, OpenSSL is required. It is also required that the include headers and libraries are in the correct location, or that their paths are specified in the `CPPFLAGS` and `LDFLAGS` environment variables.
 
+#### DH(E)
+
+Ephemeral Diffie-Hellman is implemented as a modern-day algorithm as recommended by NIST, MDN, IETF and the EU-funded PQCRYPTO. The implementation builds exclusively on the OpenSSL library.
+
+The implementation is assumed to be optimized for the underlying platform via OpenSSL and the compiler.
+
+Refer to [the report](https://github.com/profiling-pqc-kem-thesis/report) for further details.
+
+The resulting binaries for benchmarks are documented in the table below.
+
+| Name | Description |
+| :--: | ----------- |
+| `dh` | DH implemented using OpenSSL and compiled with `-O3`, `-march=native` |
+
+To build the DH implementations, OpenSSL is required. It is also required that the include headers and libraries are in the correct location, or that their paths are specified in the `CPPFLAGS` and `LDFLAGS` environment variables.
+
 #### NTRU
 
 NTRU is implemented as a post-quantum algorithm as submitted to NIST's standardization process. The implementations are based solely on the [provided reference and optimized implementation](https://github.com/profiling-pqc-kem-thesis/ntru).
