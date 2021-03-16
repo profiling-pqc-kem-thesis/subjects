@@ -22,7 +22,7 @@ build/ecdh_25519_test: test.c lib/dh.c lib/dh.h lib/params.h
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ -D ECDH_CURVE=ECDH_CURVE_25519 test.c lib/dh.c -l crypto
 
-test:
+test: tests
 	build/ecdh_p256_test
 	build/ecdh_25519_test
 
