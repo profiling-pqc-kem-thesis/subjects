@@ -97,6 +97,14 @@ To use a language server such as `clangd`, run the following command. The comman
 make compile_commands.json
 ```
 
+To build the solution in debug mode (using clang, address sanitizer etc.), first execute the following command to setup your environment.
+
+```sh
+eval $(make debug-flags)
+```
+
+You may now run any build like usual, such as `make test`.
+
 ### Identifying hot paths
 
 To identify hot paths, first make sure you've installed Valgrind and KCachegrind:

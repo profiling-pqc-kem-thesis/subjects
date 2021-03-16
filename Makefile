@@ -76,6 +76,11 @@ hotpaths: xkcp
 	$(MAKE) -C ntru hotpaths
 	$(MAKE) -C classic-mceliece hotpaths
 
+debug-flags:
+	echo "export CFLAGS='-Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-command-line-argument -fsanitize=address -fno-omit-frame-pointer'"
+	echo "export CC=clang"
+	echo "export ASAN_OPTIONS=detect_leaks=1"
+
 clean:
 	rm -rf build compile_commands.json &> /dev/null || true
 	$(MAKE) -C dh clean || true
