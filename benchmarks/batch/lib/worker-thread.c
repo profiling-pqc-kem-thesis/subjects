@@ -16,6 +16,7 @@ int worker_thread_main(const worker_thread_t *thread, state_t *state) {
 void *worker_thread_loader(void *parameters) {
   worker_thread_parameters_t *thread_parameters = (worker_thread_parameters_t *)parameters;
   int exit_code = worker_thread_main(thread_parameters->thread, thread_parameters->state);
+  free((void*)thread_parameters);
   return (void *)exit_code;
 }
 
@@ -32,6 +33,7 @@ worker_thread_t *worker_thread_create(int (*benchmark)(int process_index, int th
 }
 
 int worker_thread_start(worker_thread_t *thread, state_t *state) {
+  // The thread parameters are owned by the thread itself
   worker_thread_parameters_t *thread_parameters = malloc(sizeof(worker_thread_parameters_t));
   if (thread_parameters == NULL)
     return 1;
@@ -43,8 +45,6 @@ int worker_thread_start(worker_thread_t *thread, state_t *state) {
     free(thread_parameters);
     return 1;
   }
-
-  free(thread_parameters);
 
   return 0;
 }
