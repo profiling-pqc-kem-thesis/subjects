@@ -6,37 +6,27 @@
 
 #include "worker.h"
 
-int worker_process_main(const worker_process_t *process, const int *values, int offset, int count) {
-  struct timespec start, stop;
-  clock_gettime(CLOCK_MONOTONIC, &start);
+int worker_process_main(const worker_process_t *process, state_t *state) {
+  if (process->thread_count == 0)
+    return process->benchmark(process->process_index, 0, state);
 
-  if (process->thread_count == 0) {
-    process->benchmark(values, offset, count);
-  } else {
-    // Start the worker threads
-    for (int i = 0; i < process->thread_count; i++) {
-      if (worker_thread_start(process->threads[i], values, offset, count))
-        return EXIT_FAILURE;
-    }
-
-    // Wait for the threads to finish
-    for (int i = 0; i < process->thread_count; i++) {
-      int exit_code = worker_thread_wait_for_exit(process->threads[i]);
-      if (exit_code != 0)
-        return exit_code;
-    }
+  // Start the worker threads
+  for (int i = 0; i < process->thread_count; i++) {
+    if (worker_thread_start(process->threads[i], state))
+      return EXIT_FAILURE;
   }
 
-  clock_gettime(CLOCK_MONOTONIC, &stop);
-
-  // Print the duration of the worker
-  unsigned long long duration = (stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec);
-  printf("%d: %lluns\n", process->id, duration);
+  // Wait for the threads to finish
+  for (int i = 0; i < process->thread_count; i++) {
+    int exit_code = worker_thread_wait_for_exit(process->threads[i]);
+    if (exit_code != 0)
+      return exit_code;
+  }
 
   return EXIT_SUCCESS;
 }
 
-worker_process_t *worker_process_create(int (*benchmark)(const int *, int, int), int id, int thread_count) {
+worker_process_t *worker_process_create(int (*benchmark)(int process, int thread, state_t *state), int process_index, int thread_count) {
   worker_process_t *process = malloc(sizeof(worker_process_t));
   if (process == NULL)
     return NULL;
@@ -48,12 +38,11 @@ worker_process_t *worker_process_create(int (*benchmark)(const int *, int, int),
   }
 
   process->benchmark = benchmark;
-  process->id = id;
+  process->process_index = process_index;
   process->thread_count = thread_count;
 
   for (int i = 0; i < thread_count; i++) {
-    // TODO: rework id and offset?
-    process->threads[i] = worker_thread_create(benchmark, i);
+    process->threads[i] = worker_thread_create(benchmark, process_index, i);
     if (process->threads[i] == NULL) {
       worker_process_free(process);
       return NULL;
@@ -63,7 +52,7 @@ worker_process_t *worker_process_create(int (*benchmark)(const int *, int, int),
   return process;
 }
 
-int worker_process_start(worker_process_t *process, const int *values, int offset, int count) {
+int worker_process_start(worker_process_t *process, state_t *state) {
   pid_t pid = fork();
 
   // Fork failed
@@ -76,7 +65,7 @@ int worker_process_start(worker_process_t *process, const int *values, int offse
   if (pid > 0)
     return 0;
 
-  int exit_code = worker_process_main(process, values, offset, count);
+  int exit_code = worker_process_main(process, state);
   exit(exit_code);
 }
 

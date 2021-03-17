@@ -6,52 +6,38 @@
 
 typedef struct {
   const worker_thread_t *thread;
-  const int *values;
-  int offset;
-  int count;
+  state_t *state;
 } worker_thread_parameters_t;
 
-int worker_thread_main(const worker_thread_t *thread, const int *values, int offset, int count) {
-  struct timespec start, stop;
-  clock_gettime(CLOCK_MONOTONIC, &start);
-
-  thread->benchmark(values, offset, count);
-
-  clock_gettime(CLOCK_MONOTONIC, &stop);
-
-  // Print the duration of the worker
-  unsigned long long duration = (stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec);
-  printf("%d: %lluns\n", thread->id, duration);
-
-  return EXIT_SUCCESS;
+int worker_thread_main(const worker_thread_t *thread, state_t *state) {
+  return thread->benchmark(thread->process_index, thread->thread_index, state);
 }
 
 void *worker_thread_loader(void *parameters) {
   worker_thread_parameters_t *thread_parameters = (worker_thread_parameters_t *)parameters;
-  int exit_code = worker_thread_main(thread_parameters->thread, thread_parameters->values, thread_parameters->offset, thread_parameters->count);
+  int exit_code = worker_thread_main(thread_parameters->thread, thread_parameters->state);
   return (void *)exit_code;
 }
 
-worker_thread_t *worker_thread_create(int (*benchmark)(const int *, int, int), int id) {
+worker_thread_t *worker_thread_create(int (*benchmark)(int process_index, int thread_index, state_t *state), int process_index, int thread_index) {
   worker_thread_t *thread = malloc(sizeof(worker_thread_t));
   if (thread == NULL)
     return NULL;
 
   thread->benchmark = benchmark;
-  thread->id = id;
+  thread->process_index = process_index;
+  thread->thread_index = thread_index;
 
   return thread;
 }
 
-int worker_thread_start(worker_thread_t *thread, const int *values, int offset, int count) {
+int worker_thread_start(worker_thread_t *thread, state_t *state) {
   worker_thread_parameters_t *thread_parameters = malloc(sizeof(worker_thread_parameters_t));
   if (thread_parameters == NULL)
     return 1;
 
   thread_parameters->thread = thread;
-  thread_parameters->values = values;
-  thread_parameters->offset = offset;
-  thread_parameters->count = count;
+  thread_parameters->state = state;
 
   if (pthread_create(&thread->tid, NULL, worker_thread_loader, (void *)thread_parameters)) {
     free(thread_parameters);
