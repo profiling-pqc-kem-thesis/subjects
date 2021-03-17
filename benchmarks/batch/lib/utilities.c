@@ -1,4 +1,5 @@
 #include <sys/sysctl.h>
+#include <stddef.h>
 
 #include "utilities.h"
 
