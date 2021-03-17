@@ -44,22 +44,9 @@ int calculate(int process_index, int thread_index, state_t *state) {
   calculate_state_t *calculate_state = (calculate_state_t *)state->memory;
   int worker_count = 0;
   int worker_index = 0;
-  // Support multi-process, multi-threading and multi-threading in multi-process
-  if (calculate_state->processes == 0 && calculate_state->threads_per_process == 0) {
-    worker_count = 1;
-    worker_index = 0;
-  } else if (calculate_state->processes == 0) {
-    worker_count = calculate_state->threads_per_process;
-    worker_index = thread_index;
-  } else if (calculate_state->threads_per_process == 0) {
-    worker_count = calculate_state->processes;
-    worker_index = process_index;
-  } else {
-    worker_count = calculate_state->processes * calculate_state->threads_per_process;
-    worker_index = process_index * calculate_state->threads_per_process + thread_index;
-  }
-  if (worker_count == 0)
-    worker_count = 1;
+
+  calculate_worker_index(calculate_state->processes, calculate_state->threads_per_process, process_index, thread_index, &worker_count, &worker_index);
+
   int operations_per_thread = INPUT_COUNT / worker_count;
   int offset = worker_index * operations_per_thread;
   for (int i = offset; i < offset + operations_per_thread; i++) {
