@@ -19,7 +19,7 @@ int calculate_worker_index(int processes, int threads_per_process, int process_i
 }
 
 
-int calculate_worker_count(int processes, int threads_per_process, int process_index, int thread_index) {
+int calculate_worker_count(int processes, int threads_per_process) {
   // Support multi-process, multi-threading and multi-threading in multi-process
   int worker_count = 0;
   if (processes == 0)

@@ -42,7 +42,7 @@ void print_results(state_t *state) {
 
 int calculate(int process_index, int thread_index, state_t *state) {
   calculate_state_t *calculate_state = (calculate_state_t *)state->memory;
-  int worker_count = calculate_worker_count(calculate_state->processes, calculate_state->threads_per_process, process_index, thread_index);
+  int worker_count = calculate_worker_count(calculate_state->processes, calculate_state->threads_per_process);
   int worker_index = calculate_worker_index(calculate_state->processes, calculate_state->threads_per_process, process_index, thread_index);
 
   int operations_per_thread = INPUT_COUNT / worker_count;
