@@ -1,13 +1,22 @@
+#ifdef __APPLE__
 #include <sys/sysctl.h>
+#else
+#include <sys/sysinfo.h>
+#endif
+
 #include <stddef.h>
 
 #include "utilities.h"
 
 int get_available_cores() {
+#ifdef __APPLE__
   int count;
   size_t count_size = sizeof(count);
   sysctlbyname("hw.logicalcpu", &count, &count_size, NULL, 0);
   return count;
+#else
+  return get_nprocs();
+#endif
 }
 
 int calculate_worker_index(int processes, int threads_per_process, int process_index, int thread_index) {

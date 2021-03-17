@@ -1,5 +1,7 @@
 .PHONY: all test clean
 
+LDLIBS += -l pthread
+
 all: test
 
 test: build/test
