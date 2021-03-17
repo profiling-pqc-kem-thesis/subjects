@@ -225,9 +225,9 @@ int crypto_kem_keypair
 	unsigned char seed[ 33 ] = {64};
 	unsigned char r[ SYS_N/8 + (1 << GFBITS)*sizeof(uint32_t) + SYS_T*2 + 32 ];
 	unsigned char *rp, *skp;
-        #ifdef USE_F
-        uint64_t pivots;
-        #endif
+  #ifdef USE_F
+  uint64_t pivots;
+  #endif
 
 	gf f[ SYS_T ]; // element in GF(2^mt)
 	gf irr[ SYS_T ]; // Goppa polynomial
@@ -288,8 +288,8 @@ int crypto_kem_keypair
 		// storing positions of the 32 pivots
 
 		#ifdef USE_F
-                store8(sk + 32, pivots);
-                #else
+    store8(sk + 32, pivots);
+    #else
 		store8(sk + 32, 0xFFFFFFFF);
 		#endif
 

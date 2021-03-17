@@ -19,9 +19,9 @@ LDLIBS += -lcrypto -lkeccak
 ifneq ($(TARGET),none)
 
 	# Add common source and headers
-	source := $(shell find * -maxdepth 1 -type f -iname "*.c" -not -iname "test.c" -not -iname "benchmark.c")
-	headers := $(shell find * -maxdepth 1 -type f -iname "*.h" -not -iname "crypto_kem_mceliece8192128.h" -not -iname "crypto_kem_mceliece6960119.h")
-	headers += subroutines/crypto_int32.h
+	# source := $(shell find lib -maxdepth 1 -type f -iname "*.c" -not -iname "test.c" -not -iname "benchmark.c")
+	# headers := $(shell find lib -maxdepth 1 -type f -iname "*.h" -not -iname "crypto_kem_mceliece8192128.h" -not -iname "crypto_kem_mceliece6960119.h")
+	# headers += subroutines/crypto_int32.h
 	# Add common poly and sample source
 	#source += $(shell find poly/common -type f -iname "*.c")
 	#source += $(shell find sample/common -type f -iname "*.c")
@@ -31,26 +31,27 @@ ifneq ($(TARGET),none)
 	endif
 
 	ifeq ($(USE_AVX2),true)
-		CPPFLAGS += -DUSE_KECCAK -I ../xkcp/build/AVX2/keccak
+		CPPFLAGS += -I ../xkcp/build/AVX2/keccak
 		LDFLAGS += -L ../xkcp/build/AVX2/keccak
 	else
-		CPPFLAGS += -DUSE_KECCAK -I ../xkcp/build/plain-64bitsua/keccak
+		CPPFLAGS += -I ../xkcp/build/plain-64bitsua/keccak
 		LDFLAGS += -L ../xkcp/build/plain-64bitsua/keccak
 	endif
 
 	ifeq ($(USE_AVX2),true)
 		# Add the target-specific AVX2 poly implementation
-		source += $(shell find poly/avx2 -maxdepth 1 -type f -iname "*.c" -or -iname "*.s")
-		source += $(shell find poly/avx2/$(PARAMETERS) -type f -iname "*.c" -or -iname "*.s")
-		headers += poly/avx2/poly_r2_inv.h
+		source := $(shell find lib/avx -maxdepth 1 -type f -iname "*.c" -not -iname "test.c" -not -iname "benchmark.c")
+		headers := $(shell find lib/avx -maxdepth 1 -type f -iname "*.h" -not -iname "crypto_kem_mceliece8192128.h" -not -iname "crypto_kem_mceliece6960119.h")
 		# Add the target-specific AVX2 sample implementation
-		source += sample/avx2/$(PARAMETERS)/vec32_sample_iid.s
+		#source += sample/avx2/$(PARAMETERS)/vec32_sample_iid.s
 		CFLAGS += -mavx2
 		CPPFLAGS += -DUSE_AVX2
 		features += avx2
 	else
-		# Add the reference poly implementation
-		#source += $(shell find poly/ref -type f -iname "*.c")
+		# Add the reference implementation
+		source := $(shell find lib/reference -maxdepth 1 -type f -iname "*.c")
+		headers := $(shell find lib/reference -maxdepth 1 -type f -iname "*.h")
+		headers += lib/reference/subroutines/crypto_int32.h
 	endif
 
 	ifeq ($(USE_OPTIMIZATION_FLAGS),true)

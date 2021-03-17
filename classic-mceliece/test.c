@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "api.h"
+#include "lib/reference/api.h"
 
 // Print a byte string as hex
 void print_byte_string(unsigned char *byte_string, int size) {
