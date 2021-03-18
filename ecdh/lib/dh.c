@@ -169,7 +169,7 @@ cleanup:
   if (private_key != NULL)
     EVP_PKEY_free(private_key);
   if (public_key != NULL)
-  EVP_PKEY_free(public_key);
+    EVP_PKEY_free(public_key);
   if (ctx != NULL)
     EVP_PKEY_CTX_free(ctx);
 

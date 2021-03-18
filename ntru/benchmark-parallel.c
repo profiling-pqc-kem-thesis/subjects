@@ -1,8 +1,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 
 #include "../utilities/pool.h"
 #include "../utilities/time.h"
@@ -56,7 +56,6 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-
   benchmark_state_t *benchmark_state = malloc(sizeof(unsigned long long) * dimension + sizeof(int) * 2);
   benchmark_state->dimension = dimension;
   benchmark_state->thread_count = thread_count;
@@ -71,7 +70,7 @@ int main(int argc, char **argv) {
   struct timespec outer_start, outer_stop;
 
   clock_gettime(CLOCK_MONOTONIC, &outer_start);
-  if (pool_start(pool, (void*)benchmark_state)) {
+  if (pool_start(pool, (void *)benchmark_state)) {
     printf("failed to start worker pool\n");
     return EXIT_FAILURE;
   }

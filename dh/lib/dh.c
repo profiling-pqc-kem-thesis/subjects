@@ -62,7 +62,6 @@ int crypto_dh_enc(unsigned char *k, const unsigned char *sk, const unsigned char
   if (DH_set0_key(dh, NULL, private_key) != 1)
     goto cleanup;
 
-
   // Perform the exchange, calculating the shared secret
   unsigned char secret[CRYPTO_SECRETBYTES] = {0};
   if (DH_compute_key(secret, public_key, dh) == -1) {
