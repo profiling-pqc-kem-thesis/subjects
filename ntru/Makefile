@@ -94,6 +94,7 @@ ifneq ($(TARGET),none)
 	else ifeq ($(TARGET),benchmark-parallel)
 		source += benchmark-parallel.c ../utilities/time.c ../utilities/pool.c
 		target_name := $(target_name)_benchmark_parallel
+		LDLIBS += -lpthread
 	else ifeq ($(TARGET),test)
 		source += test.c
 		target_name := $(target_name)_test
