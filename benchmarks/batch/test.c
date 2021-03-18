@@ -53,96 +53,32 @@ int calculate(int process_index, int thread_index, state_t *state) {
   return 0;
 }
 
-void test_single_thread() {
-  worker_thread_t *thread = worker_thread_create(&calculate, 0, 0);
-  if (thread == NULL) {
-    printf("Unable to create thread\n");
+void test_pool(int process_count, int thread_count) {
+  worker_pool_t *pool = worker_pool_create(&calculate, 0, 1);
+  if (pool == NULL) {
+    printf("Unable to create pool\n");
     return;
   }
 
   state_t *state = prepare_state(0, 1);
   if (state == NULL) {
     printf("Unable to create state for thread\n");
-    worker_thread_free(thread);
+    worker_pool_free(pool);
     return;
   }
 
-  if (worker_thread_start(thread, state)) {
-    printf("Unable to start thread\n");
+  if (worker_pool_start(pool, state)) {
+    printf("Unable to start pool\n");
     return;
   }
 
-  int exit_code = worker_thread_wait_for_exit(thread);
+  int exit_code = worker_pool_wait_for_exit(pool);
   if (exit_code != 0) {
-    printf("Failed to run thread, exited with code %d\n", exit_code);
+    printf("Failed to run pool, exited with code %d\n", exit_code);
     return;
   }
 
-  worker_thread_free(thread);
-  print_results(state);
-  state_free(state);
-}
-
-void test_single_process() {
-  worker_process_t *process = worker_process_create(&calculate, 0, 0);
-  if (process == NULL) {
-    printf("Unable to create process\n");
-    return;
-  }
-
-  state_t *state = prepare_state(1, 0);
-  if (state == NULL) {
-    printf("Unable to create state for process\n");
-    worker_process_free(process);
-    return;
-  }
-
-  if (worker_process_start(process, state)) {
-    printf("Unable to start process\n");
-    return;
-  }
-
-  int exit_code = worker_process_wait_for_exit(process);
-  if (exit_code != 0) {
-    printf("Failed to run process, exited with code %d\n", exit_code);
-    return;
-  }
-
-  worker_process_free(process);
-  print_results(state);
-  state_free(state);
-}
-
-void test_multiple_processes() {
-  state_t *state = prepare_state(5, 0);
-  if (state == NULL) {
-    printf("Unable to create state for processes\n");
-    return;
-  }
-
-  worker_process_t *processes[5] = {0};
-  for (int i = 0; i < 5; i++) {
-    processes[i] = worker_process_create(&calculate, i, 0);
-    if (processes[i] == NULL) {
-      printf("Unable to create process\n");
-      return;
-    }
-
-    if (worker_process_start(processes[i], state)) {
-      printf("Unable to start process\n");
-      return;
-    }
-  }
-
-  for (int i = 0; i < 5; i++) {
-    int exit_code = worker_process_wait_for_exit(processes[i]);
-    if (exit_code != 0) {
-      printf("Failed to run process, exited with code %d\n", exit_code);
-      return;
-    }
-
-    worker_process_free(processes[i]);
-  }
+  worker_pool_free(pool);
   print_results(state);
   state_free(state);
 }
@@ -151,7 +87,12 @@ int main(int argc, char **argv) {
   int core_count = get_available_cores();
   printf("There are %d logical cores available\n", core_count);
 
-  test_single_thread();
-  test_single_process();
-  test_multiple_processes();
+  printf("===== 0 processes, 0 threads (raw) =====\n");
+  test_pool(0, 0);
+  printf("===== 0 processes, 1 thread        =====\n");
+  test_pool(0, 1);
+  printf("===== 1 process,   0 threads       =====\n");
+  test_pool(1, 0);
+  printf("===== 4 processes, 2 threads       =====\n");
+  test_pool(1, 1);
 }

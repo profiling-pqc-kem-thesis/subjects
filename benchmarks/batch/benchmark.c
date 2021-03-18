@@ -92,37 +92,20 @@ void benchmark_kernel(int dimension, int print, int processes, int threads_per_p
     input[i] = i;
   float *durations = (float*)state->memory + 1 + 1 + 1 + dimension + dimension;
 
-  // Setup worker processes
-  worker_process_t **workers = malloc(sizeof(worker_process_t*) * processes);
-  if (workers == NULL) {
+  worker_pool_t *pool = worker_pool_create(&calculate_kernel, processes, threads_per_process);
+  if (pool == NULL) {
     state_free(state);
     printf("Failed to allocate memory for managing workers\n");
     return;
   }
-  for (int i = 0; i < processes; i++) {
-    workers[i] = worker_process_create(&calculate_kernel, i, threads_per_process);
-    if (workers[i] == NULL) {
-      printf("Failed to create process\n");
-      return;
-    }
-  }
 
   // Start the workers
   clock_gettime(CLOCK_MONOTONIC, &start);
-  for (int i = 0; i < processes; i++) {
-    if (worker_process_start(workers[i], state)) {
-      printf("Failed to start process\n");
-      return;
-    }
-  }
-
-  // Wait for the workers to finish
-  for (int i = 0; i < processes; i++) {
-    int exit_code = worker_process_wait_for_exit(workers[i]);
-    if (exit_code != 0) {
-      printf("Failed to run process, exited with code %d\n", exit_code);
-      return;
-    }
+  worker_pool_start(pool, state);
+  int exit_code = worker_pool_wait_for_exit(pool);
+  if (exit_code != 0) {
+    printf("Failed to run process, exited with code %d\n", exit_code);
+    return;
   }
   clock_gettime(CLOCK_MONOTONIC, &stop);
 
@@ -149,23 +132,21 @@ void benchmark_kernel(int dimension, int print, int processes, int threads_per_p
   printf("%d processes, %d threads per process took: %fms (outer)\n", processes, threads_per_process, ((stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec)) / 1e6);
   printf("%d processes, %d threads per process took: %fms (inner)\n", processes, threads_per_process, duration);
 
-  for (int i = 0; i < processes; i++)
-    worker_process_free(workers[i]);
   state_free(state);
-  free(workers);
+  worker_pool_free(pool);
 }
 
 int main(int argc, char **argv) {
-  if (argc != 3) {
-    printf("usage: %s <dimension n> <print {0,1}>\n", argv[0]);
+  if (argc != 5) {
+    printf("usage: %s <dimension n> <processes n> <threads n> <print {0,1}>\n", argv[0]);
     return EXIT_FAILURE;
   }
 
   int dimension = atoi(argv[1]);
-  int print = atoi(argv[2]);
+  int processes = atoi(argv[2]);
+  int threads_per_process = atoi(argv[3]);
+  int print = atoi(argv[4]);
 
-  int processes = 4;
-  int threads_per_process = 5;
   int worker_count = calculate_worker_count(processes, threads_per_process);
 
   if (dimension % worker_count != 0) {

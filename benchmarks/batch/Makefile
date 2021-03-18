@@ -8,7 +8,10 @@ test: build/test
 	./build/test
 
 benchmark: build/benchmark
-	./build/benchmark 100000 0
+	@echo "=====       raw      ====="
+	./build/benchmark 1000 0 0 0
+	@echo "===== multi-process ======"
+	./build/benchmark 1000 4 5 0
 
 build/test: test.c lib/*.c lib/*.h
 	mkdir -p $(dir $@)
