@@ -4,7 +4,7 @@
 
 #include "util.h"
 
-#include "params.h"
+#include "../params.h"
 
 void store_gf(unsigned char *dest, gf a)
 {
@@ -69,7 +69,6 @@ gf bitrev(gf a)
 	a = ((a & 0x0F0F) << 4) | ((a & 0xF0F0) >> 4);
 	a = ((a & 0x3333) << 2) | ((a & 0xCCCC) >> 2);
 	a = ((a & 0x5555) << 1) | ((a & 0xAAAA) >> 1);
-	
+
 	return a >> 3;
 }
-

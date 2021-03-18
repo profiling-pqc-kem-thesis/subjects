@@ -3,7 +3,7 @@
 */
 
 #include "root.h"
-#include "params.h"
+#include "../params.h"
 #include "gf.h"
 
 #include <stdio.h>
@@ -14,7 +14,7 @@ gf eval(gf *f, gf a)
 {
 	int i;
 	gf r;
-	
+
 	r = f[ SYS_T ];
 
 	for (i = SYS_T-1; i >= 0; i--)
@@ -30,9 +30,8 @@ gf eval(gf *f, gf a)
 /* output: out = [ f(a) for a in L ] */
 void root(gf *out, gf *f, gf *L)
 {
-	int i; 
+	int i;
 
 	for (i = 0; i < SYS_N; i++)
 		out[i] = eval(f, L[i]);
 }
-

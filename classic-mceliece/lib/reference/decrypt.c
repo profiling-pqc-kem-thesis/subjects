@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "decrypt.h"
 
-#include "params.h"
+#include "../params.h"
 #include "benes.h"
 #include "util.h"
 #include "synd.h"
@@ -20,8 +20,8 @@
 /* return: 0 for success; 1 for failure */
 int decrypt(unsigned char *e, const unsigned char *sk, const unsigned char *c)
 {
-	int i, w = 0; 
-	uint16_t check;	
+	int i, w = 0;
+	uint16_t check;
 
 	unsigned char r[ SYS_N/8 ];
 
@@ -51,8 +51,8 @@ int decrypt(unsigned char *e, const unsigned char *sk, const unsigned char *c)
 	root(images, locator, L);
 
 	//
-	
-	for (i = 0; i < SYS_N/8; i++) 
+
+	for (i = 0; i < SYS_N/8; i++)
 		e[i] = 0;
 
 	for (i = 0; i < SYS_N; i++)
@@ -74,7 +74,7 @@ int decrypt(unsigned char *e, const unsigned char *sk, const unsigned char *c)
     printf("\n");
   }
 #endif
-	
+
 	synd(s_cmp, g, L, e);
 
 	//
@@ -83,11 +83,10 @@ int decrypt(unsigned char *e, const unsigned char *sk, const unsigned char *c)
 	check ^= SYS_T;
 
 	for (i = 0; i < SYS_T*2; i++)
-		check |= s[i] ^ s_cmp[i]; 
+		check |= s[i] ^ s_cmp[i];
 
 	check -= 1;
 	check >>= 15;
 
 	return check ^ 1;
 }
-

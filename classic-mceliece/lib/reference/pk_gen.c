@@ -10,7 +10,7 @@
 #include "controlbits.h"
 #include "uint64_sort.h"
 #include "pk_gen.h"
-#include "params.h"
+#include "../params.h"
 #include "benes.h"
 #include "root.h"
 #include "util.h"

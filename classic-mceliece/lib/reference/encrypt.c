@@ -5,7 +5,7 @@
 #include "encrypt.h"
 
 #include "util.h"
-#include "params.h"
+#include "../params.h"
 #include "randombytes.h"
 
 #include <stdint.h>

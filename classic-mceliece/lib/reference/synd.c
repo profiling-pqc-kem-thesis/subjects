@@ -4,7 +4,7 @@
 
 #include "synd.h"
 
-#include "params.h"
+#include "../params.h"
 #include "root.h"
 
 #include <stdio.h>
@@ -33,4 +33,3 @@ void synd(gf *out, gf *f, gf *L, unsigned char *r)
 		}
 	}
 }
-

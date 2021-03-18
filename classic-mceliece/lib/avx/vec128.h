@@ -6,7 +6,7 @@
 #ifndef VEC128_H
 #define VEC128_H
 
-#include "params.h"
+#include "../params.h"
 #include "gf.h"
 
 #include <stdint.h>

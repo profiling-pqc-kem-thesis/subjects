@@ -18,13 +18,8 @@ LDLIBS += -lcrypto -lkeccak
 # If the target is not none, define all required parameters for building a target
 ifneq ($(TARGET),none)
 
-	# Add common source and headers
-	# source := $(shell find lib -maxdepth 1 -type f -iname "*.c" -not -iname "test.c" -not -iname "benchmark.c")
-	# headers := $(shell find lib -maxdepth 1 -type f -iname "*.h" -not -iname "crypto_kem_mceliece8192128.h" -not -iname "crypto_kem_mceliece6960119.h")
-	# headers += subroutines/crypto_int32.h
-	# Add common poly and sample source
-	#source += $(shell find poly/common -type f -iname "*.c")
-	#source += $(shell find sample/common -type f -iname "*.c")
+	# Add common headers
+	headers := lib/api.h lib/params.h
 
 	ifeq ($(shell echo $(PARAMETERS) | grep -q 'f' && echo "true" || echo "false"),true)
 		CPPFLAGS += -DUSE_F
@@ -39,19 +34,24 @@ ifneq ($(TARGET),none)
 	endif
 
 	ifeq ($(USE_AVX2),true)
-		# Add the target-specific AVX2 poly implementation
-		source := $(shell find lib/avx -maxdepth 1 -type f -iname "*.c" -not -iname "test.c" -not -iname "benchmark.c")
-		headers := $(shell find lib/avx -maxdepth 1 -type f -iname "*.h" -not -iname "crypto_kem_mceliece8192128.h" -not -iname "crypto_kem_mceliece6960119.h")
-		# Add the target-specific AVX2 sample implementation
-		#source += sample/avx2/$(PARAMETERS)/vec32_sample_iid.s
+		source := $(shell find lib/avx -type f -iname "*.c")
+		source += $(shell find lib/avx -maxdepth 1 -type f -iname "*.S")
+		headers += $(shell find lib/avx -type f -iname "*.h")
+
+		ifeq ($(PARAMETERS),$(filter $(PARAMETERS),8192128 8192128f))
+			source += lib/avx/syndrome_asm_8192128/syndrome_asm.S
+		else ifeq ($(PARAMETERS),$(filter $(PARAMETERS),6960119 6960119f))
+			source += lib/avx/syndrome_asm_6960119/syndrome_asm.S
+		endif
+
+		# Add the AVX2 flags
 		CFLAGS += -mavx2
 		CPPFLAGS += -DUSE_AVX2
 		features += avx2
 	else
 		# Add the reference implementation
-		source := $(shell find lib/reference -maxdepth 1 -type f -iname "*.c")
-		headers := $(shell find lib/reference -maxdepth 1 -type f -iname "*.h")
-		headers += lib/reference/subroutines/crypto_int32.h
+		source := $(shell find lib/reference -type f -iname "*.c")
+		headers += $(shell find lib/reference -type f -iname "*.h")
 	endif
 
 	ifeq ($(USE_OPTIMIZATION_FLAGS),true)
@@ -93,91 +93,92 @@ endef
 all: tests benchmarks
 
 # Build all tests
-#tests: mceliece_8192128_ref_test mceliece_8192128_avx2n_test \
-#	mceliece_8192128f_ref_test mceliece_8192128f_avx2_test
-
-tests:  mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test
+tests:  mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test \
+				mceliece_8192128_avx2_test mceliece_8192128f_avx2_test mceliece_6960119_avx2_test mceliece_6960119f_avx2_test
 
 # Build all benchmarks
-#benchmarks: mceliece_8192128_ref mceliece_8192128_avx2 mceliece_8192128_ref_optimized mceliece_8192128_avx2_optimized \
-#	mceliece_8192128f_ref mceliece_8192128f_avx2 mceliece_8192128f_ref_optimized mceliece_8192128f_avx2_optimized
-
 benchmarks: mceliece_8192128_ref mceliece_8192128_ref_optimized	mceliece_8192128f_ref mceliece_8192128f_ref_optimized \
-						mceliece_6960119_ref mceliece_6960119_ref_optimized	mceliece_6960119f_ref mceliece_6960119f_ref_optimized
+						mceliece_6960119_ref mceliece_6960119_ref_optimized	mceliece_6960119f_ref mceliece_6960119f_ref_optimized \
+						mceliece_8192128_avx2 mceliece_8192128_avx2_optimized	mceliece_8192128f_avx2 mceliece_8192128f_avx2_optimized \
+						mceliece_6960119_avx2 mceliece_6960119_avx2_optimized	mceliece_6960119f_avx2 mceliece_6960119f_avx2_optimized
 
 # Define all mceliece8192128 targets
 #                            rule name                         target     parameter-set  avx2   optimize
 $(eval $(call create-target, mceliece_8192128_ref,             benchmark, 8192128,       false, false))
-#$(eval $(call create-target, mceliece_8192128_avx2,           benchmark, 8192128,       true,  false))
+$(eval $(call create-target, mceliece_8192128_avx2,            benchmark, 8192128,       true,  false))
 $(eval $(call create-target, mceliece_8192128_ref_optimized,   benchmark, 8192128,       false, true))
-#$(eval $(call create-target, mceliece_8192128_avx2_optimized, benchmark, 8192128,       true,  true))
+$(eval $(call create-target, mceliece_8192128_avx2_optimized,  benchmark, 8192128,       true,  true))
 $(eval $(call create-target, mceliece_8192128_ref_test,        test,      8192128,       false, false))
-#$(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128,       true,  false))
+$(eval $(call create-target, mceliece_8192128_avx2_test,       test,      8192128,       true,  false))
 
 # Define all mceliece8192128f targets
 #                            rule name                          target     parameter-set avx2   optimize
 $(eval $(call create-target, mceliece_8192128f_ref,             benchmark, 8192128f,     false, false))
-#$(eval $(call create-target, mceliece_8192128f_avx2,           benchmark, 8192128f,     true,  false))
+$(eval $(call create-target, mceliece_8192128f_avx2,            benchmark, 8192128f,     true,  false))
 $(eval $(call create-target, mceliece_8192128f_ref_optimized,   benchmark, 8192128f,     false, true))
-#$(eval $(call create-target, mceliece_8192128f_avx2_optimized, benchmark, 8192128f,     true,  true))
+$(eval $(call create-target, mceliece_8192128f_avx2_optimized,  benchmark, 8192128f,     true,  true))
 $(eval $(call create-target, mceliece_8192128f_ref_test,        test,      8192128f,     false, false))
-#$(eval $(call create-target, mceliece_8192128f_avx2_test,      test,      8192128f,     true,  false))
+$(eval $(call create-target, mceliece_8192128f_avx2_test,       test,      8192128f,     true,  false))
 
 # Define all mceliece6960119 targets
 #                            rule name                         target     parameter-set  avx2   optimize
 $(eval $(call create-target, mceliece_6960119_ref,             benchmark, 6960119,       false, false))
-#$(eval $(call create-target, mceliece_8192128_avx2,           benchmark, 8192128,       true,  false))
+$(eval $(call create-target, mceliece_6960119_avx2,            benchmark, 6960119,       true,  false))
 $(eval $(call create-target, mceliece_6960119_ref_optimized,   benchmark, 6960119,       false, true))
-#$(eval $(call create-target, mceliece_8192128_avx2_optimized, benchmark, 8192128,       true,  true))
+$(eval $(call create-target, mceliece_6960119_avx2_optimized,  benchmark, 6960119,       true,  true))
 $(eval $(call create-target, mceliece_6960119_ref_test,        test,      6960119,       false, false))
-#$(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128,       true,  false))
+$(eval $(call create-target, mceliece_6960119_avx2_test,       test,      6960119,       true,  false))
 
 # Define all mceliece6960119f targets
 #                            rule name                          target     parameter-set avx2   optimize
 $(eval $(call create-target, mceliece_6960119f_ref,             benchmark, 6960119f,     false, false))
-#$(eval $(call create-target, mceliece_8192128f_avx2,           benchmark, 8192128f,     true,  false))
+$(eval $(call create-target, mceliece_6960119f_avx2,            benchmark, 6960119f,     true,  false))
 $(eval $(call create-target, mceliece_6960119f_ref_optimized,   benchmark, 6960119f,     false, true))
-#$(eval $(call create-target, mceliece_8192128f_avx2_optimized, benchmark, 8192128f,     true,  true))
+$(eval $(call create-target, mceliece_6960119f_avx2_optimized,  benchmark, 6960119f,     true,  true))
 $(eval $(call create-target, mceliece_6960119f_ref_test,        test,      6960119f,     false, false))
-#$(eval $(call create-target, mceliece_8192128f_avx2_test,      test,      8192128f,     true,  false))
+$(eval $(call create-target, mceliece_6960119f_avx2_test,       test,      6960119f,     true,  false))
 
 # Run all tests
 test: tests
 	# Test the mceliece8192128 implementations
 	build/mceliece_8192128_ref_test
+	build/mceliece_8192128_avx2_test
 	build/mceliece_8192128f_ref_test
+	build/mceliece_8192128f_avx2_test
 #	bash -c 'diff <(build/mceliece_8192128_ref_test) <(build/mceliece_8192128_avx2_test)'
 
 	# Test the mceliece6960119 implementations
 	build/mceliece_6960119_ref_test
+	build/mceliece_6960119_avx2_test
 	build/mceliece_6960119f_ref_test
+	build/mceliece_6960119f_avx2_test
 #	bash -c 'diff <(build/mceliece_8192128f_ref_test) <(build/mceliece_8192128f_avx2_test)'
 
 # Run all benchmarks
 benchmark: benchmarks
 	# Benchmark the mceliece8192128 implementations
 	build/mceliece_8192128_ref
-#	build/mceliece_8192128_avx2
+	build/mceliece_8192128_avx2
 	build/mceliece_8192128_optimized
-#	build/mceliece_8192128_avx2_optimized
+	build/mceliece_8192128_avx2_optimized
 
 	# Benchmark the mceliece8192128f implementations
 	build/mceliece_8192128f_ref
-#	build/mceliece_8192128f_avx2
+	build/mceliece_8192128f_avx2
 	build/mceliece_8192128f_optimized
-#	build/mceliece_8192128f_avx2_optimized
+	build/mceliece_8192128f_avx2_optimized
 
 	# Benchmark the mceliece6960119 implementations
 	build/mceliece_6960119_ref
-#	build/mceliece_6960119_avx2
+	build/mceliece_6960119_avx2
 	build/mceliece_6960119_optimized
-#	build/mceliece_6960119_avx2_optimized
+	build/mceliece_6960119_avx2_optimized
 
 	# Benchmark the mceliece6960119f implementations
 	build/mceliece_6960119f_ref
-#	build/mceliece_6960119f_avx2
+	build/mceliece_6960119f_avx2
 	build/mceliece_6960119f_optimized
-#	build/mceliece_6960119f_avx2_optimized
+	build/mceliece_6960119f_avx2_optimized
 
 # Analyze the hot paths of the algorithm
 hotpaths: mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test

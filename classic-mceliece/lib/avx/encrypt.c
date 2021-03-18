@@ -5,7 +5,7 @@
 #include "encrypt.h"
 
 #include "util.h"
-#include "params.h"
+#include "../params.h"
 #include "int32_sort.h"
 #include "randombytes.h"
 

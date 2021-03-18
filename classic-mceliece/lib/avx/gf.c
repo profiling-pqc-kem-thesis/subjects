@@ -4,7 +4,7 @@
 
 #include "gf.h"
 
-#include "params.h"
+#include "../params.h"
 
 /* check if a == 0 */
 gf gf_iszero(gf a)
@@ -51,17 +51,17 @@ static inline gf gf_sq2(gf in)
 {
 	int i;
 
-	const uint64_t B[] = {0x1111111111111111, 
-	                      0x0303030303030303, 
-	                      0x000F000F000F000F, 
+	const uint64_t B[] = {0x1111111111111111,
+	                      0x0303030303030303,
+	                      0x000F000F000F000F,
 	                      0x000000FF000000FF};
 
-	const uint64_t M[] = {0x0001FF0000000000, 
-	                      0x000000FF80000000, 
-	                      0x000000007FC00000, 
+	const uint64_t M[] = {0x0001FF0000000000,
+	                      0x000000FF80000000,
+	                      0x000000007FC00000,
 	                      0x00000000003FE000};
 
-	uint64_t x = in; 
+	uint64_t x = in;
 	uint64_t t;
 
 	x = (x | (x << 24)) & B[3];
@@ -89,14 +89,14 @@ static inline gf gf_sqmul(gf in, gf m)
 	uint64_t t;
 
 	const uint64_t M[] = {0x0000001FF0000000,
-	                      0x000000000FF80000, 
-	                      0x000000000007E000}; 
+	                      0x000000000FF80000,
+	                      0x000000000007E000};
 
 	t0 = in;
 	t1 = m;
 
 	x = (t1 << 6) * (t0 & (1 << 6));
-	
+
 	t0 ^= (t0 << 7);
 
 	x ^= (t1 * (t0 & (0x04001)));
@@ -126,9 +126,9 @@ static inline gf gf_sq2mul(gf in, gf m)
 	uint64_t t;
 
 	const uint64_t M[] = {0x1FF0000000000000,
-		              0x000FF80000000000, 
-		              0x000007FC00000000, 
-	                      0x00000003FE000000, 
+		              0x000FF80000000000,
+		              0x000007FC00000000,
+	                      0x00000003FE000000,
 	                      0x0000000001FE0000,
 	                      0x000000000001E000};
 
@@ -164,7 +164,7 @@ gf gf_frac(gf den, gf num)
 
 	tmp_11 = gf_sqmul(den, den); // 11
 	tmp_1111 = gf_sq2mul(tmp_11, tmp_11); // 1111
-	out = gf_sq2(tmp_1111); 
+	out = gf_sq2(tmp_1111);
 	out = gf_sq2mul(out, tmp_1111); // 11111111
 	out = gf_sq2(out);
 	out = gf_sq2mul(out, tmp_1111); // 111111111111
@@ -194,7 +194,7 @@ void GF_mul(gf *out, gf *in0, gf *in1)
 			prod[i+j] ^= gf_mul(in0[i], in1[j]);
 
 	//
- 
+
 	for (i = 254; i >= 128; i--)
 	{
 		prod[i - 123] ^= gf_mul(prod[i], (gf) 7682);
@@ -220,7 +220,7 @@ void GF_mul(gf *out, gf *in0, gf *in1)
 			prod[i+j] ^= gf_mul(in0[i], in1[j]);
 
 	//
- 
+
 	for (i = 236; i >= 119; i--)
 	{
 		prod[i - 117] ^= gf_mul(prod[i], (gf) 6400);

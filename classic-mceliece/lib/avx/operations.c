@@ -5,7 +5,7 @@
 #include "crypto_hash.h"
 #include "encrypt.h"
 #include "decrypt.h"
-#include "params.h"
+#include "../params.h"
 #include "sk_gen.h"
 #include "pk_gen.h"
 #include "util.h"
@@ -48,7 +48,7 @@ int crypto_kem_enc(
 
 	encrypt(c, pk, e);
 
-	crypto_hash_32b(c + SYND_BYTES, two_e, sizeof(two_e)); 
+	crypto_hash_32b(c + SYND_BYTES, two_e, sizeof(two_e));
 
 	memcpy(one_ec + 1, e, SYS_N/8);
 	memcpy(one_ec + 1 + SYS_N/8, c, SYND_BYTES + 32);
@@ -76,7 +76,7 @@ int crypto_kem_enc(
 
 	encrypt(c, pk, e);
 
-	crypto_hash_32b(c + SYND_BYTES, two_e, sizeof(two_e)); 
+	crypto_hash_32b(c + SYND_BYTES, two_e, sizeof(two_e));
 
 	memcpy(one_ec + 1, e, SYS_N/8);
 	memcpy(one_ec + 1 + SYS_N/8, c, SYND_BYTES + 32);
@@ -137,9 +137,9 @@ int crypto_kem_dec(
 
 	ret_decrypt = decrypt(e, sk + 40, c);
 
-	crypto_hash_32b(conf, two_e, sizeof(two_e)); 
+	crypto_hash_32b(conf, two_e, sizeof(two_e));
 
-	for (i = 0; i < 32; i++) 
+	for (i = 0; i < 32; i++)
 		ret_confirm |= conf[i] ^ c[SYND_BYTES + i];
 
 	m = ret_decrypt | ret_confirm;
@@ -147,13 +147,13 @@ int crypto_kem_dec(
 	m >>= 8;
 
 	*x++ = m & 1;
-	for (i = 0; i < SYS_N/8; i++) 
+	for (i = 0; i < SYS_N/8; i++)
 		*x++ = (~m & s[i]) | (m & e[i]);
 
-	for (i = 0; i < SYND_BYTES + 32; i++) 
+	for (i = 0; i < SYND_BYTES + 32; i++)
 		*x++ = c[i];
 
-	crypto_hash_32b(key, preimage, sizeof(preimage)); 
+	crypto_hash_32b(key, preimage, sizeof(preimage));
 
 	return 0;
 }
@@ -185,9 +185,9 @@ int crypto_kem_dec(
 
 	ret_decrypt = decrypt(e, sk + 40, c);
 
-	crypto_hash_32b(conf, two_e, sizeof(two_e)); 
+	crypto_hash_32b(conf, two_e, sizeof(two_e));
 
-	for (i = 0; i < 32; i++) 
+	for (i = 0; i < 32; i++)
 		ret_confirm |= conf[i] ^ c[SYND_BYTES + i];
 
 	m = ret_decrypt | ret_confirm;
@@ -195,13 +195,13 @@ int crypto_kem_dec(
 	m >>= 8;
 
 	*x++ = m & 1;
-	for (i = 0; i < SYS_N/8; i++) 
+	for (i = 0; i < SYS_N/8; i++)
 		*x++ = (~m & s[i]) | (m & e[i]);
 
-	for (i = 0; i < SYND_BYTES + 32; i++) 
+	for (i = 0; i < SYND_BYTES + 32; i++)
 		*x++ = c[i];
 
-	crypto_hash_32b(key, preimage, sizeof(preimage)); 
+	crypto_hash_32b(key, preimage, sizeof(preimage));
 
 	// clear outputs (set to all 1's) if padding bits are not all zero
 
@@ -217,7 +217,7 @@ int crypto_kem_dec(
 int crypto_kem_keypair
 (
        unsigned char *pk,
-       unsigned char *sk 
+       unsigned char *sk
 )
 {
 	int i;
@@ -249,12 +249,12 @@ int crypto_kem_keypair
 
 		// generating irreducible polynomial
 
-		rp -= sizeof(f); 
+		rp -= sizeof(f);
 
-		for (i = 0; i < SYS_T; i++) 
-			f[i] = load_gf(rp + i*2); 
+		for (i = 0; i < SYS_T; i++)
+			f[i] = load_gf(rp + i*2);
 
-		if (genpoly_gen(irr, f)) 
+		if (genpoly_gen(irr, f))
 			continue;
 
 		for (i = 0; i < SYS_T; i++)
@@ -266,8 +266,8 @@ int crypto_kem_keypair
 
 		rp -= sizeof(perm);
 
-		for (i = 0; i < (1 << GFBITS); i++) 
-			perm[i] = load4(rp + i*4); 
+		for (i = 0; i < (1 << GFBITS); i++)
+			perm[i] = load4(rp + i*4);
 
 		#ifdef USE_F
 		if (pk_gen(pk, skp - IRR_BYTES, perm, pi, &pivots))
@@ -297,4 +297,3 @@ int crypto_kem_keypair
 
 	return 0;
 }
-

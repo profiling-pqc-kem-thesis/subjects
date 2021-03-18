@@ -7,7 +7,7 @@
 
 #include "util.h"
 #include "transpose.h"
-#include "params.h"
+#include "../params.h"
 #include "benes.h"
 
 /* middle layers of the benes network */
@@ -75,7 +75,7 @@ void apply_benes(unsigned char * r, const unsigned char * bits, int rev)
 
 	if (rev) { bits_ptr = bits + 12288; inc = -1024; }
 	else     { bits_ptr = bits;         inc = 0;    }
-		
+
 	for (i = 0; i < 64; i++)
 	{
 		r_int_v[0][i] = load8(r_ptr + i*16 + 0);
@@ -95,14 +95,14 @@ void apply_benes(unsigned char * r, const unsigned char * bits, int rev)
 		bits_ptr += inc;
 
 		transpose_64x64(b_int_h, b_int_v);
-	
+
 		layer_ex(r_int_h[0], b_int_h, iter);
 	}
 
 	transpose_64x64(r_int_v[0], r_int_h[0]);
 	transpose_64x64(r_int_v[1], r_int_h[1]);
 
-	for (iter = 0; iter <= 5; iter++) 
+	for (iter = 0; iter <= 5; iter++)
 	{
 		for (i = 0; i < 64; i++) { b_int_v[i] = load8(bits_ptr); bits_ptr += 8; }
 		bits_ptr += inc;
@@ -110,7 +110,7 @@ void apply_benes(unsigned char * r, const unsigned char * bits, int rev)
 		layer_in(r_int_v, b_int_v, iter);
 	}
 
-	for (iter = 4; iter >= 0; iter--) 
+	for (iter = 4; iter >= 0; iter--)
 	{
 		for (i = 0; i < 64; i++) { b_int_v[i] = load8(bits_ptr); bits_ptr += 8; }
 		bits_ptr += inc;
@@ -164,7 +164,7 @@ void support_gen(gf * s, const unsigned char *c)
 		for (j = 0; j < GFBITS; j++)
 			L[j][ i/8 ] |= ((a >> j) & 1) << (i%8);
 	}
-			
+
 	for (j = 0; j < GFBITS; j++)
 		apply_benes(L[j], c, 0);
 
@@ -178,4 +178,3 @@ void support_gen(gf * s, const unsigned char *c)
 		}
 	}
 }
-

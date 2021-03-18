@@ -4,7 +4,7 @@
 
 #include "gf.h"
 
-#include "params.h"
+#include "../params.h"
 
 gf gf_iszero(gf a)
 {

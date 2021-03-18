@@ -7,7 +7,7 @@
 #define FFT_H
 
 #include <stdint.h>
-#include "params.h"
+#include "../params.h"
 #include "vec128.h"
 #include "vec256.h"
 

@@ -7,7 +7,7 @@
 #include "controlbits.h"
 #include "uint64_sort.h"
 #include "int32_sort.h"
-#include "params.h"
+#include "../params.h"
 #include "util.h"
 #include "fft.h"
 
@@ -132,12 +132,12 @@ static void merge_rows(int n, int bound, uint16_t *x, vec256 (*mat)[par_width], 
 {
 	int i;
 
-	if (n == 1) 
+	if (n == 1)
 	{
 		if(off + step < bound)
 			minmax_rows(x, mat, off, off + step);
 	}
-	else 
+	else
 	{
 		merge_rows(n/2, bound, x, mat, off, step * 2);
 		merge_rows(n/2, bound, x, mat, off + step, step * 2);
@@ -212,22 +212,21 @@ static void to_bitslicing_2x(vec256 out0[][GFBITS], vec256 out1[][GFBITS], const
 			u[1][k] <<= 1;
 			u[1][k] |= (in[i*256 + k*64 + r] >> (j + GFBITS)) & 1;
 		}
-    
+
 		out0[i][j] = vec256_set4x(u[0][0], u[0][1], u[0][2], u[0][3]);
 		out1[i][j] = vec256_set4x(u[1][0], u[1][1], u[1][2], u[1][3]);
 	}
 }
 
-#ifdef
-
+#ifdef USE_F
 /* swap columns on mat based on the pivots in the 32 x 64 matrix */
 /* update permutation pi*/
 /* store the positions of pivots in pivots */
 static int mov_columns(uint64_t mat[][ nBlocks_I*4 ], int16_t * pi, uint64_t * pivots)
 {
 	int i, j, pivot_col[32];
-	uint64_t buf[32], t, d, mask, allone = -1, one = 1; 
-       
+	uint64_t buf[32], t, d, mask, allone = -1, one = 1;
+
 	int row = PK_NROWS - 32;
 	int block_idx = row/64;
 	#if MCELIECE_PARAMETER_SET == MCELIECE_6960119
@@ -238,11 +237,11 @@ static int mov_columns(uint64_t mat[][ nBlocks_I*4 ], int16_t * pi, uint64_t * p
 
 	#if MCELIECE_PARAMETER_SET == MCELIECE_8192128
 	for (i = 0; i < 32; i++)
-		buf[i] = (mat[ row + i ][ block_idx + 0 ] >> 32) | 
+		buf[i] = (mat[ row + i ][ block_idx + 0 ] >> 32) |
 		         (mat[ row + i ][ block_idx + 1 ] << 32);
 	#elif MCELIECE_PARAMETER_SET == MCELIECE_6960119
 	for (i = 0; i < 32; i++)
-		buf[i] = (mat[ row + i ][ block_idx + 0 ] >> tail) | 
+		buf[i] = (mat[ row + i ][ block_idx + 0 ] >> tail) |
 		         (mat[ row + i ][ block_idx + 1 ] << (64-tail));
 	#endif
 
@@ -265,46 +264,46 @@ static int mov_columns(uint64_t mat[][ nBlocks_I*4 ], int16_t * pi, uint64_t * p
 		for (j = i+1; j < 32; j++) { mask = (buf[i] >> pivot_col[i]) & 1; mask -= 1;    buf[i] ^= buf[j] & mask; }
 		for (j = i+1; j < 32; j++) { mask = (buf[j] >> pivot_col[i]) & 1; mask = -mask; buf[j] ^= buf[i] & mask; }
 	}
-   
+
 	// updating permutation
-  
+
 	for (i = 0;   i < 32; i++)
 	for (j = i+1; j < 64; j++)
 		int16_cswap(&pi[ row + i ], &pi[ row + j ], same_mask(j, pivot_col[i]));
-   
+
 	// moving columns of mat according to the column indices of pivots
 
 	#if MCELIECE_PARAMETER_SET == MCELIECE_8192128
 	for (i = 0; i < PK_NROWS; i++)
 	{
-		t = (mat[ i ][ block_idx + 0 ] >> 32) | 
+		t = (mat[ i ][ block_idx + 0 ] >> 32) |
 		    (mat[ i ][ block_idx + 1 ] << 32);
-    
+
 		for (j = 0; j < 32; j++)
 		{
 			d  = t >> j;
 			d ^= t >> pivot_col[j];
 			d &= 1;
-        
+
 			t ^= d << pivot_col[j];
 			t ^= d << j;
 		}
-         
+
 		mat[ i ][ block_idx + 0 ] = (mat[ i ][ block_idx + 0 ] & (allone >> 32)) | (t << 32);
 		mat[ i ][ block_idx + 1 ] = (mat[ i ][ block_idx + 1 ] & (allone << 32)) | (t >> 32);
 	}
 	#elif MCELIECE_PARAMETER_SET == MCELIECE_6960119
 	for (i = 0; i < PK_NROWS; i++)
 	{
-		t = (mat[ i ][ block_idx + 0 ] >> tail) | 
+		t = (mat[ i ][ block_idx + 0 ] >> tail) |
 		    (mat[ i ][ block_idx + 1 ] << (64-tail));
-    
+
 		for (j = 0; j < 32; j++)
 		{
 			d  = t >> j;
 			d ^= t >> pivot_col[j];
 			d &= 1;
-        
+
 			t ^= d << pivot_col[j];
 			t ^= d << j;
 		}
@@ -325,7 +324,7 @@ static void composeinv(int n, uint16_t y[n], uint16_t x[n], uint16_t pi[n])
   int i;
   int32_t t[n];
 
-  for (i = 0;i < n;++i) 
+  for (i = 0;i < n;++i)
   {
     t[i] = pi[i];
     t[i] <<= 16;
@@ -366,15 +365,15 @@ int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16
 	{
 		uint64_t w[ PK_NROWS ][ nBlocks_I*4 ];
 		vec256 v[ PK_NROWS ][ nBlocks_I ];
-	} mat;	
+	} mat;
 
-	union 
+	union
 	{
 		uint64_t w[ PK_NROWS ][ par_width*4 ];
 		vec256 v[ PK_NROWS ][ par_width ];
 	} par;
 
-	uint16_t m;	
+	uint16_t m;
 	vec256 mm;
 
 	vec128 sk_int[ GFBITS ];
@@ -395,7 +394,7 @@ int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16
 	uint16_t ind[ PK_NROWS ];
 	uint16_t ind_inv[ PK_NROWS ];
 
-	// compute the inverses 
+	// compute the inverses
 
 	irr_load(sk_int, irr);
 
@@ -416,14 +415,14 @@ int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16
 
 	vec256_copy(prod[0], tmp);
 
-	// fill matrix 
+	// fill matrix
 
 	de_bitslicing(list, prod);
 
 	for (i = 0; i < (1 << GFBITS); i++)
-	{	
+	{
 		list[i] <<= GFBITS;
-		list[i] |= i;	
+		list[i] |= i;
 		list[i] |= ((uint64_t) perm[i]) << 31;
 	}
 
@@ -509,16 +508,16 @@ int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16
 	#endif
 	{
 		for (k = 0; k < GFBITS; k++)
-		for (b = 0; b < par_width; b++) 
+		for (b = 0; b < par_width; b++)
 			par.v[ k ][ b ] = prod[ j+b ][ k ];
-		
+
 		for (i = 1; i < SYS_T; i++)
 		{
-			for (b = 0; b < par_width; b++) 
+			for (b = 0; b < par_width; b++)
 				vec256_mul(prod[j+b], prod[j+b], consts[j+b]);
-        
+
 			for (k = 0; k < GFBITS; k++)
-			for (b = 0; b < par_width; b++) 
+			for (b = 0; b < par_width; b++)
 				par.v[ i*GFBITS + k ][ b ] = prod[ j+b ][ k ];
 		}
 
@@ -535,11 +534,11 @@ int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16
 		for (i = row-1; i >= 0; i--)
 		{
 			mm = extract_mask256(mat.w[row], i);
-    
+
 			for (k = 0; k < par_width; k++)
 				par.v[ row ][ k ] ^= par.v[ i ][ k ] & mm;
 		}
-    
+
 		// apply U^-1
 
 		if (j == 6)
@@ -552,7 +551,7 @@ int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16
 		for (i = PK_NROWS-1; i > row; i--)
 		{
 			mm = extract_mask256(mat.w[row], i);
-    
+
 			for (k = 0; k < par_width; k++)
 				par.v[ row ][ k ] ^= par.v[ i ][ k ] & mm;
 		}
@@ -603,4 +602,3 @@ int pk_gen(unsigned char * pk, const unsigned char * irr, uint32_t * perm, int16
 
 	return 0;
 }
-

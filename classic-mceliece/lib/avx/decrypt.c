@@ -4,7 +4,7 @@
 
 #include "decrypt.h"
 
-#include "params.h"
+#include "../params.h"
 #include "fft_tr.h"
 #include "benes.h"
 #include "util.h"
@@ -44,7 +44,7 @@ static void scaling(vec256 out[][GFBITS], vec256 inv[][GFBITS], const unsigned c
 	}
 
 	vec256_copy(inv[0], tmp);
-	
+
 	//
 
 	for (i = 0; i < 32; i++)
@@ -80,10 +80,10 @@ static void preprocess(vec128 *recv, const unsigned char *s)
 	int i;
 	unsigned char r[ 1024 ];
 
-	for (i = 0; i < SYND_BYTES; i++)    
+	for (i = 0; i < SYND_BYTES; i++)
 		r[i] = s[i];
 
-	for (i = SYND_BYTES; i < 1024; i++) 
+	for (i = SYND_BYTES; i < 1024; i++)
 		r[i] = 0;
 
 	for (i = 0; i < 64; i++)
@@ -160,7 +160,7 @@ static uint64_t synd_cmp(vec256 *s0 , vec256 *s1)
 
 	for (i = 1; i < GFBITS; i++)
 		diff = vec256_or(diff, vec256_xor(s0[i], s1[i]));
-	
+
 	return vec256_testz(diff);
 }
 
@@ -295,4 +295,3 @@ int decrypt(unsigned char *e, const unsigned char *sk, const unsigned char *s)
 
 	return 1 - (check_synd & check_weight);
 }
-

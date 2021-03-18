@@ -1,8 +1,6 @@
 #ifndef OPERATIONS_H
 #define OPERATIONS_H
 
-#include "crypto_kem.h"
-
 int crypto_kem_enc(
        unsigned char *c,
        unsigned char *key,
@@ -18,8 +16,7 @@ int crypto_kem_dec(
 int crypto_kem_keypair
 (
        unsigned char *pk,
-       unsigned char *sk 
+       unsigned char *sk
 );
 
 #endif
-

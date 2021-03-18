@@ -6,7 +6,7 @@
 
 #include "randombytes.h"
 #include "controlbits.h"
-#include "params.h"
+#include "../params.h"
 #include "util.h"
 #include "gf.h"
 
@@ -73,4 +73,3 @@ int genpoly_gen(gf *out, gf *f)
 
 	return 0;
 }
-

@@ -5,7 +5,7 @@
 #include "crypto_hash.h"
 #include "encrypt.h"
 #include "decrypt.h"
-#include "params.h"
+#include "../params.h"
 #include "sk_gen.h"
 #include "pk_gen.h"
 #include "util.h"

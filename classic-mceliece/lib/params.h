@@ -54,6 +54,8 @@
 
 #define GFMASK ((1 << GFBITS) - 1)
 
+#ifndef USE_AVX
 #define CRYPTO_BYTES 32
-
 #endif
+#endif
+

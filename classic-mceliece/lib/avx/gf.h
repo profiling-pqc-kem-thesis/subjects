@@ -6,7 +6,7 @@
 #define GF_H
 
 #if MCELIECE_PARAMETER_SET == MCELIECE_8192128
-#include "params.h"
+#include "../params.h"
 #endif
 
 #include <stdint.h>

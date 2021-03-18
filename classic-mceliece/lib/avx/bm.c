@@ -10,7 +10,7 @@
 
 #include "gf.h"
 #include "vec128.h"
-#include "params.h"
+#include "../params.h"
 
 #include <stdint.h>
 

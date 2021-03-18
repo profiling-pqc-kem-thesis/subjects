@@ -3,7 +3,7 @@
   see http://crypto.stanford.edu/~mironov/cs359/massey.pdf
 */
 
-#include "params.h"
+#include "../params.h"
 #include "gf.h"
 #include "bm.h"
 
@@ -42,22 +42,22 @@ void bm(gf *out, gf *s)
 
 		for (i = 0; i <= min(N, SYS_T); i++)
 			d ^= gf_mul(C[i], s[ N-i]);
-	
+
 		mne = d; mne -= 1;   mne >>= 15; mne -= 1;
 		mle = N; mle -= 2*L; mle >>= 15; mle -= 1;
 		mle &= mne;
 
-		for (i = 0; i <= SYS_T; i++)			
+		for (i = 0; i <= SYS_T; i++)
 			T[i] = C[i];
 
 		f = gf_frac(b, d);
 
-		for (i = 0; i <= SYS_T; i++)			
+		for (i = 0; i <= SYS_T; i++)
 			C[i] ^= gf_mul(f, B[i]) & mne;
 
 		L = (L & ~mle) | ((N+1-L) & mle);
 
-		for (i = 0; i <= SYS_T; i++)			
+		for (i = 0; i <= SYS_T; i++)
 			B[i] = (B[i] & ~mle) | (T[i] & mle);
 
 		b = (b & ~mle) | (d & mle);
@@ -69,4 +69,3 @@ void bm(gf *out, gf *s)
 	for (i = 0; i <= SYS_T; i++)
 		out[i] = C[ SYS_T-i ];
 }
-
