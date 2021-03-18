@@ -21,7 +21,7 @@ int generate_keypair() {
   return crypto_kem_keypair(pk, sk) < 0;
 }
 
-int benchmark_loader(int thread_index, void *state) {
+int benchmark(int thread_index, void *state) {
   benchmark_state_t *benchmark_state = (benchmark_state_t *)state;
 
   int operations_per_thread = benchmark_state->dimension / benchmark_state->thread_count;
