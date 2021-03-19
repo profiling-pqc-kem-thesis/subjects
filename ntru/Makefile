@@ -1,6 +1,6 @@
 .PHONY: all tests benchmarks test target clean
 
-# The build type, 'none', 'test', 'benchmark-sequential' or 'benchmark-parallel'
+# The build type, 'none', 'test', 'benchmark'
 TARGET ?= none
 
 # The group to build, 'hrss' or 'hps'
@@ -88,13 +88,11 @@ ifneq ($(TARGET),none)
 	target_name := build/ntru_$(parameter_set)_$(shell echo "$(strip $(features))" | tr ' ' '-')
 
 	# Set the main target to either test or benchmark
-	ifeq ($(TARGET),benchmark-sequential)
-		source += benchmark-sequential.c
-		target_name := $(target_name)_benchmark_sequential
-	else ifeq ($(TARGET),benchmark-parallel)
-		source += benchmark-parallel.c ../utilities/time.c ../utilities/pool.c
-		target_name := $(target_name)_benchmark_parallel
+	ifeq ($(TARGET),benchmark)
+		source += benchmark.c ../utilities/benchmark.c ../utilities/benchmark-sequential.c ../utilities/cpu.c ../utilities/pool.c ../utilities/time.c
+		target_name := $(target_name)
 		LDLIBS += -lpthread
+		CPPFLAGS += -D BENCHMARK_SUBJECT_NAME='"$(target_name)"' -D BENCHMARK_KEYPAIR -D BENCHMARK_ENCRYPT -D BENCHMARK_DECRYPT
 	else ifeq ($(TARGET),test)
 		source += test.c
 		target_name := $(target_name)_test
@@ -122,32 +120,30 @@ tests: ntru_hrss701_ref_test ntru_hrss701_avx2_test ntru_hrss701_keccak_test \
 
 # Build all benchmarks
 # first line is HRS701 targets, the second HPS4096821
-benchmarks: ntru_hrss701_ref_benchmark_sequential ntru_hrss701_avx2_benchmark_sequential ntru_hrss701_ref_optimized_benchmark_sequential ntru_hrss701_avx2_optimized_benchmark_sequential ntru_hrss701_avx2_optimized_benchmark_parallel \
-	ntru_hps4096821_ref_benchmark_sequential ntru_hps4096821_avx2_benchmark_sequential ntru_hps4096821_ref_optimized_benchmark_sequential ntru_hps4096821_avx2_optimized_benchmark_sequential ntru_hps4096821_avx2_optimized_benchmark_parallel
+benchmarks: ntru_hrss701_ref ntru_hrss701_avx2 ntru_hrss701_ref_optimized ntru_hrss701_avx2_optimized \
+	ntru_hps4096821_ref ntru_hps4096821_avx2 ntru_hps4096821_ref_optimized ntru_hps4096821_avx2_optimized
 
 # Define all HRSS701 targets
-#                            rule name                                         target                group  parameter  avx2   optimize  keccak
-$(eval $(call create-target, ntru_hrss701_ref_benchmark_sequential,            benchmark-sequential, hrss,  701,       false, false,    false))
-$(eval $(call create-target, ntru_hrss701_avx2_benchmark_sequential,           benchmark-sequential, hrss,  701,       true,  false,    false))
-$(eval $(call create-target, ntru_hrss701_ref_optimized_benchmark_sequential,  benchmark-sequential, hrss,  701,       false, true,     false))
-$(eval $(call create-target, ntru_hrss701_avx2_optimized_benchmark_sequential, benchmark-sequential, hrss,  701,       true,  true,     false))
-$(eval $(call create-target, ntru_hrss701_avx2_optimized_benchmark_parallel,   benchmark-parallel,   hrss,  701,       true,  true,     false))
+#                            rule name                    target     group  parameter  avx2   optimize  keccak
+$(eval $(call create-target, ntru_hrss701_ref,            benchmark, hrss,  701,       false, false,    false))
+$(eval $(call create-target, ntru_hrss701_avx2,           benchmark, hrss,  701,       true,  false,    false))
+$(eval $(call create-target, ntru_hrss701_ref_optimized,  benchmark, hrss,  701,       false, true,     false))
+$(eval $(call create-target, ntru_hrss701_avx2_optimized, benchmark, hrss,  701,       true,  true,     false))
 
-$(eval $(call create-target, ntru_hrss701_ref_test,       test,                hrss,  701,       false, false,    false))
-$(eval $(call create-target, ntru_hrss701_avx2_test,      test,                hrss,  701,       true,  false,    false))
-$(eval $(call create-target, ntru_hrss701_keccak_test,    test,                hrss,  701,       false,  false,   true))
+$(eval $(call create-target, ntru_hrss701_ref_test,       test,       hrss,  701,       false, false,    false))
+$(eval $(call create-target, ntru_hrss701_avx2_test,      test,       hrss,  701,       true,  false,    false))
+$(eval $(call create-target, ntru_hrss701_keccak_test,    test,       hrss,  701,       false,  false,   true))
 
 # Define all HPS4096821 targets
-#                            rule name                                            target                group  parameter  avx2   optimize  keccak
-$(eval $(call create-target, ntru_hps4096821_ref_benchmark_sequential,            benchmark-sequential, hps,   4096821,   false, false,    false))
-$(eval $(call create-target, ntru_hps4096821_avx2_benchmark_sequential,           benchmark-sequential, hps,   4096821,   true,  false,    false))
-$(eval $(call create-target, ntru_hps4096821_ref_optimized_benchmark_sequential,  benchmark-sequential, hps,   4096821,   false, true,     false))
-$(eval $(call create-target, ntru_hps4096821_avx2_optimized_benchmark_sequential, benchmark-sequential, hps,   4096821,   true,  true,     false))
-$(eval $(call create-target, ntru_hps4096821_avx2_optimized_benchmark_parallel,   benchmark-parallel,   hps,   4096821,   true,  true,     false))
+#                            rule name                       target     group  parameter  avx2   optimize  keccak
+$(eval $(call create-target, ntru_hps4096821_ref,            benchmark, hps,   4096821,   false, false,    false))
+$(eval $(call create-target, ntru_hps4096821_avx2,           benchmark, hps,   4096821,   true,  false,    false))
+$(eval $(call create-target, ntru_hps4096821_ref_optimized,  benchmark, hps,   4096821,   false, true,     false))
+$(eval $(call create-target, ntru_hps4096821_avx2_optimized, benchmark, hps,   4096821,   true,  true,     false))
 
-$(eval $(call create-target, ntru_hps4096821_ref_test,       test,                hps,   4096821,   false, false,    false))
-$(eval $(call create-target, ntru_hps4096821_avx2_test,      test,                hps,   4096821,   true,  false,    false))
-$(eval $(call create-target, ntru_hps4096821_keccak_test,    test,                hps,   4096821,   false, false,    true))
+$(eval $(call create-target, ntru_hps4096821_ref_test,       test,      hps,   4096821,   false, false,    false))
+$(eval $(call create-target, ntru_hps4096821_avx2_test,      test,      hps,   4096821,   true,  false,    false))
+$(eval $(call create-target, ntru_hps4096821_keccak_test,    test,      hps,   4096821,   false, false,    true))
 
 # Run all tests
 test: tests
@@ -164,18 +160,16 @@ test: tests
 # Run all benchmarks
 benchmark: benchmarks
 	# Benchmark the HRSS701 implementation
-	build/ntru_hrss701_ref_benchmark_sequential
-	build/ntru_hrss701_avx2_benchmark_sequential
-	build/ntru_hrss701_ref_optimized_benchmark_sequential
-	build/ntru_hrss701_avx2_optimized_benchmark_sequential
-	build/ntru_hrss701_avx2_optimized_benchmark_parallel
+	build/ntru_hrss701_ref --sequential
+	build/ntru_hrss701_avx2 --sequential
+	build/ntru_hrss701_ref_optimized --sequential
+	build/ntru_hrss701_avx2_optimized --sequential
 
 	# Benchmark the HPS4096821 implementation
-	build/ntru_hps4096821_ref_benchmark_sequential
-	build/ntru_hps4096821_avx2_benchmark_sequential
-	build/ntru_hps4096821_ref_optimized_benchmark_sequential
-	build/ntru_hps4096821_avx2_optimized_benchmark_sequential
-	build/ntru_hps4096821_avx2_optimized_benchmark_parallel
+	build/ntru_hps4096821_ref --sequential
+	build/ntru_hps4096821_avx2 --sequential
+	build/ntru_hps4096821_ref_optimized --sequential
+	build/ntru_hps4096821_avx2_optimized --sequential
 
 # Analyze the hot paths of the algorithm
 hotpaths: ntru_hrss701_ref_test ntru_hps4096821_ref_test
