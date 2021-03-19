@@ -2,25 +2,34 @@
 
 LDLIBS += -l crypto
 
+source := lib/dh.c
+headers := lib/api.h lib/dh.h lib/params.h
+
+benchmark_source := $(source) benchmark.c ../utilities/benchmark.c ../utilities/benchmark-sequential.c ../utilities/time.c ../utilities/cpu.c ../utilities/pool.c
+benchmark_headers := $(headers) ../utilities/benchmark.h ../utilities/time.h ../utilities/cpu.h ../utilities/pool.h
+
+test_source := $(source) test.c
+test_headers := $(headers)
+
 all: tests benchmarks
 
 tests: build/dh_test
 
 benchmarks: build/dh_plain_optimized
 
-build/dh_plain_optimized: benchmark.c lib/dh.c lib/dh.h lib/params.h
+build/dh_plain_optimized: $(benchmark_source) $(benchmark_headers)
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ benchmark.c lib/dh.c $(LDLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D BENCHMARK_SUBJECT_NAME='"DH"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS)
 
-build/dh_test: test.c lib/dh.c lib/dh.h lib/params.h
+build/dh_test: $(test_source) $(test_headers)
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ test.c lib/dh.c $(LDLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ $(test_source) $(LDLIBS)
 
 test: tests
 	build/dh_test
 
 benchmark: benchmarks
-	build/dh_plain_optimized
+	build/dh_plain_optimized --sequential
 
 clean:
 	rm -rf build &> /dev/null || true
