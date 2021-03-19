@@ -89,7 +89,7 @@ ifneq ($(TARGET),none)
 
 	# Set the main target to either test or benchmark
 	ifeq ($(TARGET),benchmark)
-		source += benchmark.c ../utilities/benchmark.c ../utilities/benchmark-sequential.c ../utilities/cpu.c ../utilities/pool.c ../utilities/time.c
+		source += benchmark.c ../utilities/benchmark.c ../utilities/benchmark-sequential.c ../utilities/benchmark-parallel.c ../utilities/cpu.c ../utilities/pool.c ../utilities/time.c
 		target_name := $(target_name)
 		LDLIBS += -lpthread
 		CPPFLAGS += -D BENCHMARK_SUBJECT_NAME='"$(target_name)"' -D BENCHMARK_KEYPAIR -D BENCHMARK_ENCRYPT -D BENCHMARK_DECRYPT

@@ -5,18 +5,13 @@
 #define BENCHMARK_SUBJECT_NAME "unknown"
 #endif
 
-unsigned char *keypair_state();
-int keypair();
+void *get_global_state();
+int perform_keypair(void *state);
+int perform_encrypt(void *state);
+int perform_decrypt(void *state);
+int perform_exchange(void *state);
 
-unsigned char *encrypt_state();
-int encrypt();
-
-unsigned char *decrypt_state();
-int decrypt();
-
-unsigned char *exchange_state();
-int exchange();
-
-int benchmark_sequential();
+int benchmark_sequential(int iterations);
+int benchmark_parallel(int thread_count, int batch_size);
 
 #endif

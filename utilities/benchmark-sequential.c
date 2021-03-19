@@ -6,17 +6,17 @@
 
 #include "benchmark.h"
 
-static int benchmark(char *name, int (*benchmark)(unsigned char *state), unsigned char *(*get_state)(), int iterations) {
+static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations) {
   fprintf(stderr, "starting benchmark '%s' for '%s'\n", name, BENCHMARK_SUBJECT_NAME);
 
-  unsigned char *state = get_state();
+  void *state = get_global_state();
 
-  float sum;
+  float sum = 0;
   printf("progress: 0");
   for (int i = 0; i < iterations; i++) {
     struct timespec start, stop;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    if (benchmark(state) < 0) {
+    if (benchmark(state)) {
       fprintf(stderr, "error: benchmark '%s' for '%s' failed\n", name, BENCHMARK_SUBJECT_NAME);
       if (state != NULL)
         free(state);
@@ -26,7 +26,7 @@ static int benchmark(char *name, int (*benchmark)(unsigned char *state), unsigne
     sum += timespec_to_duration(&start, &stop) / 1e6;
     printf("\rprogress: %03.f%%", ((float)i / iterations) * 100);
   }
-  printf("\n");
+  printf("\rprogress: 100%%\n");
 
   printf("%s %s average (of %d iterations): %fms\n", name, BENCHMARK_SUBJECT_NAME, iterations, sum / iterations);
   if (state != NULL)
@@ -40,22 +40,22 @@ int benchmark_sequential(int iterations) {
 
 #ifdef BENCHMARK_KEYPAIR
     run++;
-    failed += benchmark("keypair", &keypair, &keypair_state, iterations);
+    failed += perform_benchmark("keypair", &perform_keypair, iterations);
 #endif
 
 #ifdef BENCHMARK_ENCRYPT
     run++;
-    failed += benchmark("encrypt", &encrypt, &encrypt_state, iterations);
+    failed += perform_benchmark("encrypt", &perform_encrypt, iterations);
 #endif
 
 #ifdef BENCHMARK_DECRYPT
     run++;
-    failed += benchmark("decrypt", &decrypt, &decrypt_state, iterations);
+    failed += perform_benchmark("decrypt", &perform_decrypt, iterations);
 #endif
 
 #ifdef BENCHMARK_EXCHANGE
     run++;
-    failed += benchmark("exchange", &exchange, &exchange_state, iterations);
+    failed += perform_benchmark("exchange", &perform_exchange, iterations);
 #endif
 
   if (failed > 0) {

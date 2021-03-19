@@ -19,21 +19,17 @@ static unsigned char p[] = {
     0x47, 0x74, 0xd8, 0x3b, 0xdb, 0x40, 0xde, 0xcd, 0x2d, 0xdb};
 static unsigned char g[] = {0x02};
 
-unsigned char *keypair_state() {
+void *get_global_state() {
   return NULL;
 }
 
-int keypair() {
+int perform_keypair(unsigned char *state) {
   unsigned char pk[CRYPTO_PUBLICKEYBYTES] = {0};
   unsigned char sk[CRYPTO_SECRETKEYBYTES] = {0};
   return crypto_dh_keypair(pk, sk, p, g) < 0;
 }
 
-unsigned char *exchange_state() {
-  return NULL;
-}
-
-int exchange() {
+int perform_exchange(unsigned char *state) {
   unsigned char alice_pk[CRYPTO_PUBLICKEYBYTES] = {0};
   unsigned char alice_sk[CRYPTO_SECRETKEYBYTES] = {0};
   unsigned char alice_k[CRYPTO_BYTES] = {0};

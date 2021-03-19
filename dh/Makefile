@@ -5,7 +5,7 @@ LDLIBS += -l crypto
 source := lib/dh.c
 headers := lib/api.h lib/dh.h lib/params.h
 
-benchmark_source := $(source) benchmark.c ../utilities/benchmark.c ../utilities/benchmark-sequential.c ../utilities/time.c ../utilities/cpu.c ../utilities/pool.c
+benchmark_source := $(source) benchmark.c ../utilities/benchmark.c ../utilities/benchmark-sequential.c ../utilities/benchmark-parallel.c ../utilities/time.c ../utilities/cpu.c ../utilities/pool.c
 benchmark_headers := $(headers) ../utilities/benchmark.h ../utilities/time.h ../utilities/cpu.h ../utilities/pool.h
 
 test_source := $(source) test.c
