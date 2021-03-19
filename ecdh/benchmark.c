@@ -4,24 +4,22 @@
 
 #include "lib/api.h"
 
-void benchmark_keypair() {
-  struct timespec start, stop;
-
-  unsigned char pk[CRYPTO_PUBLICKEYBYTES] = {0};
-  unsigned char sk[CRYPTO_SECRETKEYBYTES] = {0};
-
-  clock_gettime(CLOCK_MONOTONIC, &start);
-  if (crypto_dh_keypair(pk, sk) < 0)
-    exit(EXIT_FAILURE);
-  clock_gettime(CLOCK_MONOTONIC, &stop);
-
-  printf("%s keypair: %fms\n", CRYPTO_SUBJECT_NAME, ((stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec)) / 1e6);
+unsigned char *keypair_state() {
+  return NULL;
 }
 
-void benchmark_roundtrip() {
-  struct timespec start, stop;
+int keypair(unsigned char *state) {
+  unsigned char pk[CRYPTO_PUBLICKEYBYTES] = {0};
+  unsigned char sk[CRYPTO_SECRETKEYBYTES] = {0};
+  return crypto_dh_keypair(pk, sk) < 0;
+}
 
-  unsigned char alice_pk[CRYPTO_PUBLICKEYBYTES] = {0};
+unsigned char *exchange_state() {
+  return NULL;
+}
+
+int exchange(unsigned char *state) {
+  unsigned char alice_pk[CRYPTO_PUBLICKEYBYTES];
   unsigned char alice_sk[CRYPTO_SECRETKEYBYTES] = {0};
   unsigned char alice_k[CRYPTO_BYTES] = {0};
 
@@ -29,24 +27,17 @@ void benchmark_roundtrip() {
   unsigned char bob_sk[CRYPTO_SECRETKEYBYTES] = {0};
   unsigned char bob_k[CRYPTO_BYTES] = {0};
 
-  clock_gettime(CLOCK_MONOTONIC, &start);
   if (crypto_dh_keypair(alice_pk, alice_sk) < 0)
-    exit(EXIT_FAILURE);
+    return 1;
 
   if (crypto_dh_keypair(bob_pk, bob_sk) < 0)
-    exit(EXIT_FAILURE);
+    return 1;
 
   if (crypto_dh_enc(alice_k, alice_sk, bob_pk) < 0)
-    exit(EXIT_FAILURE);
+    return 1;
 
   if (crypto_dh_enc(bob_k, bob_sk, alice_pk) < 0)
-    exit(EXIT_FAILURE);
-  clock_gettime(CLOCK_MONOTONIC, &stop);
+    return 1;
 
-  printf("%s roundtrip: %fms\n", CRYPTO_SUBJECT_NAME, ((stop.tv_sec - start.tv_sec) * 1e9 + (stop.tv_nsec - start.tv_nsec)) / 1e6);
-}
-
-int main(int argc, char **argv) {
-  benchmark_keypair();
-  benchmark_roundtrip();
+  return 0;
 }
