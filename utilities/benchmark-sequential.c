@@ -12,18 +12,25 @@ static int benchmark(char *name, int (*benchmark)(unsigned char *state), unsigne
   unsigned char *state = get_state();
 
   float sum;
+  printf("progress: 0");
   for (int i = 0; i < iterations; i++) {
     struct timespec start, stop;
     clock_gettime(CLOCK_MONOTONIC, &start);
     if (benchmark(state) < 0) {
       fprintf(stderr, "error: benchmark '%s' for '%s' failed\n", name, BENCHMARK_SUBJECT_NAME);
+      if (state != NULL)
+        free(state);
       return 1;
     }
     clock_gettime(CLOCK_MONOTONIC, &stop);
     sum += timespec_to_duration(&start, &stop) / 1e6;
+    printf("\rprogress: %03.f%%", ((float)i / iterations) * 100);
   }
+  printf("\n");
 
   printf("%s %s average (of %d iterations): %fms\n", name, BENCHMARK_SUBJECT_NAME, iterations, sum / iterations);
+  if (state != NULL)
+    free(state);
   return 0;
 }
 
