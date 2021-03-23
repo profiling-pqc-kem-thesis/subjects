@@ -69,13 +69,11 @@ ifneq ($(TARGET),none)
 	target_name := build/mceliece_$(PARAMETERS)_$(shell echo "$(strip $(features))" | tr ' ' '_')
 
 	# Set the main target to either test or benchmark
-	ifeq ($(TARGET),benchmark-sequential)
-		source += benchmark-sequential.c
-		target_name := $(target_name)_benchmark_sequential
-	else ifeq ($(TARGET),benchmark-parallel)
-		source += benchmark-parallel.c ../utilities/time.c ../utilities/pool.c
-		target_name := $(target_name)_benchmark_parallel
+	ifeq ($(TARGET),benchmark)
+		source += benchmark.c ../utilities/benchmark.c ../utilities/benchmark-sequential.c ../utilities/benchmark-parallel.c ../utilities/cpu.c ../utilities/pool.c ../utilities/time.c
+		target_name := $(target_name)
 		LDLIBS += -lpthread
+		CPPFLAGS += -D BENCHMARK_SUBJECT_NAME='"$(target_name)"' -D BENCHMARK_KEYPAIR -D BENCHMARK_ENCRYPT -D BENCHMARK_DECRYPT
 	else ifeq ($(TARGET),test)
 		source += test.c
 		target_name := $(target_name)_test
@@ -84,8 +82,7 @@ ifneq ($(TARGET),none)
 
 	# Format the constant for controlling the implementation. Will look like
 	# MCELIECE_8192128. Possible values are defined in params.h
-	MCELIECE_PARAMETER_SET := MCELIECE_$(PARAMETERS)
-	CPPFLAGS += -D MCELIECE_PARAMETER_SET=$(MCELIECE_PARAMETER_SET)
+	CPPFLAGS += -D MCELIECE_PARAMETER_SET=MCELIECE_$(PARAMETERS)
 endif
 
 # This macro creates a build target for a configuration of NTUR
@@ -101,51 +98,46 @@ tests:  mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_re
 		mceliece_8192128_avx2_test mceliece_8192128f_avx2_test mceliece_6960119_avx2_test mceliece_6960119f_avx2_test
 
 # Build all benchmarks
-benchmarks: mceliece_8192128_ref_benchmark_sequential mceliece_8192128_ref_optimized_benchmark_sequential	mceliece_8192128f_ref_benchmark_sequential mceliece_8192128f_ref_optimized_benchmark_sequential \
-			mceliece_6960119_ref_benchmark_sequential mceliece_6960119_ref_optimized_benchmark_sequential	mceliece_6960119f_ref_benchmark_sequential mceliece_6960119f_ref_optimized_benchmark_sequential \
-			mceliece_8192128_avx2_benchmark_sequential mceliece_8192128_avx2_optimized_benchmark_sequential	mceliece_8192128f_avx2_benchmark_sequential mceliece_8192128f_avx2_optimized_benchmark_sequential \
-			mceliece_6960119_avx2_benchmark_sequential mceliece_6960119_avx2_optimized_benchmark_sequential	mceliece_6960119f_avx2_benchmark_sequential mceliece_6960119f_avx2_optimized_benchmark_sequential \
-			mceliece_8192128_avx2_optimized_benchmark_parallel mceliece_8192128f_avx2_optimized_benchmark_parallel mceliece_6960119_avx2_optimized_benchmark_parallel mceliece_6960119f_avx2_optimized_benchmark_parallel
+benchmarks: mceliece_8192128_ref mceliece_8192128_ref_optimized	mceliece_8192128f_ref mceliece_8192128f_ref_optimized \
+			mceliece_6960119_ref mceliece_6960119_ref_optimized	mceliece_6960119f_ref mceliece_6960119f_ref_optimized \
+			mceliece_8192128_avx2 mceliece_8192128_avx2_optimized	mceliece_8192128f_avx2 mceliece_8192128f_avx2_optimized \
+			mceliece_6960119_avx2 mceliece_6960119_avx2_optimized	mceliece_6960119f_avx2 mceliece_6960119f_avx2_optimized
 
 # Define all mceliece8192128 targets
-#                            rule name                                             target                parameter-set  avx2   optimize
-$(eval $(call create-target, mceliece_8192128_ref_benchmark_sequential,            benchmark-sequential, 8192128,       false, false))
-$(eval $(call create-target, mceliece_8192128_avx2_benchmark_sequential,           benchmark-sequential, 8192128,       true,  false))
-$(eval $(call create-target, mceliece_8192128_ref_optimized_benchmark_sequential,  benchmark-sequential, 8192128,       false, true))
-$(eval $(call create-target, mceliece_8192128_avx2_optimized_benchmark_sequential, benchmark-sequential, 8192128,       true,  true))
-$(eval $(call create-target, mceliece_8192128_avx2_optimized_benchmark_parallel,   benchmark-parallel,   8192128,       true,  true))
-$(eval $(call create-target, mceliece_8192128_ref_test,                            test,                 8192128,       false, false))
-$(eval $(call create-target, mceliece_8192128_avx2_test,                           test,                 8192128,       true,  false))
+#                            rule name                        target     parameter-set  avx2   optimize
+$(eval $(call create-target, mceliece_8192128_ref,            benchmark, 8192128,       false, false))
+$(eval $(call create-target, mceliece_8192128_avx2,           benchmark, 8192128,       true,  false))
+$(eval $(call create-target, mceliece_8192128_ref_optimized,  benchmark, 8192128,       false, true))
+$(eval $(call create-target, mceliece_8192128_avx2_optimized, benchmark, 8192128,       true,  true))
+$(eval $(call create-target, mceliece_8192128_ref_test,       test,      8192128,       false, false))
+$(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128,       true,  false))
 
 # Define all mceliece8192128f targets
-#                            rule name                                              target     parameter-set avx2   optimize
-$(eval $(call create-target, mceliece_8192128f_ref_benchmark_sequential,            benchmark-sequential, 8192128f,     false, false))
-$(eval $(call create-target, mceliece_8192128f_avx2_benchmark_sequential,           benchmark-sequential, 8192128f,     true,  false))
-$(eval $(call create-target, mceliece_8192128f_ref_optimized_benchmark_sequential,  benchmark-sequential, 8192128f,     false, true))
-$(eval $(call create-target, mceliece_8192128f_avx2_optimized_benchmark_sequential, benchmark-sequential, 8192128f,     true,  true))
-$(eval $(call create-target, mceliece_8192128f_avx2_optimized_benchmark_parallel,   benchmark-parallel,   8192128f,     true,  true))
-$(eval $(call create-target, mceliece_8192128f_ref_test,                            test,                 8192128f,     false, false))
-$(eval $(call create-target, mceliece_8192128f_avx2_test,                           test,                 8192128f,     true,  false))
+#                            rule name                         target     parameter-set avx2   optimize
+$(eval $(call create-target, mceliece_8192128f_ref,            benchmark, 8192128f,     false, false))
+$(eval $(call create-target, mceliece_8192128f_avx2,           benchmark, 8192128f,     true,  false))
+$(eval $(call create-target, mceliece_8192128f_ref_optimized,  benchmark, 8192128f,     false, true))
+$(eval $(call create-target, mceliece_8192128f_avx2_optimized, benchmark, 8192128f,     true,  true))
+$(eval $(call create-target, mceliece_8192128f_ref_test,       test,      8192128f,     false, false))
+$(eval $(call create-target, mceliece_8192128f_avx2_test,      test,      8192128f,     true,  false))
 
 # Define all mceliece6960119 targets
-#                            rule name                                             target                parameter-set  avx2   optimize
-$(eval $(call create-target, mceliece_6960119_ref_benchmark_sequential,            benchmark-sequential, 6960119,       false, false))
-$(eval $(call create-target, mceliece_6960119_avx2_benchmark_sequential,           benchmark-sequential, 6960119,       true,  false))
-$(eval $(call create-target, mceliece_6960119_ref_optimized_benchmark_sequential,  benchmark-sequential, 6960119,       false, true))
-$(eval $(call create-target, mceliece_6960119_avx2_optimized_benchmark_sequential, benchmark-sequential, 6960119,       true,  true))
-$(eval $(call create-target, mceliece_6960119_avx2_optimized_benchmark_parallel,   benchmark-parallel,   6960119,       true,  true))
-$(eval $(call create-target, mceliece_6960119_ref_test,                            test,                 6960119,       false, false))
-$(eval $(call create-target, mceliece_6960119_avx2_test,                           test,                 6960119,       true,  false))
+#                            rule name                        target     parameter-set  avx2   optimize
+$(eval $(call create-target, mceliece_6960119_ref,            benchmark, 6960119,       false, false))
+$(eval $(call create-target, mceliece_6960119_avx2,           benchmark, 6960119,       true,  false))
+$(eval $(call create-target, mceliece_6960119_ref_optimized,  benchmark, 6960119,       false, true))
+$(eval $(call create-target, mceliece_6960119_avx2_optimized, benchmark, 6960119,       true,  true))
+$(eval $(call create-target, mceliece_6960119_ref_test,       test,      6960119,       false, false))
+$(eval $(call create-target, mceliece_6960119_avx2_test,      test,      6960119,       true,  false))
 
 # Define all mceliece6960119f targets
-#                            rule name                                              target                parameter-set avx2   optimize
-$(eval $(call create-target, mceliece_6960119f_ref_benchmark_sequential,            benchmark-sequential, 6960119f,     false, false))
-$(eval $(call create-target, mceliece_6960119f_avx2_benchmark_sequential,           benchmark-sequential, 6960119f,     true,  false))
-$(eval $(call create-target, mceliece_6960119f_ref_optimized_benchmark_sequential,  benchmark-sequential, 6960119f,     false, true))
-$(eval $(call create-target, mceliece_6960119f_avx2_optimized_benchmark_sequential, benchmark-sequential, 6960119f,     true,  true))
-$(eval $(call create-target, mceliece_6960119f_avx2_optimized_benchmark_parallel,   benchmark-parallel,   6960119f,     true,  true))
-$(eval $(call create-target, mceliece_6960119f_ref_test,                            test,                 6960119f,     false, false))
-$(eval $(call create-target, mceliece_6960119f_avx2_test,                           test,                 6960119f,     true,  false))
+#                            rule name                         target     parameter-set avx2   optimize
+$(eval $(call create-target, mceliece_6960119f_ref,            benchmark, 6960119f,     false, false))
+$(eval $(call create-target, mceliece_6960119f_avx2,           benchmark, 6960119f,     true,  false))
+$(eval $(call create-target, mceliece_6960119f_ref_optimized,  benchmark, 6960119f,     false, true))
+$(eval $(call create-target, mceliece_6960119f_avx2_optimized, benchmark, 6960119f,     true,  true))
+$(eval $(call create-target, mceliece_6960119f_ref_test,       test,      6960119f,     false, false))
+$(eval $(call create-target, mceliece_6960119f_avx2_test,      test,      6960119f,     true,  false))
 
 # Run all tests
 test: tests
@@ -166,32 +158,28 @@ test: tests
 # Run all benchmarks
 benchmark: benchmarks
 	# Benchmark the mceliece8192128 implementations
-	build/mceliece_8192128_ref_benchmark_sequential
-	build/mceliece_8192128_avx2_benchmark_sequential
-	build/mceliece_8192128_optimized_benchmark_sequential
-	build/mceliece_8192128_avx2_optimized_benchmark_sequential
-	build/mceliece_8192128_avx2_optimized_benchmark_parallel
+	build/mceliece_8192128_ref --sequential
+	build/mceliece_8192128_avx2 --sequential
+	build/mceliece_8192128_optimized --sequential
+	build/mceliece_8192128_avx2_optimized --sequential
 
 	# Benchmark the mceliece8192128f implementations
-	build/mceliece_8192128f_ref_benchmark_sequential
-	build/mceliece_8192128f_avx2_benchmark_sequential
-	build/mceliece_8192128f_optimized_benchmark_sequential
-	build/mceliece_8192128f_avx2_optimized_benchmark_sequential
-	build/mceliece_8192128f_avx2_optimized_benchmark_parallel
+	build/mceliece_8192128f_ref --sequential
+	build/mceliece_8192128f_avx2 --sequential
+	build/mceliece_8192128f_optimized --sequential
+	build/mceliece_8192128f_avx2_optimized --sequential
 
 	# Benchmark the mceliece6960119 implementations
-	build/mceliece_6960119_ref_benchmark_sequential
-	build/mceliece_6960119_avx2_benchmark_sequential
-	build/mceliece_6960119_optimized_benchmark_sequential
-	build/mceliece_6960119_avx2_optimized_benchmark_sequential
-	build/mceliece_6960119_avx2_optimized_benchmark_parallel
+	build/mceliece_6960119_ref --sequential
+	build/mceliece_6960119_avx2 --sequential
+	build/mceliece_6960119_optimized --sequential
+	build/mceliece_6960119_avx2_optimized --sequential
 
 	# Benchmark the mceliece6960119f implementations
-	build/mceliece_6960119f_ref_benchmark_sequential
-	build/mceliece_6960119f_avx2_benchmark_sequential
-	build/mceliece_6960119f_optimized_benchmark_sequential
-	build/mceliece_6960119f_avx2_optimized_benchmark_sequential
-	build/mceliece_6960119f_avx2_optimized_benchmark_parallel
+	build/mceliece_6960119f_ref --sequential
+	build/mceliece_6960119f_avx2 --sequential
+	build/mceliece_6960119f_optimized --sequential
+	build/mceliece_6960119f_avx2_optimized --sequential
 
 # Analyze the hot paths of the algorithm
 hotpaths: mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test
