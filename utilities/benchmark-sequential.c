@@ -7,10 +7,10 @@
 #include "benchmark.h"
 
 static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations) {
-  fprintf(stderr, "starting benchmark '%s' for '%s'\n", name, BENCHMARK_SUBJECT_NAME);
-
+  fprintf(stderr, "fething global state for benchmark '%s', '%s'\n", name, BENCHMARK_SUBJECT_NAME);
   void *state = get_global_state();
 
+  fprintf(stderr, "running benchmark '%s' for '%s'\n", name, BENCHMARK_SUBJECT_NAME);
   float sum = 0;
   printf("progress: 0");
   for (int i = 0; i < iterations; i++) {

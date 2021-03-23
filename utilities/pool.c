@@ -12,6 +12,7 @@ typedef struct {
 } worker_parameters_t;
 
 static void *worker_main(void *parameters) {
+  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
   worker_parameters_t *thread_parameters = (worker_parameters_t *)parameters;
 
   int exit_code = thread_parameters->benchmark(thread_parameters->thread_index, thread_parameters->state);
@@ -62,7 +63,7 @@ int pool_start(pool_t *pool, void *state) {
   return 0;
 }
 
-void worker_kill(pool_t *pool) {
+void pool_kill(pool_t *pool) {
   for (size_t i = 0; i < pool->thread_count; i++)
     pthread_cancel(pool->threads[i]);
 }

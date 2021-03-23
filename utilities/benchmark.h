@@ -12,6 +12,6 @@ int perform_decrypt(void *state);
 int perform_exchange(void *state);
 
 int benchmark_sequential(int iterations);
-int benchmark_parallel(int thread_count, int batch_size);
+int benchmark_parallel(int thread_count, int duration);
 
 #endif

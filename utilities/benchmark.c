@@ -13,7 +13,7 @@ void die_with_usage(char *name) {
   printf("--sequential       perform the sequential benchmark\n");
   printf("--iterations <n>   iterations of the sequential benchmark\n");
   printf("--parallel         perform the parallel benchmark\n");
-  printf("--batch-size <n>   total batch size of the parallel benchmark\n");
+  printf("--duration <n>     total time in seconds to perform the parallel benchmark\n");
   printf("--thread-count <n> number of threads to use in the parallel benchmark\n");
   exit(0);
 }
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   int sequential_iterations = 1000;
 
   int perform_parallel = 0;
-  int batch_size = 1000;
+  int duration = 600;
   int thread_count = get_available_cores();
 
   if (argc <= 1)
@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
       sequential_iterations = atoi(argv[++i]);
     else if (strcmp(argv[i], "--parallel") == 0)
       perform_parallel = 1;
-    else if (strcmp(argv[i], "--batch-size") == 0)
-      batch_size = atoi(argv[++i]);
+    else if (strcmp(argv[i], "--duration") == 0)
+      duration = atoi(argv[++i]);
     else if (strcmp(argv[i], "--thread-count") == 0)
       thread_count = atoi(argv[++i]);
     else if (strcmp(argv[i], "--help") == 0)
@@ -50,5 +50,5 @@ int main(int argc, char **argv) {
     benchmark_sequential(sequential_iterations);
 
   if (perform_parallel)
-    benchmark_parallel(thread_count, batch_size);
+    benchmark_parallel(thread_count, duration);
 }
