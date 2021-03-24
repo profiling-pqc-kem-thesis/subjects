@@ -66,7 +66,12 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int thre
     goto cleanup;
   }
 
-  sleep(duration);
+  fprintf(stderr, "progress: 0s");
+  for (int i = 0; i < duration; i++) {
+    fprintf(stderr, "\rprogress: % 3.f%%", (i / (float)duration) * 100);
+    sleep(1);
+  }
+  fprintf(stderr, "\rprogress: 100%%\n");
 
   benchmark_state->perform = 0;
 

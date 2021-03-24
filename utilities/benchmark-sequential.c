@@ -12,7 +12,7 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
 
   fprintf(stderr, "running benchmark '%s' for '%s'\n", name, BENCHMARK_SUBJECT_NAME);
   float sum = 0;
-  printf("progress: 0");
+  fprintf(stderr, "progress: 0");
   for (int i = 0; i < iterations; i++) {
     struct timespec start, stop;
     clock_gettime(CLOCK_MONOTONIC, &start);
@@ -24,9 +24,9 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
     }
     clock_gettime(CLOCK_MONOTONIC, &stop);
     sum += timespec_to_duration(&start, &stop) / 1e6;
-    printf("\rprogress: %03.f%%", ((float)i / iterations) * 100);
+    fprintf(stderr, "\rprogress: % 3.f%%", ((float)i / iterations) * 100);
   }
-  printf("\rprogress: 100%%\n");
+  fprintf(stderr, "\rprogress:  100%%\n");
 
   printf("%s %s average (of %d iterations): %fms\n", name, BENCHMARK_SUBJECT_NAME, iterations, sum / iterations);
   if (state != NULL)
