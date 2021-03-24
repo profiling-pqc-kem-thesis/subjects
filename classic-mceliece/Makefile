@@ -196,7 +196,7 @@ ifneq ($(TARGET),none)
 target: $(target_name)
 $(target_name): $(source) $(headers)
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(source) $(LDLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(source) $(CSOURCE) $(LDLIBS)
 else
 target:
 	@echo "Cannot use target directly"

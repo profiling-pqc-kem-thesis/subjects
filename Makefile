@@ -2,7 +2,7 @@
 MAKEFLAGS += --silent
 
 CPPFLAGS += -I $(CURDIR)/perf/build/include
-LDFLAGS += -L $(CURDIR)/perf/build/lib
+LDFLAGS += -L $(CURDIR)/perf/build/lib/perf
 
 source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 
@@ -46,27 +46,33 @@ compile_commands.json: Makefile
 format: $(source)
 	clang-format -style=file -i $(source)
 
-test: xkcp
-	# Build tests
+# Build tests
+tests: xkcp
 	$(MAKE) -C ntru tests
 	$(MAKE) -C classic-mceliece tests
 	$(MAKE) -C dh tests
 	$(MAKE) -C ecdh tests
 
-	# Run tests
+# Run tests
+test: tests
 	$(MAKE) -C ntru test
 	$(MAKE) -C classic-mceliece test
 	$(MAKE) -C dh test
 	$(MAKE) -C ecdh test
 
-benchmark: xkcp
-	# Build benchmarks
+# Build benchmarks
+benchmarks: perf xkcp
 	$(MAKE) -C ntru benchmarks
 	$(MAKE) -C classic-mceliece benchmarks
 	$(MAKE) -C dh benchmarks
 	$(MAKE) -C ecdh benchmarks
 
-	# Run benchmarks
+# Build instrumented benchmarks
+instrumented-benchmarks:
+	LDFLAGS='$(LDFLAGS)' LDLIBS='$(LDLIBS) -lperf -lcap' CPPFLAGS='$(CPPFLAGS) -DINSTRUMENTED' CSOURCE='$(CSOURCE) $(realpath ./utilities/harness.c)' $(MAKE) benchmarks
+
+# Run benchmarks
+benchmark: benchmarks
 	$(MAKE) -C ntru benchmark
 	$(MAKE) -C classic-mceliece benchmark
 	$(MAKE) -C dh benchmark
@@ -89,3 +95,4 @@ clean:
 	$(MAKE) -C ntru clean || true
 	$(MAKE) -C classic-mceliece clean || true
 	$(MAKE) -C xkcp clean || true
+	$(MAKE) -C perf clean || true

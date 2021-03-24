@@ -5,6 +5,7 @@
 #include "time.h"
 
 #include "benchmark.h"
+#include "harness.h"
 
 static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations) {
   fprintf(stderr, "fething global state for benchmark '%s', '%s'\n", name, BENCHMARK_SUBJECT_NAME);
@@ -14,17 +15,33 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
   float sum = 0;
   fprintf(stderr, "progress: 0");
   for (int i = 0; i < iterations; i++) {
+#ifdef INSTRUMENTED
+    if (harness_setup())
+      return 1;
+#endif
+
     struct timespec start, stop;
     clock_gettime(CLOCK_MONOTONIC, &start);
+#ifdef INSTRUMENTED
+    harness_start(all_measurements);
+#endif
     if (benchmark(state)) {
       fprintf(stderr, "error: benchmark '%s' for '%s' failed\n", name, BENCHMARK_SUBJECT_NAME);
       if (state != NULL)
         free(state);
       return 1;
     }
+#ifdef INSTRUMENTED
+    harness_stop(all_measurements);
+#endif
     clock_gettime(CLOCK_MONOTONIC, &stop);
     sum += timespec_to_duration(&start, &stop) / 1e6;
     fprintf(stderr, "\rprogress: % 3.f%%", ((float)i / iterations) * 100);
+
+#ifdef INSTRUMENTED
+    harness_print_measurements();
+    harness_cleanup();
+#endif
   }
   fprintf(stderr, "\rprogress:  100%%\n");
 

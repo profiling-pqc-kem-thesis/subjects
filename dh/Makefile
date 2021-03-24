@@ -19,11 +19,11 @@ benchmarks: build/dh_plain_optimized
 
 build/dh_plain_optimized: $(benchmark_source) $(benchmark_headers)
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D BENCHMARK_SUBJECT_NAME='"DH"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D BENCHMARK_SUBJECT_NAME='"DH"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(CSOURCE) $(LDLIBS) -lpthread
 
 build/dh_test: $(test_source) $(test_headers)
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ $(test_source) $(LDLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ $(test_source) $(CSOURCE) $(LDLIBS)
 
 test: tests
 	build/dh_test
