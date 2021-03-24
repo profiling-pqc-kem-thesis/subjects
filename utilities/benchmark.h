@@ -6,6 +6,14 @@
 #endif
 
 void *get_global_state();
+
+#ifdef INSTRUMENTED
+// Called for each sequential benchmarks. Return 0 on success.
+int setup_instrumentation();
+// Called for each sequential benchmarks. Return 0 on success.
+int cleanup_instrumentation();
+#endif
+
 int perform_keypair(void *state);
 int perform_encrypt(void *state);
 int perform_decrypt(void *state);

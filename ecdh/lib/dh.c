@@ -11,6 +11,8 @@
 
 #include <openssl/sha.h>
 
+#include "../harness.h"
+
 #include "dh.h"
 
 int crypto_dh_keypair(unsigned char *pk, unsigned char *sk) {
@@ -18,12 +20,16 @@ int crypto_dh_keypair(unsigned char *pk, unsigned char *sk) {
   int return_value = -1;
   EC_KEY *key = NULL;
 
+  IF_INSTRUMENTED_start_measurement(measurement_create_curve);
   key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
   if (key == NULL)
     goto cleanup;
+  IF_INSTRUMENTED_stop_measurement(measurement_create_curve);
 
+  IF_INSTRUMENTED_start_measurement(measurement_generate_key);
   if (EC_KEY_generate_key(key) <= 0)
     goto cleanup;
+  IF_INSTRUMENTED_stop_measurement(measurement_generate_key);
 
   // Write the private key to the output buffer
   const BIGNUM *private_key = EC_KEY_get0_private_key(key);

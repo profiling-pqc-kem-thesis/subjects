@@ -62,9 +62,9 @@ test: tests
 
 # Build benchmarks
 benchmarks: perf xkcp
-	$(MAKE) -C ntru benchmarks
-	$(MAKE) -C classic-mceliece benchmarks
-	$(MAKE) -C dh benchmarks
+	# $(MAKE) -C ntru benchmarks
+	# $(MAKE) -C classic-mceliece benchmarks
+	# $(MAKE) -C dh benchmarks
 	$(MAKE) -C ecdh benchmarks
 
 # Build instrumented benchmarks

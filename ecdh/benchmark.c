@@ -2,11 +2,23 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "harness.h"
+
 #include "lib/api.h"
 
 void *get_global_state() {
   return NULL;
 }
+
+#ifdef INSTRUMENTED
+int setup_instrumentation() {
+  return harness_setup(measurement_groups, NUMBER_OF_MEASUREMENTS);
+}
+
+int cleanup_instrumentation() {
+  return harness_cleanup(measurement_groups, NUMBER_OF_MEASUREMENTS);
+}
+#endif
 
 int perform_keypair(unsigned char *state) {
   unsigned char pk[CRYPTO_PUBLICKEYBYTES] = {0};
