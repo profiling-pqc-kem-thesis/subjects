@@ -37,9 +37,5 @@ test: tests
 	build/ecdh_p256_test
 	build/ecdh_25519_test
 
-benchmark: benchmarks
-	build/ecdh_p256_plain_optimized --sequential
-	build/ecdh_25519_plain_optimized --sequential
-
 clean:
 	rm -rf build &> /dev/null || true

@@ -28,8 +28,5 @@ build/dh_test: $(test_source) $(test_headers)
 test: tests
 	build/dh_test
 
-benchmark: benchmarks
-	build/dh_plain_optimized --sequential
-
 clean:
 	rm -rf build &> /dev/null || true

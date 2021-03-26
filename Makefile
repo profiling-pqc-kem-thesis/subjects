@@ -67,12 +67,6 @@ benchmarks: xkcp
 	$(MAKE) -C dh benchmarks
 	$(MAKE) -C ecdh benchmarks
 
-benchmark: benchmarks
-	$(MAKE) -C ntru benchmark
-	$(MAKE) -C classic-mceliece benchmark
-	$(MAKE) -C dh benchmark
-	$(MAKE) -C ecdh benchmark
-
 hotpaths: xkcp
 	$(MAKE) -C ntru hotpaths
 	$(MAKE) -C classic-mceliece hotpaths

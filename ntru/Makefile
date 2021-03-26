@@ -157,20 +157,6 @@ test: tests
 	bash -c 'diff <(build/ntru_hps4096821_ref_test) <(build/ntru_hps4096821_avx2_test)'
 	bash -c 'diff <(build/ntru_hps4096821_ref_test) <(build/ntru_hps4096821_keccak_test)'
 
-# Run all benchmarks
-benchmark: benchmarks
-	# Benchmark the HRSS701 implementation
-	build/ntru_hrss701_ref --sequential
-	build/ntru_hrss701_avx2 --sequential
-	build/ntru_hrss701_ref_optimized --sequential
-	build/ntru_hrss701_avx2_optimized --sequential
-
-	# Benchmark the HPS4096821 implementation
-	build/ntru_hps4096821_ref --sequential
-	build/ntru_hps4096821_avx2 --sequential
-	build/ntru_hps4096821_ref_optimized --sequential
-	build/ntru_hps4096821_avx2_optimized --sequential
-
 # Analyze the hot paths of the algorithm
 hotpaths: ntru_hrss701_ref_test ntru_hps4096821_ref_test
 	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/ntru_hrss701_ref_test.profile build/ntru_hrss701_ref_test > /dev/null

@@ -155,32 +155,6 @@ test: tests
 	build/mceliece_6960119f_avx2_test
 #	bash -c 'diff <(build/mceliece_8192128f_ref_test) <(build/mceliece_8192128f_avx2_test)'
 
-# Run all benchmarks
-benchmark: benchmarks
-	# Benchmark the mceliece8192128 implementations
-	build/mceliece_8192128_ref --sequential
-	build/mceliece_8192128_avx2 --sequential
-	build/mceliece_8192128_optimized --sequential
-	build/mceliece_8192128_avx2_optimized --sequential
-
-	# Benchmark the mceliece8192128f implementations
-	build/mceliece_8192128f_ref --sequential
-	build/mceliece_8192128f_avx2 --sequential
-	build/mceliece_8192128f_optimized --sequential
-	build/mceliece_8192128f_avx2_optimized --sequential
-
-	# Benchmark the mceliece6960119 implementations
-	build/mceliece_6960119_ref --sequential
-	build/mceliece_6960119_avx2 --sequential
-	build/mceliece_6960119_optimized --sequential
-	build/mceliece_6960119_avx2_optimized --sequential
-
-	# Benchmark the mceliece6960119f implementations
-	build/mceliece_6960119f_ref --sequential
-	build/mceliece_6960119f_avx2 --sequential
-	build/mceliece_6960119f_optimized --sequential
-	build/mceliece_6960119f_avx2_optimized --sequential
-
 # Analyze the hot paths of the algorithm
 hotpaths: mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test
 	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_8192128_ref_test.profile build/mceliece_8192128_ref_test > /dev/null
