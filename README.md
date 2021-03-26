@@ -138,6 +138,24 @@ kcachegrind ntru/build/ntru_hps4096821_ref_test.profile
 qcachegrind ntru/build/ntru_hps4096821_ref_test.profile
 ```
 
+### Analyzing memory usage
+
+#### Heap usage
+
+Use `heaptrack` (`apt install heaptrack heaptrack-gui`) and run the benchmarks like so:
+
+```
+heaptrack ./ecdh/build/ecdh_25519_plain_optimized --sequential --iterations 100000
+```
+
+Open the output file with `heaptrack_gui` like so:
+
+```
+heaptrack_gui heaptrack.ecdh_25519_plain_optimized.56272.gz
+```
+
+Go to the Caller / Callee tab and search for the `crypto_` functions. The peak allocation is the maximum number of bytes the function allocated during a single iteration. The total amount of bytes allocated is dependant on how many times the function is invoked.
+
 ### Available Implementations
 
 #### ECDH(E)
