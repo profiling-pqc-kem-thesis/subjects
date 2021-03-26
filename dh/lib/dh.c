@@ -8,19 +8,12 @@
 int crypto_dh_keypair(unsigned char *pk, unsigned char *sk, unsigned char *p, unsigned char *g) {
   int return_value = -1;
 
-  DH *dh = DH_new();
+  DH *dh = NULL;
+
+  dh = DH_new();
   if (dh == NULL)
     goto cleanup;
-
-  BIGNUM *dh_p = BN_bin2bn(p, CRYPTO_PARAM_P_BYTES, NULL);
-  if (dh_p == NULL)
-    goto cleanup;
-
-  BIGNUM *dh_g = BN_bin2bn(g, CRYPTO_PARAM_G_BYTES, NULL);
-  if (dh_g == NULL)
-    goto cleanup;
-
-  DH_set0_pqg(dh, dh_p, NULL, dh_g);
+  DH_set0_pqg(dh, BN_bin2bn(p, CRYPTO_PARAM_P_BYTES, NULL), NULL, BN_bin2bn(g, CRYPTO_PARAM_G_BYTES, NULL));
 
   if (DH_generate_key(dh) == 0)
     goto cleanup;
@@ -38,28 +31,31 @@ int crypto_dh_keypair(unsigned char *pk, unsigned char *sk, unsigned char *p, un
   return_value = 0;
 
 cleanup:
-  DH_free(dh);
+  if (dh != NULL)
+    DH_free(dh);
 
   return return_value;
 }
 
 int crypto_dh_enc(unsigned char *k, const unsigned char *sk, const unsigned char *pk, unsigned char *p, unsigned char *g) {
   int return_value = 0;
+  DH *dh = NULL;
   BIGNUM *private_key = NULL;
   BIGNUM *public_key = NULL;
 
-  DH *dh = DH_new();
+  dh = DH_new();
+  if (dh == NULL)
+    goto cleanup;
   DH_set0_pqg(dh, BN_bin2bn(p, CRYPTO_PARAM_P_BYTES, NULL), NULL, BN_bin2bn(g, CRYPTO_PARAM_G_BYTES, NULL));
 
   private_key = BN_bin2bn(sk, CRYPTO_SECRETKEYBYTES, NULL);
   if (private_key == NULL)
     goto cleanup;
+  if (DH_set0_key(dh, NULL, private_key) != 1)
+    goto cleanup;
 
   public_key = BN_bin2bn(pk, CRYPTO_SECRETKEYBYTES, NULL);
   if (public_key == NULL)
-    goto cleanup;
-
-  if (DH_set0_key(dh, NULL, private_key) != 1)
     goto cleanup;
 
   // Perform the exchange, calculating the shared secret
@@ -77,7 +73,10 @@ int crypto_dh_enc(unsigned char *k, const unsigned char *sk, const unsigned char
   return_value = 0;
 
 cleanup:
-  DH_free(dh);
+  // dh owns private_key
+  if (dh != NULL)
+    DH_free(dh);
+
   if (public_key != NULL)
     BN_free(public_key);
 
