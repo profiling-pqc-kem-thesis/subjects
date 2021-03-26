@@ -75,6 +75,7 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int thre
 
   benchmark_state->perform = 0;
 
+  fprintf(stderr, "Waiting for threads to finish\n");
   if (pool_wait_for_exit(pool, NULL)) {
     fprintf(stderr, "error: benchmark '%s' for '%s' failed to run\n", name, BENCHMARK_SUBJECT_NAME);
     goto cleanup;
@@ -86,6 +87,7 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int thre
     total_iterations += benchmark_state->iterations[i];
   unsigned long long total_outer_time = timespec_to_duration(&outer_start, &outer_stop);
   printf("average iterations per thread (%llu total iterations, %d threads): %.2f\n", total_iterations, thread_count, total_iterations / (float)thread_count);
+  printf("average duration per iteration: %fms\n", ((float)total_outer_time / 1e6) / total_iterations);
   printf("outer total: %fms\n", total_outer_time / 1e6);
   printf("throughput: %f/s\n", total_iterations / (total_outer_time / 1e9));
 
