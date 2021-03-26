@@ -34,28 +34,36 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
   return 0;
 }
 
-int benchmark_sequential(int iterations) {
+int benchmark_sequential(int iterations, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange) {
   int run = 0;
   int failed = 0;
 
 #ifdef BENCHMARK_KEYPAIR
+  if (benchmark_keypair) {
     run++;
     failed += perform_benchmark("keypair", &perform_keypair, iterations);
+  }
 #endif
 
 #ifdef BENCHMARK_ENCRYPT
+  if (benchmark_encrypt) {
     run++;
     failed += perform_benchmark("encrypt", &perform_encrypt, iterations);
+  }
 #endif
 
 #ifdef BENCHMARK_DECRYPT
+  if (benchmark_decrypt) {
     run++;
     failed += perform_benchmark("decrypt", &perform_decrypt, iterations);
+  }
 #endif
 
 #ifdef BENCHMARK_EXCHANGE
+  if (benchmark_exchange) {
     run++;
     failed += perform_benchmark("exchange", &perform_exchange, iterations);
+  }
 #endif
 
   if (failed > 0) {

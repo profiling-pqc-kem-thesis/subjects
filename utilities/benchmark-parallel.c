@@ -103,7 +103,7 @@ cleanup:
   return return_value;
 }
 
-int benchmark_parallel(int thread_count, int duration) {
+int benchmark_parallel(int thread_count, int duration, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange) {
   if (thread_count < 1) {
     printf("expected thread count to be 1 or larger, was %d\n", thread_count);
     return EXIT_FAILURE;
@@ -111,24 +111,33 @@ int benchmark_parallel(int thread_count, int duration) {
 
   int run = 0;
   int failed = 0;
+
 #ifdef BENCHMARK_KEYPAIR
-  run++;
-  failed += perform_benchmark("keypair", &perform_keypair, thread_count, duration);
+  if (benchmark_keypair) {
+    run++;
+    failed += perform_benchmark("keypair", &perform_keypair, thread_count, duration);
+  }
 #endif
 
 #ifdef BENCHMARK_ENCRYPT
-  run++;
-  failed += perform_benchmark("encrypt", &perform_encrypt, thread_count, duration);
+  if (benchmark_encrypt) {
+    run++;
+    failed += perform_benchmark("encrypt", &perform_encrypt, thread_count, duration);
+  }
 #endif
 
 #ifdef BENCHMARK_DECRYPT
-  run++;
-  failed += perform_benchmark("decrypt", &perform_decrypt, thread_count, duration);
+  if (benchmark_decrypt) {
+    run++;
+    failed += perform_benchmark("decrypt", &perform_decrypt, thread_count, duration);
+  }
 #endif
 
 #ifdef BENCHMARK_EXCHANGE
-  run++;
-  failed += perform_benchmark("exchange", &perform_exchange, thread_count, duration);
+  if (benchmark_exchange) {
+    run++;
+    failed += perform_benchmark("exchange", &perform_exchange, thread_count, duration);
+  }
 #endif
 
   if (failed > 0) {
