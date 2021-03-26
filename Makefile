@@ -46,27 +46,28 @@ compile_commands.json: Makefile
 format: $(source)
 	clang-format -style=file -i $(source)
 
-test: xkcp
-	# Build tests
+# Build tests
+tests: xkcp
 	$(MAKE) -C ntru tests
 	$(MAKE) -C classic-mceliece tests
 	$(MAKE) -C dh tests
 	$(MAKE) -C ecdh tests
 
-	# Run tests
+# Run tests
+test: tests
 	$(MAKE) -C ntru test
 	$(MAKE) -C classic-mceliece test
 	$(MAKE) -C dh test
 	$(MAKE) -C ecdh test
 
-benchmark: xkcp
-	# Build benchmarks
+# Build benchmarks
+benchmarks: xkcp
 	$(MAKE) -C ntru benchmarks
 	$(MAKE) -C classic-mceliece benchmarks
 	$(MAKE) -C dh benchmarks
 	$(MAKE) -C ecdh benchmarks
 
-	# Run benchmarks
+benchmark: benchmarks
 	$(MAKE) -C ntru benchmark
 	$(MAKE) -C classic-mceliece benchmark
 	$(MAKE) -C dh benchmark
