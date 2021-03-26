@@ -44,9 +44,10 @@ cleanup:
   return return_value;
 #elif ECDH_CURVE == ECDH_CURVE_25519
   int return_value = -1;
+  EVP_PKEY_CTX *ctx = NULL;
   EVP_PKEY *key = NULL;
 
-  EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_X25519, NULL);
+  ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_X25519, NULL);
   if (ctx == NULL)
     goto cleanup;
 
@@ -55,8 +56,6 @@ cleanup:
 
   if (EVP_PKEY_keygen(ctx, &key) == 0)
     goto cleanup;
-
-  EVP_PKEY_CTX_free(ctx);
 
   size_t private_key_length = CRYPTO_SECRETKEYBYTES;
   if (EVP_PKEY_get_raw_private_key(key, sk, &private_key_length) == 0)
@@ -69,6 +68,9 @@ cleanup:
   return_value = 0;
 
 cleanup:
+  if (ctx != NULL)
+    EVP_PKEY_CTX_free(ctx);
+
   if (key != NULL)
     EVP_PKEY_free(key);
 
