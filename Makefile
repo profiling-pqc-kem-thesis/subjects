@@ -1,21 +1,11 @@
 # Disable echoing of commands
 MAKEFLAGS += --silent
 
-CPPFLAGS += -I $(CURDIR)/perf/build/include
-LDFLAGS += -L $(CURDIR)/perf/build/lib
-
 source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 
-.PHONY: perf xkcp dh ecdh ntru classic-mceliece test benchmark clean
+.PHONY: xkcp dh ecdh ntru classic-mceliece test benchmark clean
 
-all: perf xkcp dh ecdh ntru
-
-perf:
-ifeq ($(shell uname), Linux)
-	$(MAKE) -C perf
-else
-	echo "Warning: skipping Linux-only task 'perf' - may result in later build failure"
-endif
+all: xkcp dh ecdh ntru
 
 xkcp:
 	$(MAKE) -C xkcp plain-64bits/ua
