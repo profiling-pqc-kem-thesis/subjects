@@ -292,7 +292,7 @@ if [[ -z "$SKIP_STEP_7" ]]; then
   parallel_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
 
   # TODO: Select best implementation
-  parallel_benchmark_kem "./classic-mceliece/build/mceliece_69601196f_avx2-optimized"
+  parallel_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
 
   # TODO: Select best implementation
   parallel_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
