@@ -99,6 +99,7 @@ function heap_benchmark_kex() {
   binary="$1"
   heaptrack "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
   heaptrack "$binary" --sequential --exchange --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
+  mv heaptrack.* "$output_directory/heap"
 }
 
 function heap_benchmark_kem() {
@@ -106,6 +107,7 @@ function heap_benchmark_kem() {
   heaptrack "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
   heaptrack "$binary" --sequential --encrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
   heaptrack "$binary" --sequential --decrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
+  mv heaptrack.* "$output_directory/heap"
 }
 
 output_directory="data/benchmarks/$environment_name"
