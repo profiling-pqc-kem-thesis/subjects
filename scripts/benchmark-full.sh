@@ -72,8 +72,8 @@ function parallel_benchmark_kex() {
   max_thread_count="$(get_max_thread_count)"
   thread_count=1
   while true; do
-    "$binary" --parallel --keypair --duration "$parallel_duration" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
-    "$binary" --parallel --exchange --duration "$parallel_duration" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
+    "$binary" --parallel --keypair --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+    "$binary" --parallel --exchange --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
     thread_count=$((thread_count*2))
     if [[ $thread_count -gt $max_thread_count ]]; then
       break
@@ -86,9 +86,9 @@ function parallel_benchmark_kem() {
   max_thread_count="$(get_max_thread_count)"
   thread_count=1
   while true; do
-    "$binary" --parallel --keypair --duration "$parallel_duration" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
-    "$binary" --parallel --encrypt --duration "$parallel_duration" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
-    "$binary" --parallel --decrypt --duration "$parallel_duration" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
+    "$binary" --parallel --keypair --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+    "$binary" --parallel --encrypt --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
+    "$binary" --parallel --decrypt --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
     thread_count=$((thread_count*2))
     if [[ $thread_count -gt $max_thread_count ]]; then
       break
