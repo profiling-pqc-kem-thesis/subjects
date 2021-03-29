@@ -1,5 +1,7 @@
 # Disable echoing of commands
+ifndef VERBOSE
 MAKEFLAGS += --silent
+endif
 
 source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 
@@ -68,7 +70,7 @@ debug-flags:
 	echo "export ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer)"
 
 clean:
-	rm -rf build compile_commands.json &> /dev/null || true
+	rm -rf data compile_commands.json &> /dev/null || true
 	$(MAKE) -C dh clean || true
 	$(MAKE) -C ecdh clean || true
 	$(MAKE) -C ntru clean || true

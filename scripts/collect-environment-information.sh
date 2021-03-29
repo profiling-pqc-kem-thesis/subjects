@@ -50,11 +50,11 @@ assert_command "sqlite3"
 if [[ -f "$database_path" ]]; then
   run "delete from environments where name='?'" "$environment_name"
 else
-  run "create table environments (name TEXT PRIMARY KEY, uname TEXT, cores INT, threads INT, memory INT, memory_speed TEXT, cpu TEXT, cpu_features TEXT);"
+  run "create table environments (name TEXT PRIMARY KEY, date TEXT, uname TEXT, cores INT, threads INT, memory INT, memory_speed TEXT, cpu TEXT, cpu_features TEXT);"
 fi
 
 # Create a row for the environment
-run "insert into environments (name) values ('?')" "$environment_name"
+run "insert into environments (name, date) values ('?', datetime('now'))" "$environment_name"
 
 # Insert uname
 run "update environments set uname='?' where name='?'" "$(uname)" "$environment_name"
