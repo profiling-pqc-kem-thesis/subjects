@@ -54,14 +54,14 @@ ifneq ($(TARGET),none)
 		headers += $(shell find lib/reference -type f -iname "*.h")
 	endif
 
-	ifeq ($(USE_OPTIMIZATION_FLAGS),true)
-		CFLAGS += -march=native
-		features += optimized
-	endif
-
 	# If no features are enabled, use "ref" for "reference"
 	ifeq ($(features),)
 		features := ref
+	endif
+
+	ifeq ($(USE_OPTIMIZATION_FLAGS),true)
+		CFLAGS += -march=native
+		features += optimized
 	endif
 
 	# Define the target name like so:
@@ -98,17 +98,17 @@ tests:  mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_re
 		mceliece_8192128_avx2_test mceliece_8192128f_avx2_test mceliece_6960119_avx2_test mceliece_6960119f_avx2_test
 
 # Build all benchmarks
-benchmarks: mceliece_8192128_ref mceliece_8192128_ref_optimized	mceliece_8192128f_ref mceliece_8192128f_ref_optimized \
-			mceliece_6960119_ref mceliece_6960119_ref_optimized	mceliece_6960119f_ref mceliece_6960119f_ref_optimized \
-			mceliece_8192128_avx2 mceliece_8192128_avx2_optimized	mceliece_8192128f_avx2 mceliece_8192128f_avx2_optimized \
-			mceliece_6960119_avx2 mceliece_6960119_avx2_optimized	mceliece_6960119f_avx2 mceliece_6960119f_avx2_optimized
+benchmarks: mceliece_8192128_ref mceliece_8192128_ref-optimized	mceliece_8192128f_ref mceliece_8192128f_ref-optimized \
+			mceliece_6960119_ref mceliece_6960119_ref-optimized	mceliece_6960119f_ref mceliece_6960119f_ref-optimized \
+			mceliece_8192128_avx2 mceliece_8192128_avx2-optimized	mceliece_8192128f_avx2 mceliece_8192128f_avx2-optimized \
+			mceliece_6960119_avx2 mceliece_6960119_avx2-optimized	mceliece_6960119f_avx2 mceliece_6960119f_avx2-optimized
 
 # Define all mceliece8192128 targets
 #                            rule name                        target     parameter-set  avx2   optimize
 $(eval $(call create-target, mceliece_8192128_ref,            benchmark, 8192128,       false, false))
 $(eval $(call create-target, mceliece_8192128_avx2,           benchmark, 8192128,       true,  false))
-$(eval $(call create-target, mceliece_8192128_ref_optimized,  benchmark, 8192128,       false, true))
-$(eval $(call create-target, mceliece_8192128_avx2_optimized, benchmark, 8192128,       true,  true))
+$(eval $(call create-target, mceliece_8192128_ref-optimized,  benchmark, 8192128,       false, true))
+$(eval $(call create-target, mceliece_8192128_avx2-optimized, benchmark, 8192128,       true,  true))
 $(eval $(call create-target, mceliece_8192128_ref_test,       test,      8192128,       false, false))
 $(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128,       true,  false))
 
@@ -116,8 +116,8 @@ $(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128
 #                            rule name                         target     parameter-set avx2   optimize
 $(eval $(call create-target, mceliece_8192128f_ref,            benchmark, 8192128f,     false, false))
 $(eval $(call create-target, mceliece_8192128f_avx2,           benchmark, 8192128f,     true,  false))
-$(eval $(call create-target, mceliece_8192128f_ref_optimized,  benchmark, 8192128f,     false, true))
-$(eval $(call create-target, mceliece_8192128f_avx2_optimized, benchmark, 8192128f,     true,  true))
+$(eval $(call create-target, mceliece_8192128f_ref-optimized,  benchmark, 8192128f,     false, true))
+$(eval $(call create-target, mceliece_8192128f_avx2-optimized, benchmark, 8192128f,     true,  true))
 $(eval $(call create-target, mceliece_8192128f_ref_test,       test,      8192128f,     false, false))
 $(eval $(call create-target, mceliece_8192128f_avx2_test,      test,      8192128f,     true,  false))
 
@@ -125,8 +125,8 @@ $(eval $(call create-target, mceliece_8192128f_avx2_test,      test,      819212
 #                            rule name                        target     parameter-set  avx2   optimize
 $(eval $(call create-target, mceliece_6960119_ref,            benchmark, 6960119,       false, false))
 $(eval $(call create-target, mceliece_6960119_avx2,           benchmark, 6960119,       true,  false))
-$(eval $(call create-target, mceliece_6960119_ref_optimized,  benchmark, 6960119,       false, true))
-$(eval $(call create-target, mceliece_6960119_avx2_optimized, benchmark, 6960119,       true,  true))
+$(eval $(call create-target, mceliece_6960119_ref-optimized,  benchmark, 6960119,       false, true))
+$(eval $(call create-target, mceliece_6960119_avx2-optimized, benchmark, 6960119,       true,  true))
 $(eval $(call create-target, mceliece_6960119_ref_test,       test,      6960119,       false, false))
 $(eval $(call create-target, mceliece_6960119_avx2_test,      test,      6960119,       true,  false))
 
@@ -134,8 +134,8 @@ $(eval $(call create-target, mceliece_6960119_avx2_test,      test,      6960119
 #                            rule name                         target     parameter-set avx2   optimize
 $(eval $(call create-target, mceliece_6960119f_ref,            benchmark, 6960119f,     false, false))
 $(eval $(call create-target, mceliece_6960119f_avx2,           benchmark, 6960119f,     true,  false))
-$(eval $(call create-target, mceliece_6960119f_ref_optimized,  benchmark, 6960119f,     false, true))
-$(eval $(call create-target, mceliece_6960119f_avx2_optimized, benchmark, 6960119f,     true,  true))
+$(eval $(call create-target, mceliece_6960119f_ref-optimized,  benchmark, 6960119f,     false, true))
+$(eval $(call create-target, mceliece_6960119f_avx2-optimized, benchmark, 6960119f,     true,  true))
 $(eval $(call create-target, mceliece_6960119f_ref_test,       test,      6960119f,     false, false))
 $(eval $(call create-target, mceliece_6960119f_avx2_test,      test,      6960119f,     true,  false))
 

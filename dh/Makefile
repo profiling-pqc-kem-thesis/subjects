@@ -15,9 +15,9 @@ all: tests benchmarks
 
 tests: build/dh_test
 
-benchmarks: build/dh_plain_optimized
+benchmarks: build/dh_plain-optimized
 
-build/dh_plain_optimized: $(benchmark_source) $(benchmark_headers)
+build/dh_plain-optimized: $(benchmark_source) $(benchmark_headers)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D BENCHMARK_SUBJECT_NAME='"DH"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
 

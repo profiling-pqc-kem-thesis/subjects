@@ -73,14 +73,14 @@ ifneq ($(TARGET),none)
 		headers += lib/crypto_sort_int32.h
 	endif
 
-	ifeq ($(USE_OPTIMIZATION_FLAGS),true)
-		CFLAGS += -march=native
-		features += optimized
-	endif
-
 	# If no features are enabled, use "ref" for "reference"
 	ifeq ($(features),)
 		features := ref
+	endif
+
+	ifeq ($(USE_OPTIMIZATION_FLAGS),true)
+		CFLAGS += -march=native
+		features += optimized
 	endif
 
 	# Define the target name like so:
@@ -120,15 +120,15 @@ tests: ntru_hrss701_ref_test ntru_hrss701_avx2_test ntru_hrss701_keccak_test \
 
 # Build all benchmarks
 # first line is HRS701 targets, the second HPS4096821
-benchmarks: ntru_hrss701_ref ntru_hrss701_avx2 ntru_hrss701_ref_optimized ntru_hrss701_avx2_optimized \
-	ntru_hps4096821_ref ntru_hps4096821_avx2 ntru_hps4096821_ref_optimized ntru_hps4096821_avx2_optimized
+benchmarks: ntru_hrss701_ref ntru_hrss701_avx2 ntru_hrss701_ref-optimized ntru_hrss701_avx2-optimized \
+	ntru_hps4096821_ref ntru_hps4096821_avx2 ntru_hps4096821_ref-optimized ntru_hps4096821_avx2-optimized
 
 # Define all HRSS701 targets
 #                            rule name                    target     group  parameter  avx2   optimize  keccak
 $(eval $(call create-target, ntru_hrss701_ref,            benchmark, hrss,  701,       false, false,    false))
 $(eval $(call create-target, ntru_hrss701_avx2,           benchmark, hrss,  701,       true,  false,    false))
-$(eval $(call create-target, ntru_hrss701_ref_optimized,  benchmark, hrss,  701,       false, true,     false))
-$(eval $(call create-target, ntru_hrss701_avx2_optimized, benchmark, hrss,  701,       true,  true,     false))
+$(eval $(call create-target, ntru_hrss701_ref-optimized,  benchmark, hrss,  701,       false, true,     false))
+$(eval $(call create-target, ntru_hrss701_avx2-optimized, benchmark, hrss,  701,       true,  true,     false))
 
 $(eval $(call create-target, ntru_hrss701_ref_test,       test,       hrss,  701,       false, false,    false))
 $(eval $(call create-target, ntru_hrss701_avx2_test,      test,       hrss,  701,       true,  false,    false))
@@ -138,8 +138,8 @@ $(eval $(call create-target, ntru_hrss701_keccak_test,    test,       hrss,  701
 #                            rule name                       target     group  parameter  avx2   optimize  keccak
 $(eval $(call create-target, ntru_hps4096821_ref,            benchmark, hps,   4096821,   false, false,    false))
 $(eval $(call create-target, ntru_hps4096821_avx2,           benchmark, hps,   4096821,   true,  false,    false))
-$(eval $(call create-target, ntru_hps4096821_ref_optimized,  benchmark, hps,   4096821,   false, true,     false))
-$(eval $(call create-target, ntru_hps4096821_avx2_optimized, benchmark, hps,   4096821,   true,  true,     false))
+$(eval $(call create-target, ntru_hps4096821_ref-optimized,  benchmark, hps,   4096821,   false, true,     false))
+$(eval $(call create-target, ntru_hps4096821_avx2-optimized, benchmark, hps,   4096821,   true,  true,     false))
 
 $(eval $(call create-target, ntru_hps4096821_ref_test,       test,      hps,   4096821,   false, false,    false))
 $(eval $(call create-target, ntru_hps4096821_avx2_test,      test,      hps,   4096821,   true,  false,    false))
