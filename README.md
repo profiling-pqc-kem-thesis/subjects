@@ -177,6 +177,65 @@ crypto_kem_enc,215541,314572,49.719µs
 ...
 ```
 
+### Running the automated benchmarks
+
+The script `./scripts/benchmark-full.sh` automates the entire process of running the script. It has the following prerequisites:
+
+* `make`
+* `gcc`
+* `clang`
+* `go`
+* `sqlite3`
+* [perforator](https://github.com/zyedidia/perforator)
+* `heaptrack`
+
+It is run like so:
+
+```sh
+./scripts/benchmark-full.sh <environment name> <parallel duration> <sequential iterations>
+```
+
+The environment name is used to name the output, which will be placed in `./data/benchmarks/$environment_name`. The number of seconds to run each parallel benchmark is controlled by the parallel duration. The number of iterations to benchmark for in the sequential benchmark is dictated by sequential iterations.
+
+The script is run in seven steps:
+
+1. Assert pre-conditions
+2. Build
+3. Collect environmental information
+4. Run the heap analysis
+5. Run the micro benchmarks
+6. Run the sequential tests
+7. Run the parallel tests.
+
+These steps can be controlled using `SKIP_STEPS` like so:
+
+```sh
+SKIP_STEPS=1,2,7 ./scripts/benchmark-full.sh
+```
+
+Furthermore, one may control what algorithms are run like so:
+
+```
+SKIP_MCELIECE=yes SKIP_NTRU=yes SKIP_DH=yes SKIP_ECDH=yes ./scripts/benchmark-full.sh
+```
+
+The output is stored in `./data/benchmarks/$environment_name` and largely looks as follows:
+
+```
+data
+└── benchmarks
+    └── workstation
+        ├── build.txt
+        ├── duration.txt
+        ├── end.txt
+        ├── environment.sqlite
+        ├── heap
+        ├── micro
+        ├── parallel
+        ├── sequential
+        └── start.txt
+```
+
 ### Available Implementations
 
 #### ECDH(E)
