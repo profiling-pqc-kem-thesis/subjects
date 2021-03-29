@@ -66,7 +66,7 @@ ifneq ($(TARGET),none)
 
 	# Define the target name like so:
 	# build/mceliece_8192128-avx2-optimized
-	target_name := build/mceliece_$(PARAMETERS)_$(shell echo "$(strip $(features))" | tr ' ' '_')
+	target_name := build/mceliece_$(PARAMETERS)_$(shell echo "$(strip $(features))" | tr ' ' '-')
 
 	# Set the main target to either test or benchmark
 	ifeq ($(TARGET),benchmark)
