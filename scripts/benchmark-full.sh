@@ -140,7 +140,7 @@ echo ""
 
 echo "=== STEP 2 - Build Benchmarks ==="
 if [[ -z "$SKIP_STEP_2" ]]; then
-  VERBOSE=yes make benchmarks 2>&1 | tee "output_directory/build.txt"
+  VERBOSE=yes make benchmarks 2>&1 | tee "$output_directory/build.txt"
   echo "=== done ==="
 else
   echo "=== skipped ==="
