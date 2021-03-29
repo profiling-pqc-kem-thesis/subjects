@@ -159,40 +159,48 @@ echo ""
 
 echo "=== STEP 4 - Profile Heap Usage ==="
 if [[ -z "$SKIP_STEP_4" ]]; then
-  heap_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
-  heap_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
+  if [[ -z "$SKIP_ECDH" ]]; then
+    heap_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
+    heap_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
+  fi
 
-  heap_benchmark_kex "./dh/build/dh_plain-optimized"
+  if [[ -z "$SKIP_DH" ]]; then
+    heap_benchmark_kex "./dh/build/dh_plain-optimized"
+  fi
 
-  heap_benchmark_kem "./ntru/build/ntru_hrss701_ref"
-  heap_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized"
-  heap_benchmark_kem "./ntru/build/ntru_hrss701_avx2"
-  heap_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
+  if [[ -z "$SKIP_NTRU" ]]; then
+    heap_benchmark_kem "./ntru/build/ntru_hrss701_ref"
+    heap_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized"
+    heap_benchmark_kem "./ntru/build/ntru_hrss701_avx2"
+    heap_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
 
-  heap_benchmark_kem "./ntru/build/ntru_hps4096821_ref"
-  heap_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized"
-  heap_benchmark_kem "./ntru/build/ntru_hps4096821_avx2"
-  heap_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
+    heap_benchmark_kem "./ntru/build/ntru_hps4096821_ref"
+    heap_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized"
+    heap_benchmark_kem "./ntru/build/ntru_hps4096821_avx2"
+    heap_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
+  fi
 
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized"
+  if [[ -z "$SKIP_MCELIECE" ]]; then
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized"
 
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
 
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized"
 
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2"
-  heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2"
+    heap_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+  fi
   echo "=== done ==="
 else
   echo "=== skipped ==="
@@ -201,35 +209,39 @@ echo ""
 
 echo "=== STEP 5 - Micro Benchmarks ==="
 if [[ -z "$SKIP_STEP_5" ]]; then
-  micro_benchmark_kem "./ntru/build/ntru_hrss701_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+  if [[ -z "$SKIP_NTRU" ]]; then
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
 
-  micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+  fi
 
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+  if [[ -z "$SKIP_MCELIECE" ]]; then
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
 
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2_optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2_optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
 
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
 
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-  micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+  fi
 
   echo "=== done ==="
 else
@@ -239,40 +251,49 @@ echo ""
 
 echo "=== STEP 6 - Sequential Benchmarks ==="
 if [[ -z "$SKIP_STEP_6" ]]; then
-  sequential_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
-  sequential_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
+  if [[ -z "$SKIP_ECDH" ]]; then
+    sequential_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
 
-  sequential_benchmark_kex "./dh/build/dh_plain-optimized
-"
-  sequential_benchmark_kem "./ntru/build/ntru_hrss701_ref"
-  sequential_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized"
-  sequential_benchmark_kem "./ntru/build/ntru_hrss701_avx2"
-  sequential_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
+    sequential_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
+  fi
 
-  sequential_benchmark_kem "./ntru/build/ntru_hps4096821_ref"
-  sequential_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized"
-  sequential_benchmark_kem "./ntru/build/ntru_hps4096821_avx2"
-  sequential_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
+  if [[ -z "$SKIP_DH" ]]; then
+    sequential_benchmark_kex "./dh/build/dh_plain-optimized"
+  fi
 
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized"
+  if [[ -z "$SKIP_NTRU" ]]; then
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_ref"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_avx2"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
 
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_ref"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_avx2"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
+  fi
 
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized"
+  if [[ -z "$SKIP_MCELIECE" ]]; then
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized"
 
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2"
-  sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
+
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized"
+
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+  fi
   echo "=== done ==="
 else
   echo "=== skipped ==="
@@ -281,21 +302,31 @@ echo ""
 
 echo "=== STEP 7 - Parallel Benchmarks ==="
 if [[ -z "$SKIP_STEP_7" ]]; then
-  parallel_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
+  if [[ -z "$SKIP_ECDH" ]]; then
+    parallel_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
 
-  parallel_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
+    parallel_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
+  fi
 
-  # TODO: Select best implementation
-  parallel_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
+  if [[ -z "$SKIP_DH" ]]; then
+    parallel_benchmark_kex "./dh/build/dh_plain-optimized"
+  fi
 
-  # TODO: Select best implementation
-  parallel_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
+  if [[ -z "$SKIP_NTRU" ]]; then
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
 
-  # TODO: Select best implementation
-  parallel_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
+  fi
 
-  # TODO: Select best implementation
-  parallel_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+  if [[ -z "$SKIP_MCELIECE" ]]; then
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
+
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+  fi
   echo "=== done ==="
 else
   echo "=== skipped ==="
