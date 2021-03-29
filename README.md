@@ -236,6 +236,8 @@ data
         └── start.txt
 ```
 
+_NOTE: when analysing the results from perforate, know that it will include the results from the `get_global_state`, which includes an extra keypair generation and an encrypt for the KEMs._
+
 ### Available Implementations
 
 #### ECDH(E)

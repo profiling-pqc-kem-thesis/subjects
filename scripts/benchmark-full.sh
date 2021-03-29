@@ -34,11 +34,12 @@ function assert_commands() {
 
 function micro_benchmark_kem() {
   binary="$1"
-  shift
-  methods="$(echo "$@" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e cpu-cycles,instructions $methods -- "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
-  perforator --summary --csv -e cpu-cycles,instructions $methods -- "$binary" --sequential --encrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
-  perforator --summary --csv -e cpu-cycles,instructions $methods -- "$binary" --sequential --decrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+  keypair_methods="$(echo "$2" | sed 's/^\| / -r /g')"
+  encrypt_methods="$(echo "$3" | sed 's/^\| / -r /g')"
+  decrypt_methods="$(echo "$4" | sed 's/^\| / -r /g')"
+  perforator --summary --csv -e cpu-cycles,instructions $keypair_methods -- "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+  perforator --summary --csv -e cpu-cycles,instructions $encrypt_methods -- "$binary" --sequential --encrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+  perforator --summary --csv -e cpu-cycles,instructions $decrypt_methods -- "$binary" --sequential --decrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
 }
 
 function sequential_benchmark_kex() {
@@ -212,37 +213,37 @@ echo ""
 echo "=== STEP 5 - Micro Benchmarks ==="
 if [[ -z "$SKIP_STEP_5" ]]; then
   if [[ -z "$SKIP_NTRU" ]]; then
-    micro_benchmark_kem "./ntru/build/ntru_hrss701_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
 
-    micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
   fi
 
   if [[ -z "$SKIP_MCELIECE" ]]; then
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
 
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2_optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2_optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
 
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
 
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized" crypto_kem_keypair crypto_kem_enc crypto_kem_dec
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
   fi
 
   echo "=== done ==="
