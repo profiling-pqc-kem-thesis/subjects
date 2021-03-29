@@ -156,6 +156,27 @@ heaptrack_gui heaptrack.ecdh_25519_plain_optimized.56272.gz
 
 Go to the Caller / Callee tab and search for the `crypto_` functions. The peak allocation is the maximum number of bytes the function allocated during a single iteration. The total amount of bytes allocated is dependant on how many times the function is invoked.
 
+### Analyzing processor usage
+
+#### Micro benchmarks
+
+To analyze the performance of the implementations in terms of micro benchmarks, use the [perforator](https://github.com/zyedidia/perforator) tool to leverage the perf API on select methods.
+
+```sh
+sudo perforator --summary --csv -e cpu-cycles,instructions -r crypto_kem_keypair -r crypto_kem_enc -r crypto_kem_dec -- ./ntru/build/ntru_hrss701_avx2-optimized --sequential --encrypt --iterations 1000
+```
+
+```
+fething global state for benchmark 'encrypt', 'build/ntru_hrss701_avx2-optimized'
+running benchmark 'encrypt' for 'build/ntru_hrss701_avx2-optimized'
+progress:  100%
+encrypt build/ntru_hrss701_avx2-optimized average (of 1000 iterations): 0.058465ms
+region,cpu-cycles,instructions,time-elapsed
+crypto_kem_keypair,1225075,2949677,477.354µs
+crypto_kem_enc,215541,314572,49.719µs
+...
+```
+
 ### Available Implementations
 
 #### ECDH(E)
