@@ -56,14 +56,13 @@ function sequential_benchmark_kem() {
 
 function get_max_thread_count() {
   if [[ "$(uname)" = "Darwin" ]]; then
-    cores="$(sysctl machdep.cpu.core_count | cut -d ':' -f2)"
-    threads="$(sysctl machdep.cpu.thread_count | cut -d ':' -f2)"
-    smt="$((threads/cores))"
-    echo "$((cores*smt*4))"
+    # Cores are logical cores - physical cores * smt
+    cores="$(sysctl machdep.cpu.thread_count | cut -d ':' -f2)"
+    echo "$((cores*4))"
   else
+    # Cores are logical cores - physical cores * smt
     cores="$(lscpu | grep '^CPU(s):' | cut -d':' -f2 | sed 's/[ \t]//g')"
-    smt="$(lscpu | grep '^Thread(s)' | cut -d':' -f2 | sed 's/[ \t]//g')"
-    echo "$((cores*smt*4))"
+    echo "$((cores*4))"
   fi
 }
 
