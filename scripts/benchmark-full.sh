@@ -35,7 +35,7 @@ function assert_commands() {
 function micro_benchmark_kem() {
   binary="$1"
   shift
-  methods="$(echo "$@" | sed 's/ / -r /g')"
+  methods="$(echo "$@" | sed 's/^\| / -r /g')"
   perforator --summary --csv -e cpu-cycles,instructions $methods -- "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
   perforator --summary --csv -e cpu-cycles,instructions $methods -- "$binary" --sequential --encrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
   perforator --summary --csv -e cpu-cycles,instructions $methods -- "$binary" --sequential --decrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
