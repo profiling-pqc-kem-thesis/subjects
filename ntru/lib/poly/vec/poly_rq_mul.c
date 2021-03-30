@@ -2,7 +2,8 @@
 
 #include "../../poly.h"
 
-typedef uint16_t vuint16_t __attribute__((vector_size(sizeof(uint16_t) * NTRU_N)));
+// 1024 is the nearest multiple of two to all supported values for NTRU_N
+typedef uint16_t vuint16_t __attribute__((vector_size(sizeof(uint16_t) * 1024)));
 
 void poly_Rq_mul(poly *r, const poly *a, const poly *b) {
   vuint16_t *va = (vuint16_t *)a->coeffs;
