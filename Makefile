@@ -10,7 +10,7 @@ source := $(shell find dh ecdh ntru -type f -name "*.c" -or -name "*.h")
 all: xkcp dh ecdh ntru
 
 xkcp:
-	$(MAKE) -C xkcp plain-64bits/ua
+	$(MAKE) -C xkcp plain-64bits/lcu6
 ifeq ($(shell uname), Linux)
 ifeq ($$(shell lscpu | grep '^Flags' | cut -d ':' -f2 | grep -o avx2),)
 	@echo "Warning: skipping AVX2-only tasks for XKCP - may result in later build failure"
