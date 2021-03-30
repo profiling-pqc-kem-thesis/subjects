@@ -65,7 +65,7 @@ if [[ "$(uname)" = "Darwin" ]]; then
   run "update environments set threads='?' where name='?'" "$(sysctl machdep.cpu.thread_count | cut -d ':' -f2)" "$environment_name"
   run "update environments set memory='?' where name='?'" "$(sysctl hw.memsize | cut -d ':' -f2)" "$environment_name"
   run "update environments set cpu='?' where name='?'" "$(sysctl machdep.cpu.brand_string | cut -d ':' -f2)" "$environment_name"
-  run "update environments set cpu_features='?' where name='?'" "$(sysctl machdep.cpu.features | cut -d ':' -f2)" "$environment_name"
+  run "update environments set cpu_features='?' where name='?'" "$(sysctl machdep.cpu.features | cut -d ':' -f2)$(sysctl machdep.cpu.leaf7_features | cut -d ':' -f2)" "$environment_name"
   run "update environments set memory_speed='?' where name='?'" "$(system_profiler SPMemoryDataType | grep -i speed | head -1 | cut -d':' -f2)" "$environment_name"
 else
   run "update environments set cores='?' where name='?'" "$(lscpu | grep '^CPU(s):' | cut -d':' -f2)" "$environment_name"
