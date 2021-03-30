@@ -12,9 +12,13 @@ all: xkcp dh ecdh ntru
 xkcp:
 	$(MAKE) -C xkcp plain-64bits/ua
 ifeq ($(shell uname), Linux)
-	$(MAKE) -C xkcp AVX2
+ifeq ($$(shell lscpu | grep '^Flags' | cut -d ':' -f2 | grep -o avx2),)
+	@echo "Warning: skipping AVX2-only tasks for XKCP - may result in later build failure"
 else
-	echo "Warning: skipping Linux-only tasks for xkcp - may result in later build failure"
+	$(MAKE) -C xkcp AVX2
+endif
+else
+	@echo "Warning: skipping Linux-only tasks for XKCP - may result in later build failure"
 endif
 
 dh:

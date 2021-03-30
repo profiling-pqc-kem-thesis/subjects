@@ -108,7 +108,23 @@ endif
 # This macro creates a build target for a configuration of NTUR
 define create-target
 $(strip $(1)):
+ifeq ($$(strip $(5)),true)
+ifeq ($$(shell uname),Darwin)
+ifeq ($$(shell sysctl machdep.cpu.leaf7_features | cut -d ':' -f2 | grep -o AVX2),)
+	@echo "Warning: skipping unsupported AVX2 build"
+else
 	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) USE_KECCAK=$(strip $(7)) $$(MAKE) target
+endif
+else
+ifeq ($$(shell lscpu | grep '^Flags' | cut -d ':' -f2 | grep -o avx2),)
+	@echo "Warning: skipping unsupported AVX2 build"
+else
+	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) USE_KECCAK=$(strip $(7)) $$(MAKE) target
+endif
+endif
+else
+	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) USE_KECCAK=$(strip $(7)) $$(MAKE) target
+endif
 endef
 
 all: tests benchmarks
