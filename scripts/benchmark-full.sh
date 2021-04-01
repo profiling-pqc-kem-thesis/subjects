@@ -157,6 +157,16 @@ function heap_benchmark_kem() {
   mv heaptrack.* "$output_directory/heap"
 }
 
+function benchmark_stack() {
+  binary="$1"
+  if [[ ! -f "$binary" ]]; then
+    echo "warning: skipping benchmark - no such file" | tee "$output_directory/stack/$(basename "$binary").txt"
+    return
+  fi
+
+  bash "$DIRECTORY/calculate-stack-usage-of-object.sh" "$binary" | tee "$output_directory/stack/$(basename "$binary").txt"
+}
+
 output_directory="data/benchmarks/$environment_name"
 
 if [[ -d "$output_directory" ]]; then
@@ -173,6 +183,7 @@ mkdir -p "$output_directory/micro"
 mkdir -p "$output_directory/heap"
 mkdir -p "$output_directory/sequential"
 mkdir -p "$output_directory/parallel"
+mkdir -p "$output_directory/stack"
 
 echo -n "Benchmark started on: "
 LANG=en_US date | tee "$output_directory/start.txt"
@@ -301,6 +312,90 @@ echo ""
 echo "=== STEP 6 - Sequential Benchmarks ==="
 if [[ -z "$SKIP_STEP_6" ]]; then
   if [[ -z "$SKIP_ECDH" ]]; then
+    benchmark_stack "./ecdh/build/ecdh_25519_plain-optimized"
+
+    benchmark_stack "./ecdh/build/ecdh_p256_plain-optimized"
+  fi
+
+  if [[ -z "$SKIP_DH" ]]; then
+    benchmark_stack "./dh/build/dh_plain-optimized"
+  fi
+
+  if [[ -z "$SKIP_NTRU" ]]; then
+    benchmark_stack "./ntru/build/ntru_hrss701_ref"
+    benchmark_stack "./ntru/build/ntru_hrss701_ref-optimized"
+    benchmark_stack "./ntru/build/ntru_hrss701_avx2"
+    benchmark_stack "./ntru/build/ntru_hrss701_avx2-optimized"
+
+    benchmark_stack "./ntru/build/ntru_hps4096821_ref"
+    benchmark_stack "./ntru/build/ntru_hps4096821_ref-optimized"
+    benchmark_stack "./ntru/build/ntru_hps4096821_avx2"
+    benchmark_stack "./ntru/build/ntru_hps4096821_avx2-optimized"
+  fi
+
+  if [[ -z "$SKIP_MCELIECE" ]]; then
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_avx2-optimized"
+
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
+
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_avx2-optimized"
+
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+  fi
+  echo "=== done ==="
+else
+  echo "=== skipped ==="
+fi
+echo ""
+
+echo "=== STEP 7 - Parallel Benchmarks ==="
+if [[ -z "$SKIP_STEP_7" ]]; then
+  if [[ -z "$SKIP_ECDH" ]]; then
+    parallel_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
+
+    parallel_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
+  fi
+
+  if [[ -z "$SKIP_DH" ]]; then
+    parallel_benchmark_kex "./dh/build/dh_plain-optimized"
+  fi
+
+  if [[ -z "$SKIP_NTRU" ]]; then
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
+
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
+  fi
+
+  if [[ -z "$SKIP_MCELIECE" ]]; then
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
+
+    # TODO: Select best implementation
+    parallel_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
+  fi
+  echo "=== done ==="
+else
+  echo "=== skipped ==="
+fi
+echo ""
+
+echo "=== STEP 8 - Calculate Stack Usage ==="
+if [[ -z "$SKIP_STEP_8" ]]; then
+  if [[ -z "$SKIP_ECDH" ]]; then
     sequential_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
 
     sequential_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
@@ -343,42 +438,6 @@ if [[ -z "$SKIP_STEP_6" ]]; then
     sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2"
     sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
   fi
-  echo "=== done ==="
-else
-  echo "=== skipped ==="
-fi
-echo ""
-
-echo "=== STEP 7 - Parallel Benchmarks ==="
-if [[ -z "$SKIP_STEP_7" ]]; then
-  if [[ -z "$SKIP_ECDH" ]]; then
-    parallel_benchmark_kex "./ecdh/build/ecdh_25519_plain-optimized"
-
-    parallel_benchmark_kex "./ecdh/build/ecdh_p256_plain-optimized"
-  fi
-
-  if [[ -z "$SKIP_DH" ]]; then
-    parallel_benchmark_kex "./dh/build/dh_plain-optimized"
-  fi
-
-  if [[ -z "$SKIP_NTRU" ]]; then
-    # TODO: Select best implementation
-    parallel_benchmark_kem "./ntru/build/ntru_hrss701_avx2-optimized"
-
-    # TODO: Select best implementation
-    parallel_benchmark_kem "./ntru/build/ntru_hps4096821_avx2-optimized"
-  fi
-
-  if [[ -z "$SKIP_MCELIECE" ]]; then
-    # TODO: Select best implementation
-    parallel_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_avx2-optimized"
-
-    # TODO: Select best implementation
-    parallel_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
-  fi
-  echo "=== done ==="
-else
-  echo "=== skipped ==="
 fi
 echo ""
 
