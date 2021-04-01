@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 object_file="$1"
-dump="$(objdump -S -t "$object_file")"
+dump="$(objdump -d "$object_file")"
 
 function get_stack_size() {
   function_name="$1"
-  hex="$(echo "$dump" | grep -A3 "<$function_name>:" | tail -1 | grep -io 'sub[ \t]\+$0x[0-9abcdef]\+,%rsp' | sed 's/sub[0 \t]\+$0x\([0-9abcdefABCDEF]\+\),%rsp/\1/')"
+  hex="$(echo "$dump" | grep -A5 "<$function_name>:" | grep -io 'sub[ \t]\+$0x[0-9abcdef]\+,%rsp' | head -1 | sed 's/sub[0 \t]\+$0x\([0-9abcdefABCDEF]\+\),%rsp/\1/')"
   if [[ -z "$hex" ]]; then
     echo "N/A"
   else
