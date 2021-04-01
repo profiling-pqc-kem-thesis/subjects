@@ -7,3 +7,9 @@ unsigned long long timespec_to_nanoseconds(const struct timespec *spec) {
 unsigned long long timespec_to_duration(const struct timespec *start, const struct timespec *stop) {
   return timespec_to_nanoseconds(stop) - timespec_to_nanoseconds(start);
 }
+
+unsigned long long timespec_now() {
+  struct timespec now;
+  clock_gettime(CLOCK_MONOTONIC, &now);
+  return timespec_to_nanoseconds(&now);
+}

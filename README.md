@@ -192,7 +192,7 @@ The script `./scripts/benchmark-full.sh` automates the entire process of running
 It is run like so:
 
 ```sh
-./scripts/benchmark-full.sh <environment name> <parallel duration> <sequential iterations>
+./scripts/benchmark-full.sh <environment name>
 ```
 
 The environment name is used to name the output, which will be placed in `./data/benchmarks/$environment_name`. The number of seconds to run each parallel benchmark is controlled by the parallel duration. The number of iterations to benchmark for in the sequential benchmark is dictated by sequential iterations.
@@ -206,6 +206,7 @@ The script is run in seven steps:
 5. Run the micro benchmarks
 6. Run the sequential tests
 7. Run the parallel tests.
+8. Run static stack benchmarks
 
 These steps can be controlled using `SKIP_STEPS` like so:
 
@@ -218,6 +219,8 @@ Furthermore, one may control what algorithms are run like so:
 ```
 SKIP_MCELIECE=yes SKIP_NTRU=yes SKIP_DH=yes SKIP_ECDH=yes ./scripts/benchmark-full.sh
 ```
+
+Lastly, the number of sequential iterations, parallel iterations and timeout in seconds is configurable via `SEQUENTIAL_ITERATIONS`, `PARALLEL_ITERATIONS` and `TIMEOUT`, respectively.
 
 The output is stored in `./data/benchmarks/$environment_name` and largely looks as follows:
 

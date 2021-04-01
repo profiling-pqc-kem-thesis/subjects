@@ -4,16 +4,18 @@ DIRECTORY=$(dirname $(realpath -s $0))
 
 SKIP_STEPS="${SKIP_STEPS:-}"
 
+TIMEOUT="${TIMEOUT:-3600}"
+SEQUENTIAL_ITERATIONS="${SEQUENTIAL_ITEARTIONS:-1000}"
+PARALLEL_ITERATIONS="${SEQUENTIAL_ITEARTIONS:-100000}"
+
 while read -r step; do
     eval "SKIP_STEP_$step=1"
 done <<<"$(echo "$SKIP_STEPS" | tr ',' '\n')"
 
 environment_name="$1"
-parallel_duration="$2"
-sequential_iterations="$3"
 
-if [[ -z "$environment_name" ]] || [[ -z "$parallel_duration" ]] || [[ -z "$sequential_iterations" ]]; then
-  echo "usage: $0 <environment name> <parallel duration> <sequential iterations>"
+if [[ -z "$environment_name" ]]; then
+  echo "usage: $0 <environment name>"
   exit 1
 fi
 
@@ -42,9 +44,9 @@ function micro_benchmark_kem() {
   keypair_methods="$(echo "$2" | sed 's/^\| / -r /g')"
   encrypt_methods="$(echo "$3" | sed 's/^\| / -r /g')"
   decrypt_methods="$(echo "$4" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e cpu-cycles,instructions $keypair_methods -- "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
-  perforator --summary --csv -e cpu-cycles,instructions $encrypt_methods -- "$binary" --sequential --encrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
-  perforator --summary --csv -e cpu-cycles,instructions $decrypt_methods -- "$binary" --sequential --decrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+  perforator --summary --csv -e cpu-cycles,instructions $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+  perforator --summary --csv -e cpu-cycles,instructions $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+  perforator --summary --csv -e cpu-cycles,instructions $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
 }
 
 function sequential_benchmark_kex() {
@@ -55,8 +57,8 @@ function sequential_benchmark_kex() {
     return
   fi
 
-  "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
-  "$binary" --sequential --exchange --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").exchange.txt"
+  "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
+  "$binary" sequential --exchange --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").exchange.txt"
 }
 
 function sequential_benchmark_kem() {
@@ -68,9 +70,9 @@ function sequential_benchmark_kem() {
     return
   fi
 
-  "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
-  "$binary" --sequential --encrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").encrypt.txt"
-  "$binary" --sequential --decrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").decrypt.txt"
+  "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
+  "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").encrypt.txt"
+  "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").decrypt.txt"
 }
 
 function get_max_thread_count() {
@@ -95,8 +97,8 @@ function parallel_benchmark_kex() {
       echo "warning: skipping benchmark - no such file" | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
       continue
     else
-      "$binary" --parallel --keypair --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
-      "$binary" --parallel --exchange --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
+      "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$timeout" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+      "$binary" parallel --exchange --iterations "$PARALLEL_ITERATIONS" --timeout "$timeout" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
     fi
 
     thread_count=$((thread_count*2))
@@ -117,9 +119,9 @@ function parallel_benchmark_kem() {
       echo "warning: skipping benchmark - no such file" | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
       continue
     else
-      "$binary" --parallel --keypair --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
-      "$binary" --parallel --encrypt --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
-      "$binary" --parallel --decrypt --duration "$parallel_duration" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
+      "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$timeout" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+      "$binary" parallel --encrypt --iterations "$PARALLEL_ITERATIONS" --timeout "$timeout" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
+      "$binary" parallel --decrypt --iterations "$PARALLEL_ITERATIONS" --timeout "$timeout" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
     fi
 
     thread_count=$((thread_count*2))
@@ -137,8 +139,8 @@ function heap_benchmark_kex() {
     return
   fi
 
-  heaptrack "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
-  heaptrack "$binary" --sequential --exchange --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
+  heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+  heaptrack "$binary" sequential --exchange --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
   mv heaptrack.* "$output_directory/heap"
 }
 
@@ -151,9 +153,9 @@ function heap_benchmark_kem() {
     return
   fi
 
-  heaptrack "$binary" --sequential --keypair --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
-  heaptrack "$binary" --sequential --encrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
-  heaptrack "$binary" --sequential --decrypt --iterations "$sequential_iterations" 2>&1 | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
+  heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+  heaptrack "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
+  heaptrack "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$timeout" 2>&1 | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
   mv heaptrack.* "$output_directory/heap"
 }
 

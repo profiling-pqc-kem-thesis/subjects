@@ -11,7 +11,7 @@ int perform_encrypt(void *state);
 int perform_decrypt(void *state);
 int perform_exchange(void *state);
 
-int benchmark_sequential(int iterations, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange);
-int benchmark_parallel(int thread_count, int duration, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange);
+int benchmark_sequential(int iterations, int timeout, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange);
+int benchmark_parallel(int iterations, int thread_count, int timeout, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange);
 
 #endif

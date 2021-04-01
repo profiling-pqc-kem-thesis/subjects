@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "pool.h"
 #include "time.h"
@@ -10,36 +11,73 @@
 #include "benchmark.h"
 
 typedef struct {
-  int duration;
+  // The number of iterations to perform
+  int iterations;
+  // The number of threads to use
   int thread_count;
+  // Whether or not to run the algorithm (break condition of for loop)
   int perform;
   void *state;
+  // The benchmark function to execute
   int (*benchmark)(void *state);
-  unsigned long long iterations[];
+  // The number of iterations run for each thread
+  unsigned long long *thread_iterations;
+  // The start of each thread
+  unsigned long long *thread_start;
+  // The stop of each thread
+  unsigned long long *thread_stop;
 } benchmark_state_t;
-#define BENCHMARK_STATE_SIZE(thread_count) (sizeof(benchmark_state_t) + sizeof(unsigned long long) * thread_count)
 
 static int benchmark_loader(int thread_index, void *state) {
   benchmark_state_t *benchmark_state = (benchmark_state_t *)state;
-  while (benchmark_state->perform) {
-    if (benchmark_state->benchmark(benchmark_state->state))
+  benchmark_state->thread_start[thread_index] = timespec_now();
+  int iterations = benchmark_state->iterations / benchmark_state->thread_count;
+  for (int i = 0; i < iterations && benchmark_state->perform; i++) {
+    if (benchmark_state->benchmark(benchmark_state->state)) {
+      benchmark_state->thread_stop[thread_index] = timespec_now();
       return 1;
-    benchmark_state->iterations[thread_index] += 1;
+    }
+
+    benchmark_state->thread_iterations[thread_index] += 1;
   }
+
+  benchmark_state->thread_stop[thread_index] = timespec_now();
   return 0;
 }
 
-static int perform_benchmark(char *name, int (*benchmark)(void *state), int thread_count, int duration) {
+static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations, int thread_count, int timeout) {
   int return_value = 1;
   benchmark_state_t *benchmark_state = NULL;
   pool_t *pool = NULL;
+  pool_t *progress_pool = NULL;
   void *state = NULL;
 
-  benchmark_state = malloc(BENCHMARK_STATE_SIZE(thread_count));
+  benchmark_state = malloc(sizeof(benchmark_state_t));
   if (benchmark_state == NULL) {
     fprintf(stderr, "error: benchmark '%s' for '%s' failed to allocate memory\n", name, BENCHMARK_SUBJECT_NAME);
     goto cleanup;
   }
+
+  benchmark_state->thread_iterations = malloc(sizeof(unsigned long long) * thread_count);
+  if (benchmark_state == NULL) {
+    fprintf(stderr, "error: benchmark '%s' for '%s' failed to allocate memory\n", name, BENCHMARK_SUBJECT_NAME);
+    goto cleanup;
+  }
+  memset(benchmark_state->thread_iterations, 0, sizeof(unsigned long long) * thread_count);
+
+  benchmark_state->thread_start = malloc(sizeof(unsigned long long) * thread_count);
+  if (benchmark_state == NULL) {
+    fprintf(stderr, "error: benchmark '%s' for '%s' failed to allocate memory\n", name, BENCHMARK_SUBJECT_NAME);
+    goto cleanup;
+  }
+  memset(benchmark_state->thread_start, 0, sizeof(unsigned long long) * thread_count);
+
+  benchmark_state->thread_stop = malloc(sizeof(unsigned long long) * thread_count);
+  if (benchmark_state == NULL) {
+    fprintf(stderr, "error: benchmark '%s' for '%s' failed to allocate memory\n", name, BENCHMARK_SUBJECT_NAME);
+    goto cleanup;
+  }
+  memset(benchmark_state->thread_stop, 0, sizeof(unsigned long long) * thread_count);
 
   pool = pool_create(&benchmark_loader, thread_count);
   if (pool == NULL) {
@@ -50,42 +88,62 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int thre
   fprintf(stderr, "fething global state for benchmark '%s', '%s'\n", name, BENCHMARK_SUBJECT_NAME);
   state = get_global_state();
 
-  benchmark_state->duration = duration;
+  benchmark_state->iterations = iterations;
   benchmark_state->thread_count = thread_count;
   benchmark_state->perform = 1;
   benchmark_state->state = state;
   benchmark_state->benchmark = benchmark;
-  memset(benchmark_state->iterations, 0, sizeof(unsigned long long) * thread_count);
 
   struct timespec outer_start, outer_stop;
 
   fprintf(stderr, "running benchmark '%s' for '%s'\n", name, BENCHMARK_SUBJECT_NAME);
-  clock_gettime(CLOCK_MONOTONIC, &outer_start);
   if (pool_start(pool, (void *)benchmark_state)) {
     fprintf(stderr, "error: benchmark '%s' for '%s' failed to start\n", name, BENCHMARK_SUBJECT_NAME);
     goto cleanup;
   }
 
+  // Keep track of progress in the main thread
   fprintf(stderr, "progress: 0s");
-  for (int i = 0; i < duration; i++) {
-    fprintf(stderr, "\rprogress: % 3.f%%", (i / (float)duration) * 100);
+  int timed_out = 0;
+  for (int i = 0; i < timeout; i++) {
+    int completed_iterations = 0;
+    for (int j = 0; j < thread_count; j++)
+      completed_iterations += benchmark_state->thread_iterations[j];
+
+    if (completed_iterations >= iterations)
+      break;
+
+    fprintf(stderr, "\rprogress: % 3.f%%", ((float)completed_iterations / iterations) * 100);
     sleep(1);
   }
-  fprintf(stderr, "\rprogress: 100%%\n");
+  if (!timed_out)
+    fprintf(stderr, "\rprogress: 100%%\n");
 
+  // Stop all threads gracefully (stop after next iteration)
   benchmark_state->perform = 0;
 
-  fprintf(stderr, "Waiting for threads to finish\n");
   if (pool_wait_for_exit(pool, NULL)) {
     fprintf(stderr, "error: benchmark '%s' for '%s' failed to run\n", name, BENCHMARK_SUBJECT_NAME);
     goto cleanup;
   }
-  clock_gettime(CLOCK_MONOTONIC, &outer_stop);
 
   unsigned long long total_iterations = 0;
-  for (int i = 0; i < thread_count; i++)
-    total_iterations += benchmark_state->iterations[i];
-  unsigned long long total_outer_time = timespec_to_duration(&outer_start, &outer_stop);
+  unsigned long long first_start_time = -1;
+  unsigned long long last_stop_time = 0;
+  for (int i = 0; i < thread_count; i++) {
+    unsigned long long start_time = benchmark_state->thread_start[i];
+    unsigned long long stop_time = benchmark_state->thread_stop[i];
+    if (start_time < first_start_time)
+      first_start_time = start_time;
+    if (stop_time > last_stop_time)
+      last_stop_time = stop_time;
+    printf("thread %d: %llu iterations in %.2fms\n", i, benchmark_state->thread_iterations[i], (stop_time - start_time) / 1e6);
+    total_iterations += benchmark_state->thread_iterations[i];
+  }
+
+  unsigned long long total_outer_time = last_stop_time - first_start_time;
+  if (total_iterations < iterations)
+    fprintf(stderr, "warning: timed out after %.2fs\n", total_outer_time / 1e9);
   printf("average iterations per thread (%llu total iterations, %d threads): %.2f\n", total_iterations, thread_count, total_iterations / (float)thread_count);
   printf("average duration per iteration: %fms\n", ((float)total_outer_time / 1e6) / total_iterations);
   printf("outer total: %fms\n", total_outer_time / 1e6);
@@ -98,14 +156,28 @@ cleanup:
     free(state);
   if (pool != NULL)
     pool_free(pool);
-  if (benchmark_state != NULL)
+  if (progress_pool != NULL)
+    pool_free(progress_pool);
+  if (benchmark_state != NULL) {
+    if (benchmark_state->thread_iterations != NULL)
+      free(benchmark_state->thread_iterations);
+    if (benchmark_state->thread_start != NULL)
+      free(benchmark_state->thread_start);
+    if (benchmark_state->thread_stop != NULL)
+      free(benchmark_state->thread_stop);
     free(benchmark_state);
+  }
   return return_value;
 }
 
-int benchmark_parallel(int thread_count, int duration, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange) {
+int benchmark_parallel(int iterations, int thread_count, int timeout, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange) {
   if (thread_count < 1) {
     printf("expected thread count to be 1 or larger, was %d\n", thread_count);
+    return EXIT_FAILURE;
+  }
+
+  if (iterations % thread_count != 0) {
+    printf("expected iterations to be evenly divisible by thread count\n");
     return EXIT_FAILURE;
   }
 
@@ -115,28 +187,28 @@ int benchmark_parallel(int thread_count, int duration, int benchmark_keypair, in
 #ifdef BENCHMARK_KEYPAIR
   if (benchmark_keypair) {
     run++;
-    failed += perform_benchmark("keypair", &perform_keypair, thread_count, duration);
+    failed += perform_benchmark("keypair", &perform_keypair, iterations, thread_count, timeout);
   }
 #endif
 
 #ifdef BENCHMARK_ENCRYPT
   if (benchmark_encrypt) {
     run++;
-    failed += perform_benchmark("encrypt", &perform_encrypt, thread_count, duration);
+    failed += perform_benchmark("encrypt", &perform_encrypt, iterations, thread_count, timeout);
   }
 #endif
 
 #ifdef BENCHMARK_DECRYPT
   if (benchmark_decrypt) {
     run++;
-    failed += perform_benchmark("decrypt", &perform_decrypt, thread_count, duration);
+    failed += perform_benchmark("decrypt", &perform_decrypt, iterations, thread_count, timeout);
   }
 #endif
 
 #ifdef BENCHMARK_EXCHANGE
   if (benchmark_exchange) {
     run++;
-    failed += perform_benchmark("exchange", &perform_exchange, thread_count, duration);
+    failed += perform_benchmark("exchange", &perform_exchange, iterations, thread_count, timeout);
   }
 #endif
 
