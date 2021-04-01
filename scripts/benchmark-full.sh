@@ -186,6 +186,7 @@ mkdir -p "$output_directory/heap"
 mkdir -p "$output_directory/sequential"
 mkdir -p "$output_directory/parallel"
 mkdir -p "$output_directory/stack"
+cat "$0" > "$output_directory/benchmark-full.sh"
 
 echo -n "Benchmark started on: "
 LANG=en_US date | tee "$output_directory/start.txt"
