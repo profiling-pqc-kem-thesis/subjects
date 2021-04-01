@@ -48,8 +48,8 @@ ifneq ($(TARGET),none)
 			CPPFLAGS += -DUSE_KECCAK -I ../xkcp/build/AVX2/keccak
 			LDFLAGS += -L ../xkcp/build/AVX2/keccak
 		else
-			CPPFLAGS += -DUSE_KECCAK -I ../xkcp/build/plain-64bitsua/keccak
-			LDFLAGS += -L ../xkcp/build/plain-64bitsua/keccak
+			CPPFLAGS += -DUSE_KECCAK -I ../xkcp/build/plain-64bitslcu6/keccak
+			LDFLAGS += -L ../xkcp/build/plain-64bitslcu6/keccak
 		endif
 	else
 		source += lib/fips202.c

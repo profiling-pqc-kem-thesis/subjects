@@ -29,8 +29,8 @@ ifneq ($(TARGET),none)
 		CPPFLAGS += -I ../xkcp/build/AVX2/keccak
 		LDFLAGS += -L ../xkcp/build/AVX2/keccak
 	else
-		CPPFLAGS += -I ../xkcp/build/plain-64bitsua/keccak
-		LDFLAGS += -L ../xkcp/build/plain-64bitsua/keccak
+		CPPFLAGS += -I ../xkcp/build/plain-64bitslcu6/keccak
+		LDFLAGS += -L ../xkcp/build/plain-64bitslcu6/keccak
 	endif
 
 	ifeq ($(USE_AVX2),true)
