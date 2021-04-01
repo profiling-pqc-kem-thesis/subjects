@@ -35,9 +35,9 @@ function assert_commands() {
 function micro_benchmark_kem() {
   binary="$1"
   if [[ ! -f "$binary" ]]; then
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
     return
   fi
 
@@ -52,8 +52,8 @@ function micro_benchmark_kem() {
 function sequential_benchmark_kex() {
   binary="$1"
   if [[ ! -f "$binary" ]]; then
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/sequential/$(basename "$binary").exchange.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/sequential/$(basename "$binary").exchange.txt"
     return
   fi
 
@@ -64,9 +64,9 @@ function sequential_benchmark_kex() {
 function sequential_benchmark_kem() {
   binary="$1"
   if [[ ! -f "$binary" ]]; then
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/sequential/$(basename "$binary").encrypt.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/sequential/$(basename "$binary").decrypt.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/sequential/$(basename "$binary").encrypt.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/sequential/$(basename "$binary").decrypt.txt"
     return
   fi
 
@@ -93,8 +93,8 @@ function parallel_benchmark_kex() {
   thread_count=1
   while true; do
     if [[ ! -f "$binary" ]]; then
-      echo "warning: skipping benchmark - no such file" | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
-      echo "warning: skipping benchmark - no such file" | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
+      echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+      echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
       continue
     else
       "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
@@ -114,9 +114,9 @@ function parallel_benchmark_kem() {
   thread_count=1
   while true; do
     if [[ ! -f "$binary" ]]; then
-      echo "warning: skipping benchmark - no such file" | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
-      echo "warning: skipping benchmark - no such file" | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
-      echo "warning: skipping benchmark - no such file" | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
+      echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+      echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
+      echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
       continue
     else
       "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
@@ -134,8 +134,8 @@ function parallel_benchmark_kem() {
 function heap_benchmark_kex() {
   binary="$1"
   if [[ ! -f "$binary" ]]; then
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
     return
   fi
 
@@ -147,9 +147,9 @@ function heap_benchmark_kex() {
 function heap_benchmark_kem() {
   binary="$1"
   if [[ ! -f "$binary" ]]; then
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
     return
   fi
 
@@ -162,7 +162,7 @@ function heap_benchmark_kem() {
 function benchmark_stack() {
   binary="$1"
   if [[ ! -f "$binary" ]]; then
-    echo "warning: skipping benchmark - no such file" | tee "$output_directory/stack/$(basename "$binary").txt"
+    echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/stack/$(basename "$binary").txt"
     return
   fi
 
