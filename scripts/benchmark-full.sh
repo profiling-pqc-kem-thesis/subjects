@@ -440,6 +440,8 @@ if [[ -z "$SKIP_STEP_8" ]]; then
     sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2"
     sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_avx2-optimized"
   fi
+else
+  echo "=== skipped ==="
 fi
 echo ""
 
