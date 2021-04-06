@@ -154,7 +154,6 @@ function parallel_benchmark_kex() {
     if [[ ! -f "$binary" ]]; then
       echo "warning: skipping parallel_benchmark_kex '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
       echo "warning: skipping parallel_benchmark_kex '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
-      continue
     else
       run_wrapped "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
       wait_for_cooldown
@@ -179,7 +178,6 @@ function parallel_benchmark_kem() {
       echo "warning: skipping parallel_benchmark_kem '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
       echo "warning: skipping parallel_benchmark_kem '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
       echo "warning: skipping parallel_benchmark_kem '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
-      continue
     else
       run_wrapped "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
       wait_for_cooldown
