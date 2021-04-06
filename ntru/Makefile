@@ -167,7 +167,7 @@ $(eval $(call create-target, ntru_hrss701_gcc_keccak_test,          test,       
 #                            rule name                             target     group  parameter  compiler  avx2   optimize  keccak  vec
 $(eval $(call create-target, ntru_hps4096821_gcc_ref,              benchmark, hps,   4096821,   gcc,      false, false,    false,  false))
 $(eval $(call create-target, ntru_hps4096821_gcc_avx2,             benchmark, hps,   4096821,   gcc,      true,  false,    false,  false))
-$(eval $(call create-target, ntru_hps4096821_gcc_vec,              benchmark, hps,   4096821,   gcc,      false, false,    false,  true))
+# $(eval $(call create-target, ntru_hps4096821_gcc_vec,              benchmark, hps,   4096821,   gcc,      false, false,    false,  true))
 $(eval $(call create-target, ntru_hps4096821_gcc_ref-optimized,    benchmark, hps,   4096821,   gcc,      false, true,     false,  false))
 $(eval $(call create-target, ntru_hps4096821_clang_ref-optimized,  benchmark, hps,   4096821,   clang,    false, true,     false,  false))
 $(eval $(call create-target, ntru_hps4096821_gcc_avx2-optimized,   benchmark, hps,   4096821,   gcc,      true,  true,     false,  false))
