@@ -45,6 +45,16 @@ function wait_for_cooldown() {
   sleep "$SLEEP_BETWEEN_TESTS"
 }
 
+# Run a command and wrap it with time started, time ended
+function run_wrapped() (
+  echo "=== $(date '+%Y-%m-%d %H:%M:%S') Running command ==="
+  echo "command:"
+  echo "$@"
+  echo "output:"
+  "$@"
+  echo "=== $(date '+%Y-%m-%d %H:%M:%S') Command ended with exit code $? ==="
+)
+
 # Ensure that each specified command exists or die
 function assert_commands() {
   failures=0
@@ -60,6 +70,8 @@ function assert_commands() {
 }
 
 function micro_benchmark_kem() {
+  binary="$1"
+
   if ! which "perforator" &> /dev/null; then
     echo "warning: skipping micro_benchmark_kem '$binary' - perforator missing" | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
     echo "warning: skipping micro_benchmark_kem '$binary' - perforator missing" | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
@@ -67,7 +79,6 @@ function micro_benchmark_kem() {
     return
   fi
 
-  binary="$1"
   if [[ ! -f "$binary" ]]; then
     echo "warning: skipping micro_benchmark_kem '$binary' - no such file" | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
     echo "warning: skipping micro_benchmark_kem '$binary' - no such file" | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
@@ -76,15 +87,15 @@ function micro_benchmark_kem() {
   fi
 
   keypair_methods="$(echo "$2" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e "$PERF_EVENTS" $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+  run_wrapped perforator --summary --csv -e "$PERF_EVENTS" $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
   encrypt_methods="$(echo "$3" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e "$PERF_EVENTS" $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+  run_wrapped perforator --summary --csv -e "$PERF_EVENTS" $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
   wait_for_cooldown
 
   decrypt_methods="$(echo "$4" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e "$PERF_EVENTS" $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+  run_wrapped perforator --summary --csv -e "$PERF_EVENTS" $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
   wait_for_cooldown
 }
 
@@ -96,10 +107,10 @@ function sequential_benchmark_kex() {
     return
   fi
 
-  "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
+  run_wrapped "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
-  "$binary" sequential --exchange --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").exchange.txt"
+  run_wrapped "$binary" sequential --exchange --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").exchange.txt"
   wait_for_cooldown
 }
 
@@ -112,13 +123,13 @@ function sequential_benchmark_kem() {
     return
   fi
 
-  "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
+  run_wrapped "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
-  "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").encrypt.txt"
+  run_wrapped "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").encrypt.txt"
   wait_for_cooldown
 
-  "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").decrypt.txt"
+  run_wrapped "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/sequential/$(basename "$binary").decrypt.txt"
   wait_for_cooldown
 }
 
@@ -145,10 +156,10 @@ function parallel_benchmark_kex() {
       echo "warning: skipping parallel_benchmark_kex '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
       continue
     else
-      "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+      run_wrapped "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
       wait_for_cooldown
 
-      "$binary" parallel --exchange --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
+      run_wrapped "$binary" parallel --exchange --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").exchange.$thread_count.txt"
       wait_for_cooldown
     fi
 
@@ -170,13 +181,13 @@ function parallel_benchmark_kem() {
       echo "warning: skipping parallel_benchmark_kem '$binary' - no such file" | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
       continue
     else
-      "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
+      run_wrapped "$binary" parallel --keypair --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").keypair.$thread_count.txt"
       wait_for_cooldown
 
-      "$binary" parallel --encrypt --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
+      run_wrapped "$binary" parallel --encrypt --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").encrypt.$thread_count.txt"
       wait_for_cooldown
 
-      "$binary" parallel --decrypt --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
+      run_wrapped "$binary" parallel --decrypt --iterations "$PARALLEL_ITERATIONS" --timeout "$TIMEOUT" --thread-count "$thread_count" 2>&1 | tee "$output_directory/parallel/$(basename "$binary").decrypt.$thread_count.txt"
       wait_for_cooldown
     fi
 
@@ -188,23 +199,23 @@ function parallel_benchmark_kem() {
 }
 
 function heap_benchmark_kex() {
+  binary="$1"
   if ! which "heaptrack" &> /dev/null; then
     echo "warning: skipping heap_benchmark_kex '$binary' - heaptrack missing" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
     echo "warning: skipping heap_benchmark_kex '$binary' - heaptrack missing" | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
     return
   fi
 
-  binary="$1"
   if [[ ! -f "$binary" ]]; then
     echo "warning: skipping heap_benchmark_kex '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
     echo "warning: skipping heap_benchmark_kex '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
     return
   fi
 
-  heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+  run_wrapped heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
-  heaptrack "$binary" sequential --exchange --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
+  run_wrapped heaptrack "$binary" sequential --exchange --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
   wait_for_cooldown
 
   mv heaptrack.* "$output_directory/heap"
@@ -212,6 +223,14 @@ function heap_benchmark_kex() {
 
 function heap_benchmark_kem() {
   binary="$1"
+
+  if ! which "heaptrack" &> /dev/null; then
+    echo "warning: skipping heap_benchmark_kem '$binary' - heaptrack missing" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+    echo "warning: skipping heap_benchmark_kem '$binary' - heaptrack missing" | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
+    echo "warning: skipping heap_benchmark_kem '$binary' - heaptrack missing" | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
+   return
+  fi
+
   if [[ ! -f "$binary" ]]; then
     echo "warning: skipping heap_benchmark_kem '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
     echo "warning: skipping heap_benchmark_kem '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
@@ -219,13 +238,13 @@ function heap_benchmark_kem() {
     return
   fi
 
-  heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+  run_wrapped heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
-  heaptrack "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
+  run_wrapped heaptrack "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
   wait_for_cooldown
 
-  heaptrack "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
+  run_wrapped heaptrack "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
   wait_for_cooldown
 
   mv heaptrack.* "$output_directory/heap"
@@ -238,7 +257,7 @@ function benchmark_stack() {
     return
   fi
 
-  bash "$DIRECTORY/calculate-stack-usage-of-object.sh" "$binary" | tee "$output_directory/stack/$(basename "$binary").txt"
+  run_wrapped bash "$DIRECTORY/calculate-stack-usage-of-object.sh" "$binary" | tee "$output_directory/stack/$(basename "$binary").txt"
 }
 
 ## === START OF BENCHMARKS ===
@@ -283,7 +302,7 @@ echo ""
 
 echo "=== STEP 2 - Build Benchmarks ==="
 if [[ -z "$SKIP_STEP_2" ]]; then
-  VERBOSE=yes make benchmarks 2>&1 | tee "$output_directory/build.txt"
+  VERBOSE=yes run_wrapped make benchmarks 2>&1 | tee "$output_directory/build.txt"
   echo "=== done ==="
 else
   echo "=== skipped ==="
@@ -422,59 +441,59 @@ echo ""
 echo "=== STEP 6 - Sequential Benchmarks ==="
 if [[ -z "$SKIP_STEP_6" ]]; then
   if [[ -z "$SKIP_ECDH" ]]; then
-    benchmark_stack "./ecdh/build/ecdh_25519_gcc_plain-optimized"
+    sequential_benchmark_kex "./ecdh/build/ecdh_25519_gcc_plain-optimized"
 
-    benchmark_stack "./ecdh/build/ecdh_p256_gcc_plain-optimized"
+    sequential_benchmark_kex "./ecdh/build/ecdh_p256_gcc_plain-optimized"
   fi
 
   if [[ -z "$SKIP_DH" ]]; then
-    benchmark_stack "./dh/build/dh_gcc_plain-optimized"
+    sequential_benchmark_kex "./dh/build/dh_gcc_plain-optimized"
   fi
 
   if [[ -z "$SKIP_NTRU" ]]; then
-    benchmark_stack "./ntru/build/ntru_hrss701_gcc_ref"
-    benchmark_stack "./ntru/build/ntru_hrss701_gcc_ref-optimized"
-    benchmark_stack "./ntru/build/ntru_hrss701_clang_ref-optimized"
-    benchmark_stack "./ntru/build/ntru_hrss701_gcc_avx2"
-    benchmark_stack "./ntru/build/ntru_hrss701_gcc_avx2-optimized"
-    benchmark_stack "./ntru/build/ntru_hrss701_clang_avx2-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_clang_ref-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hrss701_clang_avx2-optimized"
 
-    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_ref"
-    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_ref-optimized"
-    benchmark_stack "./ntru/build/ntru_hps4096821_clang_ref-optimized"
-    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_avx2"
-    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_avx2-optimized"
-    benchmark_stack "./ntru/build/ntru_hps4096821_clang_avx2-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_clang_ref-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2-optimized"
+    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_clang_avx2-optimized"
   fi
 
   if [[ -z "$SKIP_MCELIECE" ]]; then
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_ref"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119_clang_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_avx2"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_avx2-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119_clang_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_avx2-optimized"
 
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_ref"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_clang_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_avx2"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized"
 
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_ref"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128_clang_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_avx2"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_avx2-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128_clang_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_avx2-optimized"
 
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_ref"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_clang_ref-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_avx2"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_avx2-optimized"
-    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_clang_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_ref-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2-optimized"
+    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_avx2-optimized"
   fi
   echo "=== done ==="
 else
