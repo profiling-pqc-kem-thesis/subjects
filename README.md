@@ -211,13 +211,13 @@ The script is run in seven steps:
 These steps can be controlled using `SKIP_STEPS` like so:
 
 ```sh
-SKIP_STEPS=1,2,7 ./scripts/benchmark-full.sh
+SKIP_STEPS=1,2,7 ./scripts/benchmark-full.sh | tee benchmark.txt
 ```
 
 Furthermore, one may control what algorithms are run like so:
 
 ```
-SKIP_MCELIECE=yes SKIP_NTRU=yes SKIP_DH=yes SKIP_ECDH=yes ./scripts/benchmark-full.sh
+SKIP_MCELIECE=yes SKIP_NTRU=yes SKIP_DH=yes SKIP_ECDH=yes ./scripts/benchmark-full.sh | tee benchmark.txt
 ```
 
 Lastly, the number of sequential iterations, parallel iterations, timeout in seconds and sleep between tests are configurable via `SEQUENTIAL_ITERATIONS`, `PARALLEL_ITERATIONS`, `TIMEOUT` and `SLEEP_BETWEEN_TESTS` respectively. The defaults are:
