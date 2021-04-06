@@ -40,6 +40,13 @@ function assert_commands() {
 }
 
 function micro_benchmark_kem() {
+  if ! which "perforator" &> /dev/null; then
+    echo "warning: skipping benchmark '$binary' - perforator missing" | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+    echo "warning: skipping benchmark '$binary' - perforator missing" | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+    echo "warning: skipping benchmark '$binary' - perforator missing" | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+    return
+  fi
+
   binary="$1"
   if [[ ! -f "$binary" ]]; then
     echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
@@ -160,6 +167,12 @@ function parallel_benchmark_kem() {
 }
 
 function heap_benchmark_kex() {
+  if ! which "heaptrack" &> /dev/null; then
+    echo "warning: skipping benchmark '$binary' - heaptrack missing" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+    echo "warning: skipping benchmark '$binary' - heaptrack missing" | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
+    return
+  fi
+
   binary="$1"
   if [[ ! -f "$binary" ]]; then
     echo "warning: skipping benchmark '$binary' - no such file" | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
