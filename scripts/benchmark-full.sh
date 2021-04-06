@@ -246,7 +246,7 @@ echo ""
 
 echo "=== STEP 1 - Checking Prerequisites ==="
 if [[ -z "$SKIP_STEP_1" ]]; then
-  assert_commands "sqlite3" "heaptrack" "make" "gcc" "clang" "go" "perforator"
+  assert_commands "sqlite3" "heaptrack" "make" "gcc" "clang" "perforator"
   echo "=== done ==="
 else
   echo "=== skipped ==="
