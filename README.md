@@ -246,6 +246,28 @@ data
 
 _NOTE: when analysing the results from perforate, know that it will include the results from the `get_global_state`, which includes an extra keypair generation and an encrypt for the KEMs._
 
+The recommended flow of benchmarking is as follows:
+
+```sh
+# Open a persistent session (you may need to press enter once)
+screen
+
+# Clean the entire build
+make clean
+
+# Start the benchmark
+./scripts/benchmark-full.sh "workstation"
+
+# Detach from the screen using CTRL+a, d
+# that way you may close an SSH connection to a remote machine, etc.
+
+# List active sessions
+screen -ls
+
+# Attach to an active session
+screen -r <name / id from screen -ls>
+```
+
 ### Available Implementations
 
 #### ECDH(E)
