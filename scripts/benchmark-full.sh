@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DIRECTORY=$(dirname $(realpath -s $0))
+DIRECTORY="$(dirname "$(realpath -s "$0")")"
 
 SKIP_STEPS="${SKIP_STEPS:-}"
 
