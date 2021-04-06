@@ -414,8 +414,8 @@ if [[ -z "$SKIP_STEP_5" ]]; then
     micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
     micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_calng_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
     micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2_optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_avx2_optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
 
     micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
     micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
