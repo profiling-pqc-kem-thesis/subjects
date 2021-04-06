@@ -11,10 +11,10 @@ SKIP_STEPS="${SKIP_STEPS:-}"
 TIMEOUT="${TIMEOUT:-3600}"
 
 # Number of iterations to run in sequential benchmarks
-SEQUENTIAL_ITERATIONS="${SEQUENTIAL_ITEARTIONS:-1000}"
+SEQUENTIAL_ITERATIONS="${SEQUENTIAL_ITERATIONS:-1000}"
 
 # Number of iterations to run in parallel benchmarks
-PARALLEL_ITERATIONS="${SEQUENTIAL_ITEARTIONS:-100000}"
+PARALLEL_ITERATIONS="${PARALLEL_ITERATIONS:-100000}"
 
 # Number of seconds to sleep between tests - defaults to 5m
 SLEEP_BETWEEN_TESTS="${SLEEP_BETWEEN_TESTS:-300}"
