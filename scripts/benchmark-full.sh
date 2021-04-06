@@ -1,31 +1,51 @@
 #!/usr/bin/env bash
 
+# === ENVIRONMENT VARIABLES ===
+
 DIRECTORY="$(dirname "$(realpath -s "$0")")"
 
+# Steps to skip, comma separated
 SKIP_STEPS="${SKIP_STEPS:-}"
 
+# Maximum number of seconds to a allow a single benchmark to run - defaults to 1h
 TIMEOUT="${TIMEOUT:-3600}"
+
+# Number of iterations to run in sequential benchmarks
 SEQUENTIAL_ITERATIONS="${SEQUENTIAL_ITEARTIONS:-1000}"
+
+# Number of iterations to run in parallel benchmarks
 PARALLEL_ITERATIONS="${SEQUENTIAL_ITEARTIONS:-100000}"
 
-SLEEP_BETWEEN_TESTS=${SLEEP_BETWEEN_TESTS:-1}
+# Number of seconds to sleep between tests - defaults to 5m
+SLEEP_BETWEEN_TESTS="${SLEEP_BETWEEN_TESTS:-300}"
 
+# The comma separated events to use with perf / perforator
+PERF_EVENTS="${PERF_EVENTS:-cpu-cycles,instructions}"
+
+# == PARSE ARGUMENTS ==
+
+# Set SKIP_STEP_i for each specified i
 while read -r step; do
     eval "SKIP_STEP_$step=1"
 done <<<"$(echo "$SKIP_STEPS" | tr ',' '\n')"
 
 environment_name="$1"
 
+# Require parameters to be set, or die with usage
 if [[ -z "$environment_name" ]]; then
   echo "usage: $0 <environment name>"
   exit 1
 fi
 
+# === FUNCTION DEFINITIONS ===
+
+# Wait SLEEP_BETWEEN_TEST seconds before continuing
 function wait_for_cooldown() {
   echo "Waiting ${SLEEP_BETWEEN_TESTS}s for cooldown"
   sleep "$SLEEP_BETWEEN_TESTS"
 }
 
+# Ensure that each specified command exists or die
 function assert_commands() {
   failures=0
   for name in "$@"; do
@@ -56,15 +76,15 @@ function micro_benchmark_kem() {
   fi
 
   keypair_methods="$(echo "$2" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e cpu-cycles,instructions $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+  perforator --summary --csv -e "$PERF_EVENTS" $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
   encrypt_methods="$(echo "$3" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e cpu-cycles,instructions $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+  perforator --summary --csv -e "$PERF_EVENTS" $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
   wait_for_cooldown
 
   decrypt_methods="$(echo "$4" | sed 's/^\| / -r /g')"
-  perforator --summary --csv -e cpu-cycles,instructions $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+  perforator --summary --csv -e "$PERF_EVENTS" $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
   wait_for_cooldown
 }
 
@@ -102,6 +122,7 @@ function sequential_benchmark_kem() {
   wait_for_cooldown
 }
 
+# Returns smt * cores * 4 on Linux and macOS
 function get_max_thread_count() {
   if [[ "$(uname)" = "Darwin" ]]; then
     # Cores are logical cores - physical cores * smt
@@ -220,8 +241,11 @@ function benchmark_stack() {
   bash "$DIRECTORY/calculate-stack-usage-of-object.sh" "$binary" | tee "$output_directory/stack/$(basename "$binary").txt"
 }
 
+## === START OF BENCHMARKS ===
+
 output_directory="data/benchmarks/$environment_name"
 
+# If the directory already exists, prompt the user
 if [[ -d "$output_directory" ]]; then
   echo -n "Continuing overwrite contents of '$output_directory'. Press any key to continue: "
   read -rn 1
@@ -231,14 +255,18 @@ if [[ -d "$output_directory" ]]; then
   echo ""
 fi
 
+# Create output directories
 mkdir -p "$output_directory"
 mkdir -p "$output_directory/micro"
 mkdir -p "$output_directory/heap"
 mkdir -p "$output_directory/sequential"
 mkdir -p "$output_directory/parallel"
 mkdir -p "$output_directory/stack"
+
+# Copy the benchmark script for easy version control
 cat "$0" > "$output_directory/benchmark-full.sh"
 
+# Print start of script
 echo -n "Benchmark started on: "
 LANG=en_US date | tee "$output_directory/start.txt"
 start_time="$(date '+%s')"
@@ -246,7 +274,7 @@ echo ""
 
 echo "=== STEP 1 - Checking Prerequisites ==="
 if [[ -z "$SKIP_STEP_1" ]]; then
-  assert_commands "sqlite3" "heaptrack" "make" "gcc" "clang" "perforator"
+  assert_commands "sqlite3" "heaptrack" "make" "gcc" "clang" "perforator" "nm" "objdump" | tee "$output_directory/commands.txt"
   echo "=== done ==="
 else
   echo "=== skipped ==="
@@ -497,62 +525,62 @@ echo ""
 echo "=== STEP 8 - Calculate Stack Usage ==="
 if [[ -z "$SKIP_STEP_8" ]]; then
   if [[ -z "$SKIP_ECDH" ]]; then
-    sequential_benchmark_kex "./ecdh/build/ecdh_25519_gcc_plain-optimized"
-    sequential_benchmark_kex "./ecdh/build/ecdh_25519_clang_plain-optimized"
+    benchmark_stack "./ecdh/build/ecdh_25519_gcc_plain-optimized"
+    benchmark_stack "./ecdh/build/ecdh_25519_clang_plain-optimized"
 
-    sequential_benchmark_kex "./ecdh/build/ecdh_p256_gcc_plain-optimized"
-    sequential_benchmark_kex "./ecdh/build/ecdh_p256_clang_plain-optimized"
+    benchmark_stack "./ecdh/build/ecdh_p256_gcc_plain-optimized"
+    benchmark_stack "./ecdh/build/ecdh_p256_clang_plain-optimized"
   fi
 
   if [[ -z "$SKIP_DH" ]]; then
-    sequential_benchmark_kex "./dh/build/dh_gcc_plain-optimized"
-    sequential_benchmark_kex "./dh/build/dh_gcc_clang-optimized"
+    benchmark_stack "./dh/build/dh_gcc_plain-optimized"
+    benchmark_stack "./dh/build/dh_gcc_clang-optimized"
   fi
 
   if [[ -z "$SKIP_NTRU" ]]; then
-    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref"
-    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref-optimized"
-    sequential_benchmark_kem "./ntru/build/ntru_hrss701_clang_ref-optimized"
-    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2"
-    sequential_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2-optimized"
-    sequential_benchmark_kem "./ntru/build/ntru_hrss701_clang_avx2-optimized"
+    benchmark_stack "./ntru/build/ntru_hrss701_gcc_ref"
+    benchmark_stack "./ntru/build/ntru_hrss701_gcc_ref-optimized"
+    benchmark_stack "./ntru/build/ntru_hrss701_clang_ref-optimized"
+    benchmark_stack "./ntru/build/ntru_hrss701_gcc_avx2"
+    benchmark_stack "./ntru/build/ntru_hrss701_gcc_avx2-optimized"
+    benchmark_stack "./ntru/build/ntru_hrss701_clang_avx2-optimized"
 
-    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref"
-    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref-optimized"
-    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_clang_ref-optimized"
-    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2"
-    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2-optimized"
-    sequential_benchmark_kem "./ntru/build/ntru_hps4096821_clang_avx2-optimized"
+    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_ref"
+    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_ref-optimized"
+    benchmark_stack "./ntru/build/ntru_hps4096821_clang_ref-optimized"
+    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_avx2"
+    benchmark_stack "./ntru/build/ntru_hps4096821_gcc_avx2-optimized"
+    benchmark_stack "./ntru/build/ntru_hps4096821_clang_avx2-optimized"
   fi
 
   if [[ -z "$SKIP_MCELIECE" ]]; then
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_clang_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_gcc_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119_clang_avx2-optimized"
 
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_clang_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized"
 
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_clang_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_gcc_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128_clang_avx2-optimized"
 
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_ref-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2-optimized"
-    sequential_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_ref"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_clang_ref-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_avx2"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_gcc_avx2-optimized"
+    benchmark_stack "./classic-mceliece/build/mceliece_8192128f_clang_avx2-optimized"
   fi
 else
   echo "=== skipped ==="
