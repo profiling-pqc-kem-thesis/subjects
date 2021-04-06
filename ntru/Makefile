@@ -150,7 +150,7 @@ tests: ntru_hrss701_ref_test ntru_hrss701_avx2_test ntru_hrss701_keccak_test ntr
 	ntru_hps4096821_ref_test ntru_hps4096821_avx2_test ntru_hps4096821_keccak_test ntru_hps4096821_vec_test
 
 # Build all benchmarks
-# first line is HRS701 targets, the second HPS4096821
+# first line is HRSS701 targets, the second HPS4096821
 benchmarks: ntru_hrss701_ref ntru_hrss701_avx2 ntru_hrss701_vec ntru_hrss701_ref-optimized ntru_hrss701_avx2-optimized ntru_hrss701_vec-optimized \
 	ntru_hps4096821_ref ntru_hps4096821_avx2 ntru_hps4096821_vec ntru_hps4096821_ref-optimized ntru_hps4096821_avx2-optimized ntru_hps4096821_vec-optimized
 
