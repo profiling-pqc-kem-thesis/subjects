@@ -114,10 +114,10 @@ tests:  mceliece_8192128_gcc_ref_test mceliece_8192128f_gcc_ref_test mceliece_69
 		mceliece_8192128_gcc_avx2_test mceliece_8192128f_gcc_avx2_test mceliece_6960119_gcc_avx2_test mceliece_6960119f_gcc_avx2_test
 
 # Build all benchmarks
-benchmarks: mceliece_8192128_gcc_ref mceliece_8192128_gcc_ref-optimized	mceliece_8192128f_gcc_ref mceliece_8192128f_gcc_ref-optimized \
-			mceliece_6960119_gcc_ref mceliece_6960119_gcc_ref-optimized	mceliece_6960119f_gcc_ref mceliece_6960119f_gcc_ref-optimized \
-			mceliece_8192128_gcc_avx2 mceliece_8192128_gcc_avx2-optimized	mceliece_8192128f_gcc_avx2 mceliece_8192128f_gcc_avx2-optimized \
-			mceliece_6960119_gcc_avx2 mceliece_6960119_gcc_avx2-optimized	mceliece_6960119f_gcc_avx2 mceliece_6960119f_gcc_avx2-optimized
+benchmarks: mceliece_8192128_gcc_ref mceliece_8192128_gcc_ref-optimized	mceliece_8192128_clang_ref-optimized mceliece_8192128f_gcc_ref mceliece_8192128f_gcc_ref-optimized mceliece_8192128f_clang_ref-optimized \
+			mceliece_6960119_gcc_ref mceliece_6960119_gcc_ref-optimized mceliece_6960119_clang_ref-optimized	mceliece_6960119f_gcc_ref mceliece_6960119f_gcc_ref-optimized mceliece_6960119f_clang_ref-optimized \
+			mceliece_8192128_gcc_avx2 mceliece_8192128_gcc_avx2-optimized mceliece_8192128_clang_avx2-optimized	mceliece_8192128f_gcc_avx2 mceliece_8192128f_gcc_avx2-optimized mceliece_8192128f_clang_avx2-optimized \
+			mceliece_6960119_gcc_avx2 mceliece_6960119_gcc_avx2-optimized	mceliece_6960119_clang_avx2-optimized mceliece_6960119f_gcc_avx2 mceliece_6960119f_gcc_avx2-optimized mceliece_6960119f_clang_avx2-optimized
 
 # Define all mceliece8192128 targets
 #                            rule name                              target     parameter-set  compiler  avx2   optimize
