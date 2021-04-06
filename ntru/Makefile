@@ -92,7 +92,7 @@ ifneq ($(TARGET),none)
 
 	# Define the target name like so:
 	# build/ntru_hrss701_keccak-avx2-optimized
-	target_name := build/ntru_$(parameter_set)_$(shell echo "$(strip $(features))" | tr ' ' '-')
+	target_name := build/ntru_$(parameter_set)_$(CC)_$(shell echo "$(strip $(features))" | tr ' ' '-')
 
 	# Set the main target to either test or benchmark
 	ifeq ($(TARGET),benchmark)
@@ -120,25 +120,17 @@ ifeq ($$(shell uname),Darwin)
 ifeq ($$(shell sysctl machdep.cpu.leaf7_features | cut -d ':' -f2 | grep -o AVX2),)
 	@echo "Warning: skipping unsupported AVX2 build"
 else
-	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) USE_KECCAK=$(strip $(7)) USE_VEC=$(strip $(8)) $$(MAKE) target
+	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) USE_AVX2=$(strip $(4)) USE_OPTIMIZATION_FLAGS=$(strip $(5)) $$(MAKE) target
 endif
 else
 ifeq ($$(shell lscpu | grep '^Flags' | cut -d ':' -f2 | grep -o avx2),)
 	@echo "Warning: skipping unsupported AVX2 build"
 else
-	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) USE_KECCAK=$(strip $(7)) USE_VEC=$(strip $(8)) $$(MAKE) target
+	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) CC=$(strip $(5)) USE_AVX2=$(strip $(6)) USE_OPTIMIZATION_FLAGS=$(strip $(7)) USE_KECCAK=$(strip $(8)) USE_VEC=$(strip $(9)) $$(MAKE) target
 endif
 endif
 else
-ifeq ($$(strip $(8)),true)
-ifeq ($$(shell uname -a | grep -o s390x),)
-	@echo "Warning: skipping unsupported s390x vec build"
-else
-	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) USE_KECCAK=$(strip $(7)) USE_VEC=$(strip $(8)) $$(MAKE) target
-endif
-else
-	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) USE_KECCAK=$(strip $(7)) USE_VEC=$(strip $(8)) $$(MAKE) target
-endif
+	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) CC=$(strip $(5)) USE_AVX2=$(strip $(6)) USE_OPTIMIZATION_FLAGS=$(strip $(7)) USE_KECCAK=$(strip $(8)) USE_VEC=$(strip $(9)) $$(MAKE) target
 endif
 endef
 
@@ -146,58 +138,64 @@ all: tests benchmarks
 
 # Build all tests
 # first line is HRS701 targets, the second HPS4096821
-tests: ntru_hrss701_ref_test ntru_hrss701_avx2_test ntru_hrss701_keccak_test ntru_hrss701_vec_test \
-	ntru_hps4096821_ref_test ntru_hps4096821_avx2_test ntru_hps4096821_keccak_test ntru_hps4096821_vec_test
+tests: ntru_hrss701_gcc_ref_test ntru_hrss701_gcc_avx2_test ntru_hrss701_gcc_keccak_test \
+	ntru_hps4096821_gcc_ref_test ntru_hps4096821_gcc_avx2_test ntru_hps4096821_gcc_keccak_test
 
 # Build all benchmarks
 # first line is HRSS701 targets, the second HPS4096821
-benchmarks: ntru_hrss701_ref ntru_hrss701_avx2 ntru_hrss701_vec ntru_hrss701_ref-optimized ntru_hrss701_avx2-optimized ntru_hrss701_vec-optimized \
-	ntru_hps4096821_ref ntru_hps4096821_avx2 ntru_hps4096821_vec ntru_hps4096821_ref-optimized ntru_hps4096821_avx2-optimized ntru_hps4096821_vec-optimized
+benchmarks: ntru_hrss701_gcc_ref ntru_hrss701_gcc_avx2 ntru_hrss701_gcc_ref-optimized ntru_hrss701_clang_ref-optimized ntru_hrss701_gcc_avx2-optimized ntru_hrss701_clang_avx2-optimized \
+	ntru_hps4096821_gcc_ref ntru_hps4096821_gcc_avx2 ntru_hps4096821_gcc_ref-optimized ntru_hps4096821_clang_ref-optimized ntru_hps4096821_gcc_avx2-optimized ntru_hps4096821_clang_avx2-optimized
 
 # Define all HRSS701 targets
-#                            rule name                    target     group  parameter  avx2   optimize  keccak  vec
-$(eval $(call create-target, ntru_hrss701_ref,            benchmark, hrss,  701,       false, false,    false,  false))
-$(eval $(call create-target, ntru_hrss701_avx2,           benchmark, hrss,  701,       true,  false,    false,  false))
-$(eval $(call create-target, ntru_hrss701_vec,            benchmark, hrss,  701,       false, false,    false,  true))
-$(eval $(call create-target, ntru_hrss701_ref-optimized,  benchmark, hrss,  701,       false, true,     false,  false))
-$(eval $(call create-target, ntru_hrss701_avx2-optimized, benchmark, hrss,  701,       true,  true,     false,  false))
-$(eval $(call create-target, ntru_hrss701_vec-optimized,  benchmark, hrss,  701,       false, true,     false,  true))
+#                            rule name                          target     group  parameter  compiler  avx2   optimize  keccak  vec
+$(eval $(call create-target, ntru_hrss701_gcc_ref,              benchmark, hrss,  701,       gcc,      false, false,    false,  false))
+$(eval $(call create-target, ntru_hrss701_gcc_avx2,             benchmark, hrss,  701,       gcc,      true,  false,    false,  false))
+# $(eval $(call create-target, ntru_hrss701_gcc_vec,              benchmark, hrss,  701,       gcc,      false, false,    false,  true))
+$(eval $(call create-target, ntru_hrss701_gcc_ref-optimized,    benchmark, hrss,  701,       gcc,      false, true,     false,  false))
+$(eval $(call create-target, ntru_hrss701_clang_ref-optimized,  benchmark, hrss,  701,       clang,    false, true,     false,  false))
+$(eval $(call create-target, ntru_hrss701_gcc_avx2-optimized,   benchmark, hrss,  701,       gcc,      true,  true,     false,  false))
+$(eval $(call create-target, ntru_hrss701_clang_avx2-optimized, benchmark, hrss,  701,       clang,    true,  true,     false,  false))
+# $(eval $(call create-target, ntru_hrss701_gcc_vec-optimized,    benchmark, hrss,  701,       gcc,      false, true,     false,  true))
+# $(eval $(call create-target, ntru_hrss701_clang_vec-optimized,  benchmark, hrss,  701,       clang,    false, true,     false,  true))
 
-$(eval $(call create-target, ntru_hrss701_ref_test,       test,       hrss,  701,       false, false,    false,  false))
-$(eval $(call create-target, ntru_hrss701_avx2_test,      test,       hrss,  701,       true,  false,    false,  false))
-$(eval $(call create-target, ntru_hrss701_keccak_test,    test,       hrss,  701,       false,  false,   true,   false))
-$(eval $(call create-target, ntru_hrss701_vec_test,       test,       hrss,  701,       false,  false,   false,  true))
+$(eval $(call create-target, ntru_hrss701_gcc_ref_test,             test,       hrss,  701,      gcc,      false, false,    false,  false))
+$(eval $(call create-target, ntru_hrss701_gcc_avx2_test,            test,       hrss,  701,      gcc,      true,  false,    false,  false))
+$(eval $(call create-target, ntru_hrss701_gcc_keccak_test,          test,       hrss,  701,      gcc,      false,  false,   true,   false))
+# $(eval $(call create-target, ntru_hrss701_vec_test,             test,       hrss,  701,      gcc,      false,  false,   false,  true))
 
 # Define all HPS4096821 targets
-#                            rule name                       target     group  parameter  avx2   optimize  keccak  vec
-$(eval $(call create-target, ntru_hps4096821_ref,            benchmark, hps,   4096821,   false, false,    false,  false))
-$(eval $(call create-target, ntru_hps4096821_avx2,           benchmark, hps,   4096821,   true,  false,    false,  false))
-$(eval $(call create-target, ntru_hps4096821_vec,            benchmark, hps,   4096821,   false, false,    false,  true))
-$(eval $(call create-target, ntru_hps4096821_ref-optimized,  benchmark, hps,   4096821,   false, true,     false,  false))
-$(eval $(call create-target, ntru_hps4096821_avx2-optimized, benchmark, hps,   4096821,   true,  true,     false,  false))
-$(eval $(call create-target, ntru_hps4096821_vec-optimized,  benchmark, hps,   4096821,   false, true,     false,  true))
+#                            rule name                             target     group  parameter  compiler  avx2   optimize  keccak  vec
+$(eval $(call create-target, ntru_hps4096821_gcc_ref,              benchmark, hps,   4096821,   gcc,      false, false,    false,  false))
+$(eval $(call create-target, ntru_hps4096821_gcc_avx2,             benchmark, hps,   4096821,   gcc,      true,  false,    false,  false))
+$(eval $(call create-target, ntru_hps4096821_gcc_vec,              benchmark, hps,   4096821,   gcc,      false, false,    false,  true))
+$(eval $(call create-target, ntru_hps4096821_gcc_ref-optimized,    benchmark, hps,   4096821,   gcc,      false, true,     false,  false))
+$(eval $(call create-target, ntru_hps4096821_clang_ref-optimized,  benchmark, hps,   4096821,   clang,    false, true,     false,  false))
+$(eval $(call create-target, ntru_hps4096821_gcc_avx2-optimized,   benchmark, hps,   4096821,   gcc,      true,  true,     false,  false))
+$(eval $(call create-target, ntru_hps4096821_clang_avx2-optimized, benchmark, hps,   4096821,   clang,    true,  true,     false,  false))
+# $(eval $(call create-target, ntru_hps4096821_gcc_vec-optimized,    benchmark, hps,   4096821,   gcc,      false, true,     false,  true))
+# $(eval $(call create-target, ntru_hps4096821_clang_vec-optimized,  benchmark, hps,   4096821,   clang,    false, true,     false,  true))
 
-$(eval $(call create-target, ntru_hps4096821_ref_test,       test,      hps,   4096821,   false, false,    false,  false))
-$(eval $(call create-target, ntru_hps4096821_avx2_test,      test,      hps,   4096821,   true,  false,    false,  false))
-$(eval $(call create-target, ntru_hps4096821_keccak_test,    test,      hps,   4096821,   false, false,    true,   false))
-$(eval $(call create-target, ntru_hps4096821_vec_test,       test,      hps,   4096821,   false, false,    false,  true))
+$(eval $(call create-target, ntru_hps4096821_gcc_ref_test,             test,      hps,   4096821,   gcc,      false, false,    false,  false))
+$(eval $(call create-target, ntru_hps4096821_gcc_avx2_test,            test,      hps,   4096821,   gcc,      true,  false,    false,  false))
+$(eval $(call create-target, ntru_hps4096821_gcc_keccak_test,          test,      hps,   4096821,   gcc,      false, false,    true,   false))
+# $(eval $(call create-target, ntru_hps4096821_vec_test,             test,      hps,   4096821,   gcc,      false, false,    false,  true))
 
 # Run all tests
 test: tests
 	# Test the HRSS701 implementation
-	build/ntru_hrss701_ref_test
-	bash -c 'diff <(build/ntru_hrss701_ref_test) <(build/ntru_hrss701_avx2_test)'
-	bash -c 'diff <(build/ntru_hrss701_ref_test) <(build/ntru_hrss701_keccak_test)'
+	build/ntru_hrss701_gcc_ref_test
+	bash -c 'diff <(build/ntru_hrss701_gcc_ref_test) <(build/ntru_hrss701_gcc_avx2_test)'
+	bash -c 'diff <(build/ntru_hrss701_gcc_ref_test) <(build/ntru_hrss701_gcc_keccak_test)'
 
 	# Test the HPS4086821 implementation
-	build/ntru_hps4096821_ref_test
-	bash -c 'diff <(build/ntru_hps4096821_ref_test) <(build/ntru_hps4096821_avx2_test)'
-	bash -c 'diff <(build/ntru_hps4096821_ref_test) <(build/ntru_hps4096821_keccak_test)'
+	build/ntru_hps4096821_gcc_ref_test
+	bash -c 'diff <(build/ntru_hps4096821_gcc_ref_test) <(build/ntru_hps4096821_gcc_avx2_test)'
+	bash -c 'diff <(build/ntru_hps4096821_gcc_ref_test) <(build/ntru_hps4096821_gcc_keccak_test)'
 
 # Analyze the hot paths of the algorithm
-hotpaths: ntru_hrss701_ref_test ntru_hps4096821_ref_test
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/ntru_hrss701_ref_test.profile build/ntru_hrss701_ref_test > /dev/null
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/ntru_hps4096821_ref_test.profile build/ntru_hps4096821_ref_test > /dev/null
+hotpaths: ntru_hrss701_gcc_ref_test ntru_hps4096821_gcc_ref_test
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/ntru_hrss701_gcc_ref_test.profile build/ntru_hrss701_gcc_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/ntru_hps4096821_gcc_ref_test.profile build/ntru_hps4096821_gcc_ref_test > /dev/null
 
 clean:
 	rm -rf build &> /dev/null || true

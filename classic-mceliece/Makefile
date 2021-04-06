@@ -66,7 +66,7 @@ ifneq ($(TARGET),none)
 
 	# Define the target name like so:
 	# build/mceliece_8192128-avx2-optimized
-	target_name := build/mceliece_$(PARAMETERS)_$(shell echo "$(strip $(features))" | tr ' ' '-')
+	target_name := build/mceliece_$(PARAMETERS)_$(CC)_$(shell echo "$(strip $(features))" | tr ' ' '-')
 
 	# Set the main target to either test or benchmark
 	ifeq ($(TARGET),benchmark)
@@ -93,90 +93,97 @@ ifeq ($$(shell uname),Darwin)
 ifeq ($$(shell sysctl machdep.cpu.leaf7_features | cut -d ':' -f2 | grep -o AVX2),)
 	@echo "Warning: skipping unsupported AVX2 build"
 else
-	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) USE_AVX2=$(strip $(4)) USE_OPTIMIZATION_FLAGS=$(strip $(5)) $$(MAKE) target
+	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) CC=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) $$(MAKE) target
 endif
 else
 ifeq ($$(shell lscpu | grep '^Flags' | cut -d ':' -f2 | grep -o avx2),)
 	@echo "Warning: skipping unsupported AVX2 build"
 else
-	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) USE_AVX2=$(strip $(4)) USE_OPTIMIZATION_FLAGS=$(strip $(5)) $$(MAKE) target
+	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) CC=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) $$(MAKE) target
 endif
 endif
 else
-	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) USE_AVX2=$(strip $(4)) USE_OPTIMIZATION_FLAGS=$(strip $(5)) $$(MAKE) target
+	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) CC=$(strip $(4)) USE_AVX2=$(strip $(5)) USE_OPTIMIZATION_FLAGS=$(strip $(6)) $$(MAKE) target
 endif
 endef
 
 all: tests benchmarks
 
 # Build all tests
-tests:  mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test \
-		mceliece_8192128_avx2_test mceliece_8192128f_avx2_test mceliece_6960119_avx2_test mceliece_6960119f_avx2_test
+tests:  mceliece_8192128_gcc_ref_test mceliece_8192128f_gcc_ref_test mceliece_6960119_gcc_ref_test mceliece_6960119f_gcc_ref_test \
+		mceliece_8192128_gcc_avx2_test mceliece_8192128f_gcc_avx2_test mceliece_6960119_gcc_avx2_test mceliece_6960119f_gcc_avx2_test
 
 # Build all benchmarks
-benchmarks: mceliece_8192128_ref mceliece_8192128_ref-optimized	mceliece_8192128f_ref mceliece_8192128f_ref-optimized \
-			mceliece_6960119_ref mceliece_6960119_ref-optimized	mceliece_6960119f_ref mceliece_6960119f_ref-optimized \
-			mceliece_8192128_avx2 mceliece_8192128_avx2-optimized	mceliece_8192128f_avx2 mceliece_8192128f_avx2-optimized \
-			mceliece_6960119_avx2 mceliece_6960119_avx2-optimized	mceliece_6960119f_avx2 mceliece_6960119f_avx2-optimized
+benchmarks: mceliece_8192128_gcc_ref mceliece_8192128_gcc_ref-optimized	mceliece_8192128f_gcc_ref mceliece_8192128f_gcc_ref-optimized \
+			mceliece_6960119_gcc_ref mceliece_6960119_gcc_ref-optimized	mceliece_6960119f_gcc_ref mceliece_6960119f_gcc_ref-optimized \
+			mceliece_8192128_gcc_avx2 mceliece_8192128_gcc_avx2-optimized	mceliece_8192128f_gcc_avx2 mceliece_8192128f_gcc_avx2-optimized \
+			mceliece_6960119_gcc_avx2 mceliece_6960119_gcc_avx2-optimized	mceliece_6960119f_gcc_avx2 mceliece_6960119f_gcc_avx2-optimized
 
 # Define all mceliece8192128 targets
-#                            rule name                        target     parameter-set  avx2   optimize
-$(eval $(call create-target, mceliece_8192128_ref,            benchmark, 8192128,       false, false))
-$(eval $(call create-target, mceliece_8192128_avx2,           benchmark, 8192128,       true,  false))
-$(eval $(call create-target, mceliece_8192128_ref-optimized,  benchmark, 8192128,       false, true))
-$(eval $(call create-target, mceliece_8192128_avx2-optimized, benchmark, 8192128,       true,  true))
-$(eval $(call create-target, mceliece_8192128_ref_test,       test,      8192128,       false, false))
-$(eval $(call create-target, mceliece_8192128_avx2_test,      test,      8192128,       true,  false))
+#                            rule name                              target     parameter-set  compiler  avx2   optimize
+$(eval $(call create-target, mceliece_8192128_gcc_ref,              benchmark, 8192128,       gcc,      false, false))
+$(eval $(call create-target, mceliece_8192128_gcc_avx2,             benchmark, 8192128,       gcc,      true,  false))
+$(eval $(call create-target, mceliece_8192128_gcc_ref-optimized,    benchmark, 8192128,       gcc,      false, true))
+$(eval $(call create-target, mceliece_8192128_clang_ref-optimized,  benchmark, 8192128,       clang,    false, true))
+$(eval $(call create-target, mceliece_8192128_gcc_avx2-optimized,   benchmark, 8192128,       gcc,      true,  true))
+$(eval $(call create-target, mceliece_8192128_clang_avx2-optimized, benchmark, 8192128,       clang,    true,  true))
+$(eval $(call create-target, mceliece_8192128_gcc_ref_test,         test,      8192128,       gcc,      false, false))
+$(eval $(call create-target, mceliece_8192128_gcc_avx2_test,        test,      8192128,       gcc,      true,  false))
 
 # Define all mceliece8192128f targets
-#                            rule name                         target     parameter-set avx2   optimize
-$(eval $(call create-target, mceliece_8192128f_ref,            benchmark, 8192128f,     false, false))
-$(eval $(call create-target, mceliece_8192128f_avx2,           benchmark, 8192128f,     true,  false))
-$(eval $(call create-target, mceliece_8192128f_ref-optimized,  benchmark, 8192128f,     false, true))
-$(eval $(call create-target, mceliece_8192128f_avx2-optimized, benchmark, 8192128f,     true,  true))
-$(eval $(call create-target, mceliece_8192128f_ref_test,       test,      8192128f,     false, false))
-$(eval $(call create-target, mceliece_8192128f_avx2_test,      test,      8192128f,     true,  false))
+#                            rule name                              target     parameter-set compiler  avx2   optimize
+$(eval $(call create-target, mceliece_8192128f_gcc_ref,              benchmark, 8192128f,     gcc,      false, false))
+$(eval $(call create-target, mceliece_8192128f_gcc_avx2,             benchmark, 8192128f,     gcc,      true,  false))
+$(eval $(call create-target, mceliece_8192128f_gcc_ref-optimized,    benchmark, 8192128f,     gcc,      false, true))
+$(eval $(call create-target, mceliece_8192128f_clang_ref-optimized,  benchmark, 8192128f,     clang,    false, true))
+$(eval $(call create-target, mceliece_8192128f_gcc_avx2-optimized,   benchmark, 8192128f,     gcc,      true,  true))
+$(eval $(call create-target, mceliece_8192128f_clang_avx2-optimized, benchmark, 8192128f,     clang,    true,  true))
+$(eval $(call create-target, mceliece_8192128f_gcc_ref_test,         test,      8192128f,     gcc,      false, false))
+$(eval $(call create-target, mceliece_8192128f_gcc_avx2_test,        test,      8192128f,     gcc,      true,  false))
 
 # Define all mceliece6960119 targets
-#                            rule name                        target     parameter-set  avx2   optimize
-$(eval $(call create-target, mceliece_6960119_ref,            benchmark, 6960119,       false, false))
-$(eval $(call create-target, mceliece_6960119_avx2,           benchmark, 6960119,       true,  false))
-$(eval $(call create-target, mceliece_6960119_ref-optimized,  benchmark, 6960119,       false, true))
-$(eval $(call create-target, mceliece_6960119_avx2-optimized, benchmark, 6960119,       true,  true))
-$(eval $(call create-target, mceliece_6960119_ref_test,       test,      6960119,       false, false))
-$(eval $(call create-target, mceliece_6960119_avx2_test,      test,      6960119,       true,  false))
+#                            rule name                              target     parameter-set  compiler  avx2   optimize
+$(eval $(call create-target, mceliece_6960119_gcc_ref,              benchmark, 6960119,       gcc,      false, false))
+$(eval $(call create-target, mceliece_6960119_gcc_avx2,             benchmark, 6960119,       gcc,      true,  false))
+$(eval $(call create-target, mceliece_6960119_gcc_ref-optimized,    benchmark, 6960119,       gcc,      false, true))
+$(eval $(call create-target, mceliece_6960119_clang_ref-optimized,  benchmark, 6960119,       clang,    false, true))
+$(eval $(call create-target, mceliece_6960119_gcc_avx2-optimized,   benchmark, 6960119,       gcc,      true,  true))
+$(eval $(call create-target, mceliece_6960119_clang_avx2-optimized, benchmark, 6960119,       clang,    true,  true))
+$(eval $(call create-target, mceliece_6960119_gcc_ref_test,         test,      6960119,       gcc,      false, false))
+$(eval $(call create-target, mceliece_6960119_gcc_avx2_test,        test,      6960119,       gcc,      true,  false))
 
 # Define all mceliece6960119f targets
-#                            rule name                         target     parameter-set avx2   optimize
-$(eval $(call create-target, mceliece_6960119f_ref,            benchmark, 6960119f,     false, false))
-$(eval $(call create-target, mceliece_6960119f_avx2,           benchmark, 6960119f,     true,  false))
-$(eval $(call create-target, mceliece_6960119f_ref-optimized,  benchmark, 6960119f,     false, true))
-$(eval $(call create-target, mceliece_6960119f_avx2-optimized, benchmark, 6960119f,     true,  true))
-$(eval $(call create-target, mceliece_6960119f_ref_test,       test,      6960119f,     false, false))
-$(eval $(call create-target, mceliece_6960119f_avx2_test,      test,      6960119f,     true,  false))
+#                            rule name                               target     parameter-set compiler  avx2   optimize
+$(eval $(call create-target, mceliece_6960119f_gcc_ref,              benchmark, 6960119f,     gcc,      false, false))
+$(eval $(call create-target, mceliece_6960119f_gcc_avx2,             benchmark, 6960119f,     gcc,      true,  false))
+$(eval $(call create-target, mceliece_6960119f_gcc_ref-optimized,    benchmark, 6960119f,     gcc,      false, true))
+$(eval $(call create-target, mceliece_6960119f_clang_ref-optimized,  benchmark, 6960119f,     clang,    false, true))
+$(eval $(call create-target, mceliece_6960119f_clang_avx2-optimized, benchmark, 6960119f,     clang,    true,  true))
+$(eval $(call create-target, mceliece_6960119f_gcc_ref_test,         test,      6960119f,     gcc,      false, false))
+$(eval $(call create-target, mceliece_6960119f_gcc_avx2_test,        test,      6960119f,     gcc,      true,  false))
 
 # Run all tests
 test: tests
 	# Test the mceliece8192128 implementations
-	build/mceliece_8192128_ref_test
-	build/mceliece_8192128_avx2_test
-	build/mceliece_8192128f_ref_test
-	build/mceliece_8192128f_avx2_test
+	build/mceliece_8192128_gcc_ref_test
+	build/mceliece_8192128_gcc_avx2_test
+	build/mceliece_8192128f_gcc_ref_test
+	build/mceliece_8192128f_gcc_avx2_test
 #	bash -c 'diff <(build/mceliece_8192128_ref_test) <(build/mceliece_8192128_avx2_test)'
 
 	# Test the mceliece6960119 implementations
-	build/mceliece_6960119_ref_test
-	build/mceliece_6960119_avx2_test
-	build/mceliece_6960119f_ref_test
-	build/mceliece_6960119f_avx2_test
+	build/mceliece_6960119_gcc_ref_test
+	build/mceliece_6960119_gcc_avx2_test
+	build/mceliece_6960119f_gcc_ref_test
+	build/mceliece_6960119f_gcc_avx2_test
 #	bash -c 'diff <(build/mceliece_8192128f_ref_test) <(build/mceliece_8192128f_avx2_test)'
 
 # Analyze the hot paths of the algorithm
-hotpaths: mceliece_8192128_ref_test mceliece_8192128f_ref_test mceliece_6960119_ref_test mceliece_6960119f_ref_test
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_8192128_ref_test.profile build/mceliece_8192128_ref_test > /dev/null
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_8192128f_ref_test.profile build/mceliece_8192128f_ref_test > /dev/null
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_6960119_ref_test.profile build/mceliece_6960119_ref_test > /dev/null
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_6960119f_ref_test.profile build/mceliece_6960119f_ref_test > /dev/null
+hotpaths: mceliece_8192128_gcc_ref_test mceliece_8192128f_gcc_ref_test mceliece_6960119_gcc_ref_test mceliece_6960119f_gcc_ref_test
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_8192128_gcc_ref_test.profile build/mceliece_8192128_gcc_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_8192128f_gcc_ref_test.profile build/mceliece_8192128f_gcc_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_6960119_gcc_ref_test.profile build/mceliece_6960119_gcc_ref_test > /dev/null
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes --callgrind-out-file=build/mceliece_6960119f_gcc_ref_test.profile build/mceliece_6960119f_gcc_ref_test > /dev/null
 
 clean:
 	rm -rf build &> /dev/null || true
