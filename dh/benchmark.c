@@ -1,6 +1,12 @@
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "lib/api.h"
+
+typedef struct {
+  unsigned char pk[CRYPTO_PUBLICKEYBYTES];
+  unsigned char sk[CRYPTO_SECRETKEYBYTES];
+} global_state_t;
 
 static unsigned char p[] = {
     0x00, 0xf4, 0xb3, 0xe8, 0xce, 0x2a, 0xd6, 0xbd, 0xce, 0xe1, 0x72, 0x7c, 0xdf, 0xc9, 0x11, 0x0e, 0x36, 0x6b, 0x41,
@@ -20,7 +26,17 @@ static unsigned char p[] = {
 static unsigned char g[] = {0x02};
 
 void *get_global_state() {
-  return NULL;
+  global_state_t *state = malloc(sizeof(global_state_t));
+  if (state == NULL)
+    return NULL;
+
+  // Generate a keypair for use when exchaning keys
+  if (crypto_dh_keypair(state->pk, state->sk, p, g) < 0) {
+    free(state);
+    return NULL;
+  }
+
+  return state;
 }
 
 int perform_keypair(unsigned char *state) {
@@ -30,24 +46,18 @@ int perform_keypair(unsigned char *state) {
 }
 
 int perform_exchange(unsigned char *state) {
-  unsigned char alice_pk[CRYPTO_PUBLICKEYBYTES] = {0};
+  if (state == NULL)
+    return 1;
+
+  // We generate a new key here since we're testing DHE, not DH
+  unsigned char alice_pk[CRYPTO_PUBLICKEYBYTES];
   unsigned char alice_sk[CRYPTO_SECRETKEYBYTES] = {0};
   unsigned char alice_k[CRYPTO_BYTES] = {0};
-
-  unsigned char bob_pk[CRYPTO_PUBLICKEYBYTES] = {0};
-  unsigned char bob_sk[CRYPTO_SECRETKEYBYTES] = {0};
-  unsigned char bob_k[CRYPTO_BYTES] = {0};
 
   if (crypto_dh_keypair(alice_pk, alice_sk, p, g) < 0)
     return 1;
 
-  if (crypto_dh_keypair(bob_pk, bob_sk, p, g) < 0)
-    return 1;
-
-  if (crypto_dh_enc(alice_k, alice_sk, bob_pk, p, g) < 0)
-    return 1;
-
-  if (crypto_dh_enc(bob_k, bob_sk, alice_pk, p, g) < 0)
+  if (crypto_dh_enc(alice_k, alice_sk, ((global_state_t *)state)->pk, p, g) < 0)
     return 1;
 
   return 0;
