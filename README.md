@@ -220,7 +220,12 @@ Furthermore, one may control what algorithms are run like so:
 SKIP_MCELIECE=yes SKIP_NTRU=yes SKIP_DH=yes SKIP_ECDH=yes ./scripts/benchmark-full.sh
 ```
 
-Lastly, the number of sequential iterations, parallel iterations and timeout in seconds is configurable via `SEQUENTIAL_ITERATIONS`, `PARALLEL_ITERATIONS` and `TIMEOUT`, respectively.
+Lastly, the number of sequential iterations, parallel iterations, timeout in seconds and sleep between tests are configurable via `SEQUENTIAL_ITERATIONS`, `PARALLEL_ITERATIONS`, `TIMEOUT` and `SLEEP_BETWEEN_TESTS` respectively. The defaults are:
+
+* `TIMEOUT` - 3600 (1h)
+* `SEQUENTIAL_ITERATIONS` - 1000
+* `PARALLEL_ITERATIONS` - 100000
+* `SLEEP_BETWEEN_TESTS` - 1
 
 The output is stored in `./data/benchmarks/$environment_name` and largely looks as follows:
 
