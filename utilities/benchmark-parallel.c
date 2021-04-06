@@ -137,17 +137,17 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
       first_start_time = start_time;
     if (stop_time > last_stop_time)
       last_stop_time = stop_time;
-    printf("thread %d: %llu iterations in %.2fms\n", i, benchmark_state->thread_iterations[i], (stop_time - start_time) / 1e6);
+    printf("thread %d: %llu iterations in %.4fms\n", i, benchmark_state->thread_iterations[i], (stop_time - start_time) / 1e6);
     total_iterations += benchmark_state->thread_iterations[i];
   }
 
   unsigned long long total_outer_time = last_stop_time - first_start_time;
   if (total_iterations < iterations)
     fprintf(stderr, "warning: timed out after %.2fs\n", total_outer_time / 1e9);
-  printf("average iterations per thread (%llu total iterations, %d threads): %.2f\n", total_iterations, thread_count, total_iterations / (float)thread_count);
-  printf("average duration per iteration: %fms\n", ((float)total_outer_time / 1e6) / total_iterations);
-  printf("outer total: %fms\n", total_outer_time / 1e6);
-  printf("throughput: %f/s\n", total_iterations / (total_outer_time / 1e9));
+  printf("average iterations per thread (%llu total iterations, %d threads): %.4f\n", total_iterations, thread_count, total_iterations / (float)thread_count);
+  printf("average duration per iteration: %.4fms\n", ((float)total_outer_time / 1e6) / total_iterations);
+  printf("outer total: %.4fms\n", total_outer_time / 1e6);
+  printf("throughput: %.4f/s\n", total_iterations / (total_outer_time / 1e9));
 
   return_value = 0;
 

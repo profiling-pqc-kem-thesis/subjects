@@ -40,7 +40,8 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
   else
     fprintf(stderr, "\rprogress:  100%%\n");
 
-  printf("%s %s average (of %d iterations): %fms\n", name, BENCHMARK_SUBJECT_NAME, completed_iterations, sum / completed_iterations);
+  printf("%s %s %d iterations took %.4fms\n", name, BENCHMARK_SUBJECT_NAME, completed_iterations, sum);
+  printf("%s %s average (of %d iterations): %.4fms\n", name, BENCHMARK_SUBJECT_NAME, completed_iterations, sum / completed_iterations);
   if (state != NULL)
     free(state);
   return 0;
