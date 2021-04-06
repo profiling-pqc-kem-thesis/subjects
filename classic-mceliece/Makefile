@@ -158,6 +158,7 @@ $(eval $(call create-target, mceliece_6960119f_gcc_ref,              benchmark, 
 $(eval $(call create-target, mceliece_6960119f_gcc_avx2,             benchmark, 6960119f,     gcc,      true,  false))
 $(eval $(call create-target, mceliece_6960119f_gcc_ref-optimized,    benchmark, 6960119f,     gcc,      false, true))
 $(eval $(call create-target, mceliece_6960119f_clang_ref-optimized,  benchmark, 6960119f,     clang,    false, true))
+$(eval $(call create-target, mceliece_6960119f_gcc_avx2-optimized,   benchmark, 6960119f,     gcc,      true,  true))
 $(eval $(call create-target, mceliece_6960119f_clang_avx2-optimized, benchmark, 6960119f,     clang,    true,  true))
 $(eval $(call create-target, mceliece_6960119f_gcc_ref_test,         test,      6960119f,     gcc,      false, false))
 $(eval $(call create-target, mceliece_6960119f_gcc_avx2_test,        test,      6960119f,     gcc,      true,  false))
