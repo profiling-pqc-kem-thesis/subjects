@@ -256,7 +256,7 @@ screen
 make clean
 
 # Start the benchmark
-./scripts/benchmark-full.sh "workstation"
+./scripts/benchmark-full.sh "workstation" | tee ./data/benchmarks/workstation/benchmark.txt
 
 # Detach from the screen using CTRL+a, d
 # that way you may close an SSH connection to a remote machine, etc.
