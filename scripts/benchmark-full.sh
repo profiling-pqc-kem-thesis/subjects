@@ -560,7 +560,7 @@ if [[ -z "$SKIP_STEP_8" ]]; then
 
   if [[ -z "$SKIP_DH" ]]; then
     benchmark_stack "./dh/build/dh_gcc_plain-optimized"
-    benchmark_stack "./dh/build/dh_gcc_clang-optimized"
+    benchmark_stack "./dh/build/dh_clang_plain-optimized"
   fi
 
   if [[ -z "$SKIP_NTRU" ]]; then
