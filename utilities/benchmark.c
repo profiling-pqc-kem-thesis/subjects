@@ -14,7 +14,7 @@ void die_with_usage(char *name) {
   printf("\n");
   printf("\033[0;1mflags:\033[0m\n");
   printf("--help             print this help text\n");
-  printf("--iterations <n>   iterations of the benchmark\n");
+  printf("--iterations <n>   iterations of the benchmark (per thread if parallel)\n");
   printf("--timeout <n>      maximum time in seconds to perform the benchmark\n");
   printf("--thread-count <n> number of threads to use in the parallel benchmark\n");
 #ifdef BENCHMARK_KEYPAIR

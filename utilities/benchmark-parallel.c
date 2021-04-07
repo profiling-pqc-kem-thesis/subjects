@@ -31,8 +31,7 @@ typedef struct {
 static int benchmark_loader(int thread_index, void *state) {
   benchmark_state_t *benchmark_state = (benchmark_state_t *)state;
   benchmark_state->thread_start[thread_index] = timespec_now();
-  int iterations = benchmark_state->iterations / benchmark_state->thread_count;
-  for (int i = 0; i < iterations && benchmark_state->perform; i++) {
+  for (int i = 0; i < benchmark_state->iterations && benchmark_state->perform; i++) {
     if (benchmark_state->benchmark(benchmark_state->state)) {
       benchmark_state->thread_stop[thread_index] = timespec_now();
       return 1;
@@ -173,11 +172,6 @@ cleanup:
 int benchmark_parallel(int iterations, int thread_count, int timeout, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange) {
   if (thread_count < 1) {
     printf("expected thread count to be 1 or larger, was %d\n", thread_count);
-    return EXIT_FAILURE;
-  }
-
-  if (iterations % thread_count != 0) {
-    printf("expected iterations to be evenly divisible by thread count\n");
     return EXIT_FAILURE;
   }
 
