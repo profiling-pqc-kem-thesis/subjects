@@ -13,6 +13,9 @@ TIMEOUT="${TIMEOUT:-3600}"
 # Number of iterations to run in sequential benchmarks
 SEQUENTIAL_ITERATIONS="${SEQUENTIAL_ITERATIONS:-1000}"
 
+# Number of iteartions to run in sequential benchmarks under heaptrack
+HEAPTRACK_SEQUENTIAL_ITERATIONS="${HEAPTRACK_SEQUENTIAL_ITERATIONS:-10}"
+
 # Number of iterations to run in parallel benchmarks
 PARALLEL_ITERATIONS="${PARALLEL_ITERATIONS:-100000}"
 
@@ -210,10 +213,10 @@ function heap_benchmark_kex() {
     return
   fi
 
-  run_wrapped heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+  run_wrapped heaptrack "$binary" sequential --keypair --iterations "$HEAPTRACK_SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
-  run_wrapped heaptrack "$binary" sequential --exchange --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
+  run_wrapped heaptrack "$binary" sequential --exchange --iterations "$HEAPTRACK_SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").exchange.txt"
   wait_for_cooldown
 
   mv heaptrack.* "$output_directory/heap"
@@ -236,13 +239,13 @@ function heap_benchmark_kem() {
     return
   fi
 
-  run_wrapped heaptrack "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
+  run_wrapped heaptrack "$binary" sequential --keypair --iterations "$HEAPTRACK_SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").keypair.txt"
   wait_for_cooldown
 
-  run_wrapped heaptrack "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
+  run_wrapped heaptrack "$binary" sequential --encrypt --iterations "$HEAPTRACK_SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").encrypt.txt"
   wait_for_cooldown
 
-  run_wrapped heaptrack "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
+  run_wrapped heaptrack "$binary" sequential --decrypt --iterations "$HEAPTRACK_SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/heap/$(basename "$binary").decrypt.txt"
   wait_for_cooldown
 
   mv heaptrack.* "$output_directory/heap"

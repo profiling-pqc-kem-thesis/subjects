@@ -96,6 +96,7 @@ Lastly, the number of sequential iterations, parallel iterations, timeout in sec
 * `SEQUENTIAL_ITERATIONS` - 1000
 * `PARALLEL_ITERATIONS` - 100000
 * `SLEEP_BETWEEN_TESTS` - 1
+* `HEAPTRACK_SEQUENTIAL_ITERATIONS` - 10
 
 The output is stored in `./data/benchmarks/$environment_name` and largely looks as follows:
 
