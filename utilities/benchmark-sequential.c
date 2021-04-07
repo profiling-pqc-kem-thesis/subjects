@@ -1,12 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "time.h"
 
 #include "benchmark.h"
 
 static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations, int timeout) {
+  printf("=== Running benchmark ===\n");
+  unsigned long long *durations = malloc(sizeof(unsigned long long) * iterations);
+  if (durations == NULL) {
+    fprintf(stderr, "Unable to allocate memory for durations\n");
+    return 1;
+  }
+  memset(durations, 0, sizeof(unsigned long long) * iterations);
+
   fprintf(stderr, "fething global state for benchmark '%s', '%s'\n", name, BENCHMARK_SUBJECT_NAME);
   void *state = get_global_state();
 
@@ -27,6 +36,7 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
       return 1;
     }
     clock_gettime(CLOCK_MONOTONIC, &stop);
+    durations[completed_iterations] = timespec_to_duration(&start, &stop);
     sum += timespec_to_duration(&start, &stop) / 1e6;
     fprintf(stderr, "\rprogress: % 3.f%%", ((float)completed_iterations / iterations) * 100);
 
@@ -40,6 +50,12 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
   else
     fprintf(stderr, "\rprogress:  100%%\n");
 
+  printf("=== Results ===\n");
+  printf("iteration,duration (ns)\n");
+  for (int i = 0; i < completed_iterations; i++)
+    printf("%d,%llu\n", i, durations[i]);
+
+  printf("=== Summary ===\n");
   printf("%s %s %d iterations took %.4fms\n", name, BENCHMARK_SUBJECT_NAME, completed_iterations, sum);
   printf("%s %s average (of %d iterations): %.4fms\n", name, BENCHMARK_SUBJECT_NAME, completed_iterations, sum / completed_iterations);
   if (state != NULL)

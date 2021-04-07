@@ -45,6 +45,7 @@ static int benchmark_loader(int thread_index, void *state) {
 }
 
 static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations, int thread_count, int timeout) {
+  printf("=== Running benchmark ===\n");
   int return_value = 1;
   benchmark_state_t *benchmark_state = NULL;
   pool_t *pool = NULL;
@@ -126,6 +127,8 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
     goto cleanup;
   }
 
+  printf("=== Results ===\n");
+  printf("thread,iterations,duration (ns)\n");
   unsigned long long total_iterations = 0;
   unsigned long long first_start_time = -1;
   unsigned long long last_stop_time = 0;
@@ -136,10 +139,11 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
       first_start_time = start_time;
     if (stop_time > last_stop_time)
       last_stop_time = stop_time;
-    printf("thread %d: %llu iterations in %.4fms\n", i, benchmark_state->thread_iterations[i], (stop_time - start_time) / 1e6);
+    printf("%d,%llu,%llu\n", i, benchmark_state->thread_iterations[i], stop_time - start_time);
     total_iterations += benchmark_state->thread_iterations[i];
   }
 
+  printf("=== Summary ===\n");
   unsigned long long total_outer_time = last_stop_time - first_start_time;
   if (total_iterations < iterations)
     fprintf(stderr, "warning: timed out after %.2fs\n", total_outer_time / 1e9);
