@@ -120,7 +120,7 @@ ifeq ($$(shell uname),Darwin)
 ifeq ($$(shell sysctl machdep.cpu.leaf7_features | cut -d ':' -f2 | grep -o AVX2),)
 	@echo "Warning: skipping unsupported AVX2 build"
 else
-	TARGET=$(strip $(2)) PARAMETERS=$(strip $(3)) USE_AVX2=$(strip $(4)) USE_OPTIMIZATION_FLAGS=$(strip $(5)) $$(MAKE) target
+	TARGET=$(strip $(2)) GROUP="$(strip $(3)) PARAMETERS=$(strip $(4)) CC=$(strip $(5)) USE_AVX2=$(strip $(6)) USE_OPTIMIZATION_FLAGS=$(strip $(7)) USE_KECCAK=$(strip $(8)) USE_VEC=$(strip $(9)) $$(MAKE) target
 endif
 else
 ifeq ($$(shell lscpu | grep '^Flags' | cut -d ':' -f2 | grep -o avx2),)
