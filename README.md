@@ -195,78 +195,7 @@ It is run like so:
 ./scripts/benchmark-full.sh <environment name>
 ```
 
-The environment name is used to name the output, which will be placed in `./data/benchmarks/$environment_name`. The number of seconds to run each parallel benchmark is controlled by the parallel duration. The number of iterations to benchmark for in the sequential benchmark is dictated by sequential iterations.
-
-The script is run in seven steps:
-
-1. Assert pre-conditions
-2. Build
-3. Collect environmental information
-4. Run the heap analysis
-5. Run the micro benchmarks
-6. Run the sequential tests
-7. Run the parallel tests.
-8. Run static stack benchmarks
-
-These steps can be controlled using `SKIP_STEPS` like so:
-
-```sh
-SKIP_STEPS=1,2,7 ./scripts/benchmark-full.sh | tee benchmark.txt
-```
-
-Furthermore, one may control what algorithms are run like so:
-
-```
-SKIP_MCELIECE=yes SKIP_NTRU=yes SKIP_DH=yes SKIP_ECDH=yes ./scripts/benchmark-full.sh | tee benchmark.txt
-```
-
-Lastly, the number of sequential iterations, parallel iterations, timeout in seconds and sleep between tests are configurable via `SEQUENTIAL_ITERATIONS`, `PARALLEL_ITERATIONS`, `TIMEOUT` and `SLEEP_BETWEEN_TESTS` respectively. The defaults are:
-
-* `TIMEOUT` - 3600 (1h)
-* `SEQUENTIAL_ITERATIONS` - 1000
-* `PARALLEL_ITERATIONS` - 100000
-* `SLEEP_BETWEEN_TESTS` - 1
-
-The output is stored in `./data/benchmarks/$environment_name` and largely looks as follows:
-
-```
-data
-└── benchmarks
-    └── workstation
-        ├── build.txt
-        ├── duration.txt
-        ├── end.txt
-        ├── environment.sqlite
-        ├── heap
-        ├── micro
-        ├── parallel
-        ├── sequential
-        └── start.txt
-```
-
-_NOTE: when analysing the results from perforate, know that it will include the results from the `get_global_state`, which includes an extra keypair generation and an encrypt for the KEMs._
-
-The recommended flow of benchmarking is as follows:
-
-```sh
-# Open a persistent session (you may need to press enter once)
-screen
-
-# Clean the entire build
-make clean
-
-# Start the benchmark
-./scripts/benchmark-full.sh "workstation" | tee benchmark.txt
-
-# Detach from the screen using CTRL+a, d
-# that way you may close an SSH connection to a remote machine, etc.
-
-# List active sessions
-screen -ls
-
-# Attach to an active session
-screen -r <name / id from screen -ls>
-```
+The complete workflow
 
 ### Available Implementations
 
