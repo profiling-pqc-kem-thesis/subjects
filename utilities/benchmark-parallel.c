@@ -12,7 +12,7 @@
 
 typedef struct {
   // The number of iterations to perform
-  int iterations;
+  int iterations_per_thread;
   // The number of threads to use
   int thread_count;
   // Whether or not to run the algorithm (break condition of for loop)
@@ -31,7 +31,7 @@ typedef struct {
 static int benchmark_loader(int thread_index, void *state) {
   benchmark_state_t *benchmark_state = (benchmark_state_t *)state;
   benchmark_state->thread_start[thread_index] = timespec_now();
-  for (int i = 0; i < benchmark_state->iterations && benchmark_state->perform; i++) {
+  for (int i = 0; i < benchmark_state->iterations_per_thread && benchmark_state->perform; i++) {
     if (benchmark_state->benchmark(benchmark_state->state)) {
       benchmark_state->thread_stop[thread_index] = timespec_now();
       return 1;
@@ -44,7 +44,7 @@ static int benchmark_loader(int thread_index, void *state) {
   return 0;
 }
 
-static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations, int thread_count, int timeout) {
+static int perform_benchmark(char *name, int (*benchmark)(void *state), int iterations_per_thread, int thread_count, int timeout) {
   printf("=== Running benchmark ===\n");
   int return_value = 1;
   benchmark_state_t *benchmark_state = NULL;
@@ -88,7 +88,7 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
   fprintf(stderr, "fething global state for benchmark '%s', '%s'\n", name, BENCHMARK_SUBJECT_NAME);
   state = get_global_state();
 
-  benchmark_state->iterations = iterations;
+  benchmark_state->iterations_per_thread = iterations_per_thread;
   benchmark_state->thread_count = thread_count;
   benchmark_state->perform = 1;
   benchmark_state->state = state;
@@ -110,10 +110,10 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
     for (int j = 0; j < thread_count; j++)
       completed_iterations += benchmark_state->thread_iterations[j];
 
-    if (completed_iterations >= iterations)
+    if (completed_iterations >= iterations_per_thread * thread_count)
       break;
 
-    fprintf(stderr, "\rprogress: % 3.f%%", ((float)completed_iterations / iterations) * 100);
+    fprintf(stderr, "\rprogress: % 3.f%%", ((float)completed_iterations / (iterations_per_thread * thread_count)) * 100);
     sleep(1);
   }
   if (!timed_out)
@@ -145,7 +145,7 @@ static int perform_benchmark(char *name, int (*benchmark)(void *state), int iter
 
   printf("=== Summary ===\n");
   unsigned long long total_outer_time = last_stop_time - first_start_time;
-  if (total_iterations < iterations)
+  if (total_iterations < (iterations_per_thread * thread_count))
     fprintf(stderr, "warning: timed out after %.2fs\n", total_outer_time / 1e9);
   printf("average iterations per thread (%llu total iterations, %d threads): %.4f\n", total_iterations, thread_count, total_iterations / (float)thread_count);
   printf("average duration per iteration: %.4fms\n", ((float)total_outer_time / 1e6) / total_iterations);
@@ -173,7 +173,7 @@ cleanup:
   return return_value;
 }
 
-int benchmark_parallel(int iterations, int thread_count, int timeout, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange) {
+int benchmark_parallel(int iterations_per_thread, int thread_count, int timeout, int benchmark_keypair, int benchmark_encrypt, int benchmark_decrypt, int benchmark_exchange) {
   if (thread_count < 1) {
     printf("expected thread count to be 1 or larger, was %d\n", thread_count);
     return EXIT_FAILURE;
@@ -185,28 +185,28 @@ int benchmark_parallel(int iterations, int thread_count, int timeout, int benchm
 #ifdef BENCHMARK_KEYPAIR
   if (benchmark_keypair) {
     run++;
-    failed += perform_benchmark("keypair", &perform_keypair, iterations, thread_count, timeout);
+    failed += perform_benchmark("keypair", &perform_keypair, iterations_per_thread, thread_count, timeout);
   }
 #endif
 
 #ifdef BENCHMARK_ENCRYPT
   if (benchmark_encrypt) {
     run++;
-    failed += perform_benchmark("encrypt", &perform_encrypt, iterations, thread_count, timeout);
+    failed += perform_benchmark("encrypt", &perform_encrypt, iterations_per_thread, thread_count, timeout);
   }
 #endif
 
 #ifdef BENCHMARK_DECRYPT
   if (benchmark_decrypt) {
     run++;
-    failed += perform_benchmark("decrypt", &perform_decrypt, iterations, thread_count, timeout);
+    failed += perform_benchmark("decrypt", &perform_decrypt, iterations_per_thread, thread_count, timeout);
   }
 #endif
 
 #ifdef BENCHMARK_EXCHANGE
   if (benchmark_exchange) {
     run++;
-    failed += perform_benchmark("exchange", &perform_exchange, iterations, thread_count, timeout);
+    failed += perform_benchmark("exchange", &perform_exchange, iterations_per_thread, thread_count, timeout);
   }
 #endif
 
