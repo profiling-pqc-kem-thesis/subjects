@@ -115,7 +115,7 @@ endif
 # This macro creates a build target for a configuration of NTUR
 define create-target
 $(strip $(1)):
-ifeq ($$(strip $(5)),true)
+ifeq ($$(strip $(6)),true)
 ifeq ($$(shell uname),Darwin)
 ifeq ($$(shell sysctl machdep.cpu.leaf7_features | cut -d ':' -f2 | grep -o AVX2),)
 	@echo "Warning: skipping unsupported AVX2 build"
