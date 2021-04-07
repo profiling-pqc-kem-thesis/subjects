@@ -118,6 +118,20 @@ _NOTE: when analysing the results from perforate, know that it will include the 
 
 ## Benchmarking
 
+TODO: Add sudo instructions / paranoia instructions
+
+Starting the benchmark.
+
+While you can run the benchmark script with `sudo` to get the correct monitoring permissions, it's recommended to instead change the `kernel.perf_event_paranoid` level:
+
+```sh
+# Add the following row to the file:
+# kernel.perf_event_paranoid = -1
+sudo vi /etc/sysctl.conf
+# Restart
+sudo shutdown -r now
+```
+
 ```sh
 # Clone this repository
 git clone https://github.com/profiling-pqc-kem-thesis/subjects
@@ -134,10 +148,20 @@ make clean
 
 # Detach from the screen using CTRL+a, d
 # that way you may close an SSH connection to a remote machine, etc.
+```
 
+Checking the status of the benchmark.
+
+```sh
 # List active sessions
 screen -ls
 
 # Attach to an active session
 screen -r <name / id from screen -ls>
+```
+
+Compiling the results.
+
+```sh
+tar -xzf archive.tgz ./data/benchmarks
 ```
