@@ -16,8 +16,8 @@ SEQUENTIAL_ITERATIONS="${SEQUENTIAL_ITERATIONS:-1000}"
 # Number of iteartions to run in sequential benchmarks under heaptrack
 HEAPTRACK_SEQUENTIAL_ITERATIONS="${HEAPTRACK_SEQUENTIAL_ITERATIONS:-10}"
 
-# Number of iterations to run in parallel benchmarks
-PARALLEL_ITERATIONS="${PARALLEL_ITERATIONS:-100000}"
+# Number of iterations to run in parallel benchmarks (per thread)
+PARALLEL_ITERATIONS="${PARALLEL_ITERATIONS:-1000}"
 
 # Number of seconds to sleep between tests - defaults to 5m
 SLEEP_BETWEEN_TESTS="${SLEEP_BETWEEN_TESTS:-300}"
