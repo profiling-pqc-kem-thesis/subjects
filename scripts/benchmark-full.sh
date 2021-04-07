@@ -279,6 +279,7 @@ mkdir -p "$output_directory/heap"
 mkdir -p "$output_directory/sequential"
 mkdir -p "$output_directory/parallel"
 mkdir -p "$output_directory/stack"
+mkdir -p "$output_directory/versions"
 
 # Copy the benchmark script for easy version control
 cat "$0" > "$output_directory/benchmark-full.sh"
@@ -292,6 +293,14 @@ echo ""
 echo "=== STEP 1 - Checking Prerequisites ==="
 if [[ -z "$SKIP_STEP_1" ]]; then
   assert_commands "sqlite3" "heaptrack" "make" "gcc" "clang" "perforator" "nm" "objdump" | tee "$output_directory/commands.txt"
+  heaptrack -v | tee "$output_directory/versions/heaptrack.txt"
+  perforator -v | tee "$output_directory/versions/perforator.txt"
+  gcc -v | tee "$output_directory/versions/gcc.txt"
+  clang -v | tee "$output_directory/versions/clang.txt"
+  nm --version | tee "$output_directory/versions/nm.txt"
+  objdump --version | tee "$output_directory/versions/objdump.txt"
+  make -v | tee "$output_directory/versions/make.txt"
+  sqlite3 --version | tee "$output_directory/versions/sqlite3.txt"
   echo "=== done ==="
 else
   echo "=== skipped ==="
