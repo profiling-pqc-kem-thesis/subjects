@@ -20,7 +20,7 @@ PARALLEL_ITERATIONS="${PARALLEL_ITERATIONS:-100000}"
 SLEEP_BETWEEN_TESTS="${SLEEP_BETWEEN_TESTS:-300}"
 
 # The comma separated events to use with perf / perforator
-PERF_EVENTS="${PERF_EVENTS:-cpu-cycles,instructions}"
+PERF_EVENTS="${PERF_EVENTS:-cpu-cycles,instructions,cache-misses,page-faults,task-clock}"
 
 # == PARSE ARGUMENTS ==
 

@@ -163,7 +163,7 @@ Go to the Caller / Callee tab and search for the `crypto_` functions. The peak a
 To analyze the performance of the implementations in terms of micro benchmarks, use the [perforator](https://github.com/zyedidia/perforator) tool to leverage the perf API on select methods.
 
 ```sh
-sudo perforator --no-sort --summary --csv --group cpu-cycles,instructions -r crypto_kem_keypair -r crypto_kem_enc -r crypto_kem_dec -- ./ntru/build/ntru_hrss701_avx2-optimized --sequential --encrypt --iterations 1000
+sudo perforator --no-sort --summary --csv -e cpu-cycles,instructions,cache-misses,page-faults,task-clock -r crypto_kem_keypair -r crypto_kem_enc -r crypto_kem_dec -- ./ntru/build/ntru_hrss701_avx2-optimized --sequential --encrypt --iterations 1000
 ```
 
 ```
