@@ -19,19 +19,19 @@ benchmarks: build/ecdh_p256_gcc_plain-optimized build/ecdh_p256_clang_plain-opti
 
 build/ecdh_p256_gcc_plain-optimized: $(benchmark_source) $(benchmark_headers)
 	mkdir -p $(dir $@)
-	gcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D ECDH_CURVE=ECDH_CURVE_P256 -D BENCHMARK_SUBJECT_NAME='"ECDHE P-256"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
+	gcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -mtune=native -o $@ -D ECDH_CURVE=ECDH_CURVE_P256 -D BENCHMARK_SUBJECT_NAME='"ECDHE P-256"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
 
 build/ecdh_p256_clang_plain-optimized: $(benchmark_source) $(benchmark_headers)
 	mkdir -p $(dir $@)
-	clang $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D ECDH_CURVE=ECDH_CURVE_P256 -D BENCHMARK_SUBJECT_NAME='"ECDHE P-256"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
+	clang $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -mtune=native -o $@ -D ECDH_CURVE=ECDH_CURVE_P256 -D BENCHMARK_SUBJECT_NAME='"ECDHE P-256"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
 
 build/ecdh_25519_gcc_plain-optimized: $(benchmark_source) $(benchmark_headers)
 	mkdir -p $(dir $@)
-	gcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D ECDH_CURVE=ECDH_CURVE_25519 -D BENCHMARK_SUBJECT_NAME='"ECDHE x25519"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
+	gcc $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -mtune=native -o $@ -D ECDH_CURVE=ECDH_CURVE_25519 -D BENCHMARK_SUBJECT_NAME='"ECDHE x25519"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
 
 build/ecdh_25519_clang_plain-optimized: $(benchmark_source) $(benchmark_headers)
 	mkdir -p $(dir $@)
-	clang $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -o $@ -D ECDH_CURVE=ECDH_CURVE_25519 -D BENCHMARK_SUBJECT_NAME='"ECDHE x25519"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
+	clang $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -O3 -march=native -mtune=native -o $@ -D ECDH_CURVE=ECDH_CURVE_25519 -D BENCHMARK_SUBJECT_NAME='"ECDHE x25519"' -D BENCHMARK_KEYPAIR -D BENCHMARK_EXCHANGE $(benchmark_source) $(LDLIBS) -lpthread
 
 build/ecdh_p256_test: $(test_source) $(test_headers)
 	mkdir -p $(dir $@)

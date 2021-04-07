@@ -86,7 +86,7 @@ ifneq ($(TARGET),none)
 	endif
 
 	ifeq ($(USE_OPTIMIZATION_FLAGS),true)
-		CFLAGS += -O3 -march=native
+		CFLAGS += -O3 -march=native -mtune=native
 		features += optimized
 	endif
 
