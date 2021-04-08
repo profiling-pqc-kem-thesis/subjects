@@ -19,8 +19,8 @@ HEAPTRACK_SEQUENTIAL_ITERATIONS="${HEAPTRACK_SEQUENTIAL_ITERATIONS:-10}"
 # Number of iterations to run in parallel benchmarks (per thread)
 PARALLEL_ITERATIONS="${PARALLEL_ITERATIONS:-1000}"
 
-# Number of seconds to sleep between tests - defaults to 5m
-SLEEP_BETWEEN_TESTS="${SLEEP_BETWEEN_TESTS:-300}"
+# Number of seconds to sleep between tests - defaults to 1m
+SLEEP_BETWEEN_TESTS="${SLEEP_BETWEEN_TESTS:-60}"
 
 # The comma separated events to use with perf / perforator
 PERF_EVENTS="${PERF_EVENTS:-cpu-cycles,instructions,cache-misses,page-faults,task-clock}"
