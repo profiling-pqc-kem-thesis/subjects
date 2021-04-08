@@ -25,6 +25,10 @@ SLEEP_BETWEEN_TESTS="${SLEEP_BETWEEN_TESTS:-60}"
 # The comma separated events to use with perf / perforator
 PERF_EVENTS="${PERF_EVENTS:-cpu-cycles,instructions,cache-misses,page-faults,task-clock}"
 
+KEM_REGIONS="crypto_kem_keypair crypto_kem_enc crypto_kem_dec"
+NTRU_REGIONS="$KEM_REGIONS poly_Rq_mul poly_S3_inv randombytes poly_Rq_inv poly_R2_inv poly_R2_inv_to_Rq_inv poly_Sq_mul"
+MCELIECE_REGIONS="$KEM_REGIONS pk_gen gen_e syndrome syndrome_asm same_mask gf_mul root eval gf_add synd"
+
 # == PARSE ARGUMENTS ==
 
 # Set SKIP_STEP_i for each specified i
@@ -105,15 +109,15 @@ function micro_benchmark_kem() {
 
   keypair_methods="$(echo "$2" | sed 's/^\| / -r /g')"
   wait_for_cooldown
-  run_wrapped perforator --no-sort --summary --csv -e "$PERF_EVENTS" $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+  run_wrapped perforator --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
 
   encrypt_methods="$(echo "$3" | sed 's/^\| / -r /g')"
   wait_for_cooldown
-  run_wrapped perforator --no-sort --summary --csv -e "$PERF_EVENTS" $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+  run_wrapped perforator --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
 
   decrypt_methods="$(echo "$4" | sed 's/^\| / -r /g')"
   wait_for_cooldown
-  run_wrapped perforator --no-sort --summary --csv -e "$PERF_EVENTS" $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+  run_wrapped perforator --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
 }
 
 function sequential_benchmark_kex() {
@@ -444,49 +448,49 @@ echo ""
 echo "=== STEP 5 - Micro Benchmarks ==="
 if [[ -z "$SKIP_STEP_5" ]]; then
   if [[ -z "$SKIP_NTRU" ]]; then
-    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_clang_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_clang_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_ref-optimized" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_clang_ref-optimized" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2-optimized" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hrss701_clang_avx2-optimized" $NTRU_REGIONS
 
-    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_clang_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_clang_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_ref-optimized" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_clang_ref-optimized" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2-optimized" $NTRU_REGIONS
+    plan micro_benchmark_kem "./ntru/build/ntru_hps4096821_clang_avx2-optimized" $NTRU_REGIONS
   fi
 
   if [[ -z "$SKIP_MCELIECE" ]]; then
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_gcc_avx2-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119_clang_avx2-optimized" $MCELIECE_REGIONS
 
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized" $MCELIECE_REGIONS
 
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_gcc_avx2-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128_clang_avx2-optimized" $MCELIECE_REGIONS
 
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_ref-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
-    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_avx2-optimized" "crypto_kem_keypair" "crypto_kem_enc" "crypto_kem_dec"
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_ref-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2-optimized" $MCELIECE_REGIONS
+    plan micro_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_avx2-optimized" $MCELIECE_REGIONS
   fi
 
   run_jobs micro_benchmark_kem
