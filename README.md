@@ -156,6 +156,36 @@ heaptrack_gui heaptrack.ecdh_25519_plain_optimized.56272.gz
 
 Go to the Caller / Callee tab and search for the `crypto_` functions. The peak allocation is the maximum number of bytes the function allocated during a single iteration. The total amount of bytes allocated is dependant on how many times the function is invoked.
 
+### Making assembly functions debuggable
+
+Perforator etc. uses debugging information and other information stored in the ELF files. Normally, assembly files don't include all of the necessary information to properly use these tools. To enable using these tools, first mark the symbols as being functions.
+
+```diff
+.global poly_Rq_mul
+.global _poly_Rq_mul
++#ifdef __linux__
++.type poly_Rq_mul, @function
++.type _poly_Rq_mul, @function
++#endif
+poly_Rq_mul:
+_poly_Rq_mul:
+```
+
+After the end of a function, add these symbols to specify the size.
+
+```diff
+mov %r8, %rsp
+pop %r12
+ret
++#ifdef __linux__
++.poly_Rq_mul_end:
++.size poly_Rq_mul, .-poly_Rq_mul
++.size _poly_Rq_mul, .-_poly_Rq_mul
++#endif
+```
+
+_Note: the assembly files will have to be stored with a capital `.S` file extension._
+
 ### Analyzing processor usage
 
 #### Micro benchmarks
