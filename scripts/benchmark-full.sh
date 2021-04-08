@@ -92,6 +92,8 @@ function assert_commands() {
 
 function micro_benchmark_kem() {
   binary="$1"
+  shift
+  regions="$(echo "$*" | sed 's/^\| / -r /g')"
 
   if ! which "perforator" &> /dev/null; then
     echo "warning: skipping micro_benchmark_kem '$binary' - perforator missing" | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
@@ -107,17 +109,14 @@ function micro_benchmark_kem() {
     return
   fi
 
-  keypair_methods="$(echo "$2" | sed 's/^\| / -r /g')"
   wait_for_cooldown
-  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $keypair_methods -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
 
-  encrypt_methods="$(echo "$3" | sed 's/^\| / -r /g')"
   wait_for_cooldown
-  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $encrypt_methods -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
 
-  decrypt_methods="$(echo "$4" | sed 's/^\| / -r /g')"
   wait_for_cooldown
-  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $decrypt_methods -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
 }
 
 function sequential_benchmark_kex() {
