@@ -62,6 +62,8 @@
 .hidden syndrome_asm
 .global _syndrome_asm
 .global syndrome_asm
+.type _syndrome_asm, @function
+.type syndrome_asm, @function
 _syndrome_asm:
 syndrome_asm:
 mov %rsp,%r11
@@ -909,3 +911,6 @@ movq   %rsi,200(%rdi)
 # qhasm: return
 add %r11,%rsp
 ret
+.syndrome_asm_end:
+.size syndrome_asm, .-syndrome_asm
+.size _syndrome_asm, .-_syndrome_asm

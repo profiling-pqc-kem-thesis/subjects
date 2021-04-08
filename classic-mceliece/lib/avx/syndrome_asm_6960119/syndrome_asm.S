@@ -72,6 +72,10 @@
 .hidden syndrome_asm
 .global _syndrome_asm
 .global syndrome_asm
+#ifdef __linux__
+.type _syndrome_asm, @function
+.type syndrome_asm, @function
+#endif
 _syndrome_asm:
 syndrome_asm:
 mov %rsp,%r11
@@ -920,3 +924,8 @@ movb   %sil,0(%rdi)
 # qhasm: return
 add %r11,%rsp
 ret
+#ifdef __linux__
+.syndrome_asm_end:
+.size syndrome_asm, .-syndrome_asm
+.size _syndrome_asm, .-_syndrome_asm
+#endif
