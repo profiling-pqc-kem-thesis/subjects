@@ -166,3 +166,7 @@ Compiling the results.
 ```sh
 tar -xzf archive.tgz ./data/benchmarks
 ```
+
+## Considerations
+
+Progress is tracked in the `progress.txt` file in the output directory. Each step is planned sequentially. This enables you to stop a benchmark at any time and continue where you left off without losing work.
