@@ -1,7 +1,3 @@
-<p align="center">
-  <strong><a href="#quickstart">Quick Start</a> | <a href="#documentation">Documentation</a> </strong>
-</p>
-
 # subjects
 ## Instrumented implementations of modern-day KEXs and future KEMs
 
