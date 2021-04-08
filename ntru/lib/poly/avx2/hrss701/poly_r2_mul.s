@@ -105,6 +105,10 @@ low189:
 .text
 .global poly_R2_mul
 .global _poly_R2_mul
+#ifdef __linux__
+.type poly_R2_mul, @function
+.type _poly_R2_mul, @function
+#endif
 poly_R2_mul:
 _poly_R2_mul:
 vmovdqa 0(%rsi), %ymm0
@@ -464,3 +468,8 @@ vmovdqa %ymm2, 0(%rdi)
 vmovdqa %ymm0, 32(%rdi)
 vmovdqa %ymm8, 64(%rdi)
 ret
+#ifdef __linux__
+.poly_R2_mul_end:
+.size poly_R2_mul, .-poly_R2_mul
+.size _poly_R2_mul, .-_poly_R2_mul
+#endif

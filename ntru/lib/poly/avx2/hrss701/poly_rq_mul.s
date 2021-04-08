@@ -323,6 +323,10 @@ mask_mod8192:
 .text
 .global poly_Rq_mul
 .global _poly_Rq_mul
+#ifdef __linux__
+.type poly_Rq_mul, @function
+.type _poly_Rq_mul, @function
+#endif
 poly_Rq_mul:
 _poly_Rq_mul:
 push %r12
@@ -8455,3 +8459,8 @@ vmovdqu %ymm11, 1320(%rdi)
 mov %r8, %rsp
 pop %r12
 ret
+#ifdef __linux__
+.poly_Rq_mul_end:
+.size poly_Rq_mul, .-poly_Rq_mul
+.size _poly_Rq_mul, .-_poly_Rq_mul
+#endif

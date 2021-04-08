@@ -71,6 +71,10 @@ mask_3:
 .text
 .global poly_Rq_to_S3
 .global _poly_Rq_to_S3
+#ifdef __linux__
+.type poly_Rq_to_S3, @function
+.type _poly_Rq_to_S3, @function
+#endif
 poly_Rq_to_S3:
 _poly_Rq_to_S3:
 vmovdqa mask_modq(%rip), %ymm6
@@ -1114,3 +1118,8 @@ vpand %ymm15, %ymm1, %ymm14
 vpxor %ymm14, %ymm0, %ymm1
 vmovdqa %ymm1, 1376(%rdi)
 ret
+#ifdef __linux__
+.poly_Rq_to_S3_end:
+.size poly_Rq_to_S3, .-poly_Rq_to_S3
+.size _poly_Rq_to_S3, .-_poly_Rq_to_S3
+#endif

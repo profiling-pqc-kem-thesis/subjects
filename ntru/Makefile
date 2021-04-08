@@ -57,8 +57,8 @@ ifneq ($(TARGET),none)
 
 	ifeq ($(USE_AVX2),true)
 		# Add the target-specific AVX2 poly implementation
-		source += $(shell find lib/poly/avx2 -maxdepth 1 -type f -iname "*.c" -or -iname "*.s")
-		source += $(shell find lib/poly/avx2/$(parameter_set) -type f -iname "*.c" -or -iname "*.s")
+		source += $(shell find lib/poly/avx2 -maxdepth 1 -type f -iname "*.c" -or -iname "*.[sS]")
+		source += $(shell find lib/poly/avx2/$(parameter_set) -type f -iname "*.c" -or -iname "*.[sS]")
 		headers += lib/poly/avx2/poly_r2_inv.h
 		# Add the target-specific AVX2 sample implementation
 		source += lib/sample/avx2/$(parameter_set)/vec32_sample_iid.s
@@ -120,7 +120,7 @@ ifeq ($$(shell uname),Darwin)
 ifeq ($$(shell sysctl machdep.cpu.leaf7_features | cut -d ':' -f2 | grep -o AVX2),)
 	@echo "Warning: skipping unsupported AVX2 build"
 else
-	TARGET=$(strip $(2)) GROUP="$(strip $(3)) PARAMETERS=$(strip $(4)) CC=$(strip $(5)) USE_AVX2=$(strip $(6)) USE_OPTIMIZATION_FLAGS=$(strip $(7)) USE_KECCAK=$(strip $(8)) USE_VEC=$(strip $(9)) $$(MAKE) target
+	TARGET=$(strip $(2)) GROUP=$(strip $(3)) PARAMETERS=$(strip $(4)) CC=$(strip $(5)) USE_AVX2=$(strip $(6)) USE_OPTIMIZATION_FLAGS=$(strip $(7)) USE_KECCAK=$(strip $(8)) USE_VEC=$(strip $(9)) $$(MAKE) target
 endif
 else
 ifeq ($$(shell lscpu | grep '^Flags' | cut -d ':' -f2 | grep -o avx2),)
