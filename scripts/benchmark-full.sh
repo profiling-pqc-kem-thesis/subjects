@@ -110,13 +110,13 @@ function micro_benchmark_kem() {
   fi
 
   wait_for_cooldown
-  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
+  run_wrapped perforator --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --keypair --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").keypair.txt"
 
   wait_for_cooldown
-  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
+  run_wrapped perforator --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --encrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").encrypt.txt"
 
   wait_for_cooldown
-  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
+  run_wrapped perforator --ignore-missing-regions --no-sort --summary --csv -e "$PERF_EVENTS" $regions -- "$binary" sequential --decrypt --iterations "$SEQUENTIAL_ITERATIONS" --timeout "$TIMEOUT" 2>&1 | tee "$output_directory/micro/$(basename "$binary").decrypt.txt"
 }
 
 function sequential_benchmark_kex() {
