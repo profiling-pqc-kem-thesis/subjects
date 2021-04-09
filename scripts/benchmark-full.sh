@@ -352,6 +352,8 @@ if [[ -z "$SKIP_STEP_1" ]]; then
   objdump --version 2>&1 | tee "$output_directory/versions/objdump.txt"
   make -v 2>&1 | tee "$output_directory/versions/make.txt"
   sqlite3 --version 2>&1 | tee "$output_directory/versions/sqlite3.txt"
+  git log -1 2>&1 | tee "$output_directory/versions/source.txt"
+  git diff -1 2>&1 | tee "$output_directory/versions/source-diff.txt"
   echo "=== done ==="
 else
   echo "=== skipped ==="

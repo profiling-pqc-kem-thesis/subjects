@@ -115,8 +115,6 @@ _NOTE: when analysing the results from perforate, know that it will include the 
 
 ## Benchmarking
 
-TODO: Add sudo instructions / paranoia instructions
-
 Starting the benchmark.
 
 While you can run the benchmark script with `sudo` to get the correct monitoring permissions, it's recommended to instead change the `kernel.perf_event_paranoid` level:
