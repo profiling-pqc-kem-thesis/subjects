@@ -7,8 +7,8 @@ DIRECTORY="$(dirname "$(realpath -s "$0")")"
 # Steps to skip, comma separated
 SKIP_STEPS="${SKIP_STEPS:-}"
 
-# Maximum number of seconds to a allow a single benchmark to run - defaults to 1h
-TIMEOUT="${TIMEOUT:-3600}"
+# Maximum number of seconds to a allow a single benchmark to run - defaults to 15m
+TIMEOUT="${TIMEOUT:-900}"
 
 # Number of iterations to run in sequential benchmarks
 SEQUENTIAL_ITERATIONS="${SEQUENTIAL_ITERATIONS:-1000}"
