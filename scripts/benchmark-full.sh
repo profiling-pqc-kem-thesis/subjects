@@ -27,7 +27,7 @@ PERF_EVENTS="${PERF_EVENTS:-cpu-cycles,instructions,cache-misses,page-faults,tas
 
 KEM_REGIONS="crypto_kem_keypair crypto_kem_enc crypto_kem_dec"
 NTRU_REGIONS="$KEM_REGIONS poly_Rq_mul poly_S3_inv randombytes poly_Rq_inv poly_R2_inv poly_R2_inv_to_Rq_inv poly_Sq_mul"
-MCELIECE_REGIONS="$KEM_REGIONS pk_gen gen_e syndrome syndrome_asm same_mask gf_mul root eval gf_add synd"
+MCELIECE_REGIONS="$KEM_REGIONS pk_gen gen_e syndrome syndrome_asm root eval synd"
 
 # == PARSE ARGUMENTS ==
 
