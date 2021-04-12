@@ -14,6 +14,8 @@ Then ensure you have the following packages installed from your preferred packag
 * `gcc`
 * `clang`
 * `go`
+* `git`
+* `libssl` (`libssl-dev`)
 * `sqlite3`
 * `nm`
 * `objdump`
