@@ -83,7 +83,7 @@ class Parse:
     def add_benchmark(self, benchmark_type: str, file_name: str, start_timestamp: int, stop_timestamp: int) -> int:
         parts = file_name.split(".")
         stage = ""
-        if parts[1] == "keypair" or parts[1] == "encrypt" or parts[1] == "decrypt":
+        if parts[1] == "keypair" or parts[1] == "encrypt" or parts[1] == "decrypt" or parts[1] == "exchange":
             stage = parts[1]
 
         self.cursor.execute(
@@ -98,11 +98,11 @@ class Parse:
 
         lines = file.read().splitlines()
         start_time = re.search(time_pattern, lines[0]).group(0)
-        start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S") - datetime(1900, 1, 1)
+        start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S") - datetime(1970, 1, 1)
         start_time = int(start_time.total_seconds())
 
         stop_time = re.search(time_pattern, lines[-1]).group(0)
-        stop_time = datetime.strptime(stop_time, "%Y-%m-%d %H:%M:%S") - datetime(1900, 1, 1)
+        stop_time = datetime.strptime(stop_time, "%Y-%m-%d %H:%M:%S") - datetime(1970, 1, 1)
         stop_time = int(stop_time.total_seconds())
         file.seek(0)
 
