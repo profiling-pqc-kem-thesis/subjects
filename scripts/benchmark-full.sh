@@ -572,32 +572,32 @@ echo ""
 echo "=== STEP 7 - Parallel Benchmarks ==="
 if [[ -z "$SKIP_STEP_7" ]]; then
   if [[ -z "$SKIP_ECDH" ]]; then
-    # TODO: Select best implementation
     plan parallel_benchmark_kex "./ecdh/build/ecdh_25519_gcc_plain-optimized"
+    plan parallel_benchmark_kex "./ecdh/build/ecdh_25519_clang_plain-optimized"
 
-    # TODO: Select best implementation
     plan parallel_benchmark_kex "./ecdh/build/ecdh_p256_gcc_plain-optimized"
+    plan parallel_benchmark_kex "./ecdh/build/ecdh_p256_clang_plain-optimized"
   fi
 
   if [[ -z "$SKIP_DH" ]]; then
-    # TODO: Select best implementation
     plan parallel_benchmark_kex "./dh/build/dh_gcc_plain-optimized"
+    plan parallel_benchmark_kex "./dh/build/dh_clang_plain-optimized"
   fi
 
   if [[ -z "$SKIP_NTRU" ]]; then
-    # TODO: Select best implementation
     plan parallel_benchmark_kem "./ntru/build/ntru_hrss701_gcc_avx2-optimized"
+    plan parallel_benchmark_kem "./ntru/build/ntru_hrss701_clang_avx2-optimized"
 
-    # TODO: Select best implementation
     plan parallel_benchmark_kem "./ntru/build/ntru_hps4096821_gcc_avx2-optimized"
+    plan parallel_benchmark_kem "./ntru/build/ntru_hps4096821_clang_avx2-optimized"
   fi
 
   if [[ -z "$SKIP_MCELIECE" ]]; then
-    # TODO: Select best implementation
     plan parallel_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_gcc_avx2-optimized"
+    plan parallel_benchmark_kem "./classic-mceliece/build/mceliece_6960119f_clang_avx2-optimized"
 
-    # TODO: Select best implementation
     plan parallel_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_gcc_avx2-optimized"
+    plan parallel_benchmark_kem "./classic-mceliece/build/mceliece_8192128f_clang_avx2-optimized"
   fi
 
   run_jobs parallel_benchmark_kex parallel_benchmark_kem
