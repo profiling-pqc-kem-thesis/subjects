@@ -505,12 +505,15 @@ echo "=== STEP 6 - Sequential Benchmarks ==="
 if [[ -z "$SKIP_STEP_6" ]]; then
   if [[ -z "$SKIP_ECDH" ]]; then
     plan sequential_benchmark_kex "./ecdh/build/ecdh_25519_gcc_plain-optimized"
+    plan sequential_benchmark_kex "./ecdh/build/ecdh_25519_clang_plain-optimized"
 
     plan sequential_benchmark_kex "./ecdh/build/ecdh_p256_gcc_plain-optimized"
+    plan sequential_benchmark_kex "./ecdh/build/ecdh_p256_clang_plain-optimized"
   fi
 
   if [[ -z "$SKIP_DH" ]]; then
     plan sequential_benchmark_kex "./dh/build/dh_gcc_plain-optimized"
+    plan sequential_benchmark_kex "./dh/build/dh_clang_plain-optimized"
   fi
 
   if [[ -z "$SKIP_NTRU" ]]; then
