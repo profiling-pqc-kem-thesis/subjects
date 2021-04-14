@@ -134,6 +134,10 @@ sudo shutdown -r now
 git clone https://github.com/profiling-pqc-kem-thesis/subjects
 cd subjects
 
+# Install submodules
+git submodule init
+git submodule update
+
 # Open a persistent session (you may need to press enter once)
 screen
 
