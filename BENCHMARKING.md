@@ -15,17 +15,22 @@ Then ensure you have the following packages installed from your preferred packag
 * `clang`
 * `go`
 * `git`
-* `libssl` (`libssl-dev`)
+* `libssl` (apt: `libssl-dev`)
 * `sqlite3`
 * `nm`
 * `objdump`
 * `bash`
 * `cmake`
-* `boost` (`libboost-all-dev`, `boost-devel`) 1.41.0 or higher
-* `libunwind` (`libunwind-dev`)
-* `libdwarf` (`libdwarf-dev`)
+* `boost` (apt: `libboost-all-dev`, yum: `boost-devel`) 1.41.0 or higher
+* `libunwind` (apt: `libunwind-dev`)
+* `libdwarf` (apt: `libdwarf-dev`, yum: `libdwarf-devel`)
 
 On s390x build `libunwind` from source:
+
+First install these packages
+* `autoconf` (yum: `autoconf-2.69-27.el8.noarch`)
+* `automake` (yum: `automake-1.16.1-6.el8.noarch`)
+* `libtool`
 
 ```sh
 git clone https://github.com/libunwind/libunwind
@@ -33,10 +38,13 @@ cd libunwind
 ./autogen.sh
 ./configure
 make
-make install
+sudo make install
 ```
 
 Then install heaptrack from source:
+
+On s390x, install the following packages:
+* `zlib` (`zlib-devel`)
 
 ```sh
 git clone "https://github.com/KDE/heaptrack.git"
