@@ -15,10 +15,9 @@ MAX_INT = 9223372036854775807
 
 class Parse:
 
-    def __init__(self, path: Path):
+    def __init__(self, path, database_path):
         self.path = path
-        self.copy_environment_database()
-        self.connection = sqlite3.connect(self.path.name + ".sqlite")
+        self.connection = sqlite3.connect(database_path)
         self.cursor = self.connection.cursor()
         self.init_database()
 
@@ -29,13 +28,16 @@ class Parse:
         self.connection.commit()
         self.connection.close()
 
-    def copy_environment_database(self):
-        copyfile(self.path.joinpath("environment.sqlite"), self.path.name + ".sqlite")
-
     def init_database(self):
+        # Environment
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS environment
+                   (id INTEGER PRIMARY KEY, name TEXT, date TEXT, uname TEXT, cores INT, threads INT, memory INT,
+                    memory_speed TEXT, cpu TEXT, cpu_features TEXT)''')
+        # Benchmark
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS benchmark
                    (id INTEGER PRIMARY KEY, environment TEXT, benchmark_type TEXT, stage TEXT, algorithm INTEGER,
                     totalDuration INTEGER, startTimestamp INTEGER, stopTimestamp INTEGER)''')
+        # Algorithm
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS algorithm
                    (id INTEGER PRIMARY KEY, name TEXT, parameters TEXT, compiler TEXT, features TEXT)''')
         # Sequential benchmark
@@ -93,19 +95,34 @@ class Parse:
         return self.cursor.lastrowid
 
     @staticmethod
-    def get_times(file: TextIO) -> (int, int):
-        time_pattern = re.compile("[0-9\-]{10} [0-9\:]{8}")
+    def was_skipped(file: TextIO) -> bool:
+        head = file.readline()
+        file.seek(0)
+        return re.search("^warning: skipping", head) is not None
 
+    @staticmethod
+    def get_times(file: TextIO) -> (int, int):
+        time_pattern = re.compile("[0-9-]{10} [0-9:]{8}")
         lines = file.read().splitlines()
-        start_time = re.search(time_pattern, lines[0]).group(0)
+
+        start_time = time_pattern.search(lines[0])
+        if start_time is None:
+            print("Warning: unable to get start time from file:", file.name)
+            file.seek(0)
+            return (0, 0)
+        start_time = start_time.group(0)
         start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S") - datetime(1970, 1, 1)
         start_time = int(start_time.total_seconds())
 
-        stop_time = re.search(time_pattern, lines[-1]).group(0)
+        stop_time = time_pattern.search(lines[-1])
+        if stop_time is None:
+            print("Warning: unable to get end time from file:", file.name)
+            file.seek(0)
+            return (0, 0)
+        stop_time = stop_time.group(0)
         stop_time = datetime.strptime(stop_time, "%Y-%m-%d %H:%M:%S") - datetime(1970, 1, 1)
         stop_time = int(stop_time.total_seconds())
         file.seek(0)
-
         return start_time, stop_time
 
     def sequential(self):
@@ -114,6 +131,9 @@ class Parse:
 
         for file_name in os.listdir(sequential_path):
             with iter(open(sequential_path.joinpath(file_name))) as input_file:
+                if self.was_skipped(input_file):
+                    continue
+
                 sequential_benchmark_iterations = []
                 sequential_benchmark_id = None
                 start_time, stop_time = self.get_times(input_file)
@@ -152,6 +172,9 @@ class Parse:
 
         for file_name in os.listdir(parallel_path):
             with iter(open(parallel_path.joinpath(file_name))) as input_file:
+                if self.was_skipped(input_file):
+                    continue
+
                 parallel_benchmark_threads = []
                 parallel_benchmark_id = None
                 start_time, stop_time = self.get_times(input_file)
@@ -198,6 +221,9 @@ class Parse:
 
         for file_name in os.listdir(micro_path):
             with iter(open(micro_path.joinpath(file_name))) as input_file:
+                if self.was_skipped(input_file):
+                    continue
+
                 start_time, stop_time = self.get_times(input_file)
                 benchmark_id = self.add_benchmark("micro", file_name, start_time, stop_time)
                 self.cursor.execute("INSERT INTO microBenchmark(benchmark) VALUES (?)", (benchmark_id,))
@@ -241,6 +267,9 @@ class Parse:
 
         for file_name in os.listdir(stack_path):
             with iter(open(stack_path.joinpath(file_name))) as input_file:
+                if self.was_skipped(input_file):
+                    continue
+
                 start_time, stop_time = self.get_times(input_file)
                 benchmark_id = self.add_benchmark("stack", file_name, start_time, stop_time)
                 self.cursor.execute("INSERT INTO stackBenchmark(benchmark) VALUES (?)", (benchmark_id,))
@@ -272,6 +301,9 @@ class Parse:
                 continue
 
             with open(heap_path.joinpath(file_name)) as input_file:
+                if self.was_skipped(input_file):
+                    continue
+
                 start_time, stop_time = self.get_times(input_file)
                 benchmark_id = self.add_benchmark("heap", file_name, start_time, stop_time)
                 for line in input_file:
@@ -322,8 +354,8 @@ class Parse:
         return traces
 
 
-def main(path: Path):
-    parse = Parse(path)
+def main(path: Path, database_path: Path):
+    parse = Parse(path, database_path)
     parse.sequential()
     parse.parallel()
     parse.micro()
@@ -333,7 +365,7 @@ def main(path: Path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("usage: {} <input_directory>".format(sys.argv[0]))
+    if len(sys.argv) != 3:
+        print("usage: {} <input_directory> <target_database.sqlite>".format(sys.argv[0]))
         exit(1)
-    main(Path(sys.argv[1]))
+    main(Path(sys.argv[1]), Path(sys.argv[2]))
