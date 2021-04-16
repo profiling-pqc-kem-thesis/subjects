@@ -259,6 +259,8 @@ class Parse:
 
                 csv_header = None
                 result = False
+                found_rows_to_ignore = False
+                micro_benchmark_measurement_id = None
                 for line in input_file:
                     if re.search("INFO: [0-9]+: exited", line):
                         line = next(input_file)
@@ -269,10 +271,16 @@ class Parse:
                     elif result:
                         for i, item in enumerate(line.split(",")[:-1]):
                             if i == 0:
-                                self.cursor.execute(
-                                    "INSERT INTO MicroBenchmarkMeasurement(microBenchmark, region) VALUES (?, ?)",
-                                    (micro_benchmark_id, item))
-                                micro_benchmark_measurement_id = self.cursor.lastrowid
+                                if not found_rows_to_ignore:
+                                    # Ignore all rows correlating to calls from the get_global_state function
+                                    found_kem_end = item == "crypto_kem_enc"
+                                    if found_kem_end:
+                                        found_rows_to_ignore = True
+                                else:
+                                    self.cursor.execute(
+                                        "INSERT INTO MicroBenchmarkMeasurement(microBenchmark, region) VALUES (?, ?)",
+                                        (micro_benchmark_id, item))
+                                    micro_benchmark_measurement_id = self.cursor.lastrowid
                             else:
                                 item = int(item)
                                 if item == MAX_INT + 1:
