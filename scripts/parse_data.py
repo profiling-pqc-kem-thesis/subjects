@@ -17,29 +17,40 @@ class Parse:
 
     def __init__(self, path, database_path):
         self.path = path
-        self.connection = sqlite3.connect(database_path)
+        self.database_path = database_path
+
+    def __del__(self):
+        self.connection.close()
+
+    def commit(self):
+        self.connection.commit()
+
+    def initialize(self):
+        self.connection = sqlite3.connect(self.database_path)
         self.cursor = self.connection.cursor()
         self.init_database()
 
         self.algorithms = {}
         self.parse_algorithms()
+        self.environment_id = self.environment()
 
-    def __del__(self):
-        self.connection.commit()
-        self.connection.close()
+    def rollback(self):
+        if self.connection is not None:
+            self.connection.rollback()
 
     def init_database(self):
         # Environment
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS environment
-                   (id INTEGER PRIMARY KEY, name TEXT, date TEXT, uname TEXT, cores INT, threads INT, memory INT,
+                   (id INTEGER PRIMARY KEY, name TEXT UNIQUE, date TEXT, uname TEXT, cores INT, threads INT, memory INT,
                     memory_speed TEXT, cpu TEXT, cpu_features TEXT)''')
         # Benchmark
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS benchmark
-                   (id INTEGER PRIMARY KEY, environment TEXT, benchmark_type TEXT, stage TEXT, algorithm INTEGER,
+                   (id INTEGER PRIMARY KEY, environment INTEGER, benchmark_type TEXT, stage TEXT, algorithm INTEGER,
                     totalDuration INTEGER, startTimestamp INTEGER, stopTimestamp INTEGER)''')
         # Algorithm
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS algorithm
-                   (id INTEGER PRIMARY KEY, name TEXT, parameters TEXT, compiler TEXT, features TEXT)''')
+                   (id INTEGER PRIMARY KEY, name TEXT, parameters TEXT, compiler TEXT, features TEXT,
+                   UNIQUE(name, parameters, compiler, features))''')
         # Sequential benchmark
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS sequentialBenchmark
                    (id INTEGER PRIMARY KEY, benchmark INTEGER, iterations INTEGER, averageDuration REAL)''')
@@ -66,21 +77,25 @@ class Parse:
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS heapBenchmark (id INTEGER PRIMARY KEY, benchmark INTEGER)''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS heapBenchmarkMeasurement
                    (id INTEGER PRIMARY KEY, heapBenchmark INTEGER, trace TEXT, peakAllocation INTEGER)''')
-        self.connection.commit()
+
 
     def parse_algorithms(self):
         file_names = [file_name.split(".")[0] for file_name in os.listdir(self.path.joinpath("stack"))]
         for file_name in set(file_names):
             parts = file_name.split("_")
-            if parts[0] == "dh":
+            parameters = ("dh", "", parts[1], parts[2]) if parts[0] == "dh" else  (parts[0], parts[1], parts[2], parts[3])
+            try:
                 self.cursor.execute(
                     "INSERT INTO algorithm(name, parameters, compiler, features) VALUES (?, ?, ?, ?)",
-                    ("dh", "", parts[1], parts[2]))
-            else:
+                    parameters)
+            except sqlite3.IntegrityError:
+                pass
+            finally:
                 self.cursor.execute(
-                    "INSERT INTO algorithm(name, parameters, compiler, features) VALUES (?, ?, ?, ?)",
-                    (parts[0], parts[1], parts[2], parts[3]))
-            self.algorithms[file_name] = self.cursor.lastrowid
+                    "SELECT id FROM algorithm WHERE name = ? AND parameters = ? AND compiler = ? AND features = ?",
+                    parameters)
+                (id,) = self.cursor.fetchone()
+                self.algorithms[file_name] = id
 
     def add_benchmark(self, benchmark_type: str, file_name: str, start_timestamp: int, stop_timestamp: int) -> int:
         parts = file_name.split(".")
@@ -90,7 +105,7 @@ class Parse:
 
         self.cursor.execute(
             "INSERT INTO benchmark(environment, benchmark_type, stage, algorithm, totalDuration, startTimestamp, stopTimestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (self.path.name, benchmark_type, stage, self.algorithms[parts[0]], stop_timestamp - start_timestamp,
+            (self.environment_id, benchmark_type, stage, self.algorithms[parts[0]], stop_timestamp - start_timestamp,
              start_timestamp, stop_timestamp))
         return self.cursor.lastrowid
 
@@ -124,6 +139,19 @@ class Parse:
         stop_time = int(stop_time.total_seconds())
         file.seek(0)
         return start_time, stop_time
+
+    def environment(self) -> int:
+        environment_path = self.path.joinpath("environment.sqlite")
+        environment_connection = sqlite3.connect(environment_path)
+        environment_cursor = environment_connection.cursor()
+        environment_cursor.execute("SELECT * FROM environments")
+        result = environment_cursor.fetchone()
+        self.cursor.execute(
+            "INSERT INTO environment(name, date, uname, cores, threads, memory,  memory_speed, cpu, cpu_features) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            result)
+        environment_cursor.close()
+        environment_connection.close()
+        return self.cursor.lastrowid
 
     def sequential(self):
         sequential_path = self.path.joinpath("sequential")
@@ -165,7 +193,7 @@ class Parse:
                 self.cursor.executemany(
                     "INSERT INTO sequentialBenchmarkIteration(sequentialBenchmark, iteration, duration) VALUES (?, ?, ?)",
                     sequential_benchmark_iterations)
-        self.connection.commit()
+
 
     def parallel(self):
         parallel_path = self.path.joinpath("parallel")
@@ -213,7 +241,7 @@ class Parse:
                 self.cursor.executemany(
                     "INSERT INTO parallelBenchmarkThread(parallelBenchmark, thread, iterations, duration) VALUES (?, ?, ?, ?)",
                     parallel_benchmark_threads)
-        self.connection.commit()
+
 
     def micro(self):
         micro_path = self.path.joinpath("micro")
@@ -259,7 +287,7 @@ class Parse:
                                     self.cursor.execute(
                                         "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
                                         (micro_benchmark_measurement_id, csv_header[i], item))
-        self.connection.commit()
+
 
     def stack(self):
         stack_path = self.path.joinpath("stack")
@@ -292,7 +320,7 @@ class Parse:
                             "INSERT INTO stackBenchmarkSymbol(stackBenchmark, symbol, size, allocation) VALUES (?, ?, ?, ?)",
                             (stack_benchmark_id, parts[0], int(parts[1]), allocation))
 
-        self.connection.commit()
+
 
     def heap(self):
         heap_path = self.path.joinpath("heap")
@@ -319,7 +347,7 @@ class Parse:
                     "INSERT INTO heapBenchmarkMeasurement(heapBenchmark, trace, peakAllocation) VALUES (?, ?, ?)",
                     (heap_benchmark_id, line[0], int(line[1])))
             os.remove(output_file)
-        self.connection.commit()
+
 
     @staticmethod
     def create_flamegraph(input_file: str, output_file: str):
@@ -356,13 +384,22 @@ class Parse:
 
 def main(path: Path, database_path: Path):
     parse = Parse(path, database_path)
-    parse.sequential()
-    parse.parallel()
-    parse.micro()
-    parse.stack()
-    parse.heap()
-    del parse
-
+    try:
+        parse.initialize()
+        parse.sequential()
+        parse.parallel()
+        parse.micro()
+        parse.stack()
+        parse.heap()
+        parse.commit()
+        print("Comitted changes")
+    except Exception as exception:
+        print("Got exception while parsing")
+        print(exception)
+        print("Rolling back - no changes has been made to the database")
+        parse.rollback()
+    finally:
+        del parse
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
