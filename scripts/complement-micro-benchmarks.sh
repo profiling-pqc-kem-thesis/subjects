@@ -84,8 +84,8 @@ function micro_benchmark_kem() {
     return
   fi
 
-  #wait_for_cooldown
-  echo run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$events" $regions -- $command 2>&1 | tee "$output_directory/micro/$(basename "$binary").$stage.txt"
+  wait_for_cooldown
+  run_wrapped perforator -V --ignore-missing-regions --no-sort --summary --csv -e "$events" $regions -- $command 2>&1 | tee "$output_directory/micro/$(basename "$binary").$stage.txt"
 }
 
 function print_usage() {
