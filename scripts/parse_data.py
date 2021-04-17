@@ -300,14 +300,21 @@ class Parse:
                                     micro_benchmark_measurement_id = self.cursor.lastrowid
                             else:
                                 item = int(item)
+                                # Outlier - identified as bug in perf
                                 if item == MAX_INT + 1:
                                     self.cursor.execute(
                                         "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
                                         (micro_benchmark_measurement_id, csv_header[i], -1))
+                                # Outlier - a value we cannot represent and that should never occur
                                 elif item > MAX_INT + 1:
                                     self.cursor.execute(
                                         "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
                                         (micro_benchmark_measurement_id, csv_header[i], -2))
+                                # Outlier - a value that should not possibly occur
+                                elif item == 0:
+                                    self.cursor.execute(
+                                        "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
+                                        (micro_benchmark_measurement_id, csv_header[i], -3))
                                 else:
                                     self.cursor.execute(
                                         "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
