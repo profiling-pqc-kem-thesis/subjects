@@ -43,6 +43,10 @@ class Parse:
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS environment
                    (id INTEGER PRIMARY KEY, name TEXT UNIQUE, date TEXT, uname TEXT, cores INT, threads INT, memory INT,
                     memory_speed TEXT, cpu TEXT, cpu_features TEXT)''')
+        # Tool versions
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS tool
+                   (id INTEGER PRIMARY KEY, environment INT, tool TEXT, version TEXT,
+                   UNIQUE(environment, tool))''')
         # Benchmark
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS benchmark
                    (id INTEGER PRIMARY KEY, environment INTEGER, benchmark_type TEXT, stage TEXT, algorithm INTEGER,
@@ -152,6 +156,19 @@ class Parse:
         environment_cursor.close()
         environment_connection.close()
         return self.cursor.lastrowid
+
+    def tool_versions(self):
+        versions_path = self.path.joinpath("versions")
+
+        for file_name in os.listdir(versions_path):
+            file_path = self.path.joinpath("versions/{}".format(file_name))
+            tool = file_name.replace(".txt", "")
+            with open(file_path, "r") as file:
+                version = file.read()
+                self.cursor.execute(
+                    "INSERT OR IGNORE INTO tool(environment, tool, version) VALUES (?, ?, ?)",
+                    (self.environment_id, tool, version)
+                )
 
     def sequential(self):
         sequential_path = self.path.joinpath("sequential")
@@ -394,6 +411,7 @@ def main(path: Path, database_path: Path):
     parse = Parse(path, database_path)
     try:
         parse.initialize()
+        parse.tool_versions()
         parse.sequential()
         parse.parallel()
         parse.micro()
