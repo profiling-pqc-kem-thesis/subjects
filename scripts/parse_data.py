@@ -311,7 +311,7 @@ class Parse:
                                         "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
                                         (micro_benchmark_measurement_id, csv_header[i], -2))
                                 # Outlier - a value that should not possibly occur
-                                elif item == 0:
+                                elif item == 0 and (csv_header[i] != "cache-misses" and csv_header[i] != "page-faults"):
                                     self.cursor.execute(
                                         "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
                                         (micro_benchmark_measurement_id, csv_header[i], -3))
