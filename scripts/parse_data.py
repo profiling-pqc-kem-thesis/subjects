@@ -82,12 +82,12 @@ class Parse:
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS heapBenchmarkMeasurement
                    (id INTEGER PRIMARY KEY, heapBenchmark INTEGER, trace TEXT, peakAllocation INTEGER)''')
 
-
     def parse_algorithms(self):
         file_names = [file_name.split(".")[0] for file_name in os.listdir(self.path.joinpath("stack"))]
         for file_name in set(file_names):
             parts = file_name.split("_")
-            parameters = ("dh", "", parts[1], parts[2]) if parts[0] == "dh" else  (parts[0], parts[1], parts[2], parts[3])
+            parameters = ("dh", "", parts[1], parts[2]) if parts[0] == "dh" else (
+            parts[0], parts[1], parts[2], parts[3])
             try:
                 self.cursor.execute(
                     "INSERT INTO algorithm(name, parameters, compiler, features) VALUES (?, ?, ?, ?)",
@@ -211,11 +211,11 @@ class Parse:
                     "INSERT INTO sequentialBenchmarkIteration(sequentialBenchmark, iteration, duration) VALUES (?, ?, ?)",
                     sequential_benchmark_iterations)
 
-
     def parallel(self):
         parallel_path = self.path.joinpath("parallel")
+        last_file = None
 
-        for file_name in os.listdir(parallel_path):
+        for file_name in sorted(os.listdir(parallel_path)):
             with iter(open(parallel_path.joinpath(file_name))) as input_file:
                 if self.was_skipped(input_file):
                     continue
@@ -223,7 +223,10 @@ class Parse:
                 parallel_benchmark_threads = []
                 parallel_benchmark_id = None
                 start_time, stop_time = self.get_times(input_file)
-                benchmark_id = self.add_benchmark("parallel", file_name, start_time, stop_time)
+
+                if last_file != ".".join(file_name.split(".", 2)[:2]):
+                    benchmark_id = self.add_benchmark("parallel", file_name, start_time, stop_time)
+                    last_file = ".".join(file_name.split(".", 2)[:2])
 
                 results = False
                 summary = False
@@ -258,7 +261,6 @@ class Parse:
                 self.cursor.executemany(
                     "INSERT INTO parallelBenchmarkThread(parallelBenchmark, thread, iterations, duration) VALUES (?, ?, ?, ?)",
                     parallel_benchmark_threads)
-
 
     def micro(self):
         micro_path = self.path.joinpath("micro")
@@ -320,7 +322,6 @@ class Parse:
                                         "INSERT INTO MicroBenchmarkEvent(microBenchmarkMeasurement, event, value) VALUES (?, ?, ?)",
                                         (micro_benchmark_measurement_id, csv_header[i], item))
 
-
     def stack(self):
         stack_path = self.path.joinpath("stack")
         end_pattern = re.compile("=== [0-9\-]{10} [0-9\:]{8} Command ended with exit code 0 ===")
@@ -352,8 +353,6 @@ class Parse:
                             "INSERT INTO stackBenchmarkSymbol(stackBenchmark, symbol, size, allocation) VALUES (?, ?, ?, ?)",
                             (stack_benchmark_id, parts[0], int(parts[1]), allocation))
 
-
-
     def heap(self):
         heap_path = self.path.joinpath("heap")
         for file_name in os.listdir(heap_path):
@@ -379,7 +378,6 @@ class Parse:
                     "INSERT INTO heapBenchmarkMeasurement(heapBenchmark, trace, peakAllocation) VALUES (?, ?, ?)",
                     (heap_benchmark_id, line[0], int(line[1])))
             os.remove(output_file)
-
 
     @staticmethod
     def create_flamegraph(input_file: str, output_file: str):
@@ -433,6 +431,7 @@ def main(path: Path, database_path: Path):
         parse.rollback()
     finally:
         del parse
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
