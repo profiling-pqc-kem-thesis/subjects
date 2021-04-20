@@ -15,8 +15,10 @@ MAX_INT = 9223372036854775807
 
 class Parse:
 
-    def __init__(self, path, database_path):
+    def __init__(self, path: Path, environment_name: str, run_index: int, database_path: Path):
         self.path = path
+        self.environment_name = environment_name
+        self.run_index = run_index
         self.database_path = database_path
 
     def __del__(self):
@@ -33,6 +35,7 @@ class Parse:
         self.algorithms = {}
         self.parse_algorithms()
         self.environment_id = self.environment()
+        self.benchmark_run_id = self.benchmark_run()
 
     def rollback(self):
         if self.connection is not None:
@@ -43,13 +46,17 @@ class Parse:
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS environment
                    (id INTEGER PRIMARY KEY, name TEXT UNIQUE, date TEXT, uname TEXT, cores INT, threads INT, memory INT,
                     memory_speed TEXT, cpu TEXT, cpu_features TEXT)''')
+
+        # Run
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS benchmarkRun
+                    (id INTEGER PRIMARY KEY, environment INTEGER, runIndex INTEGER)''')
         # Tool versions
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS tool
-                   (id INTEGER PRIMARY KEY, environment INT, tool TEXT, version TEXT,
-                   UNIQUE(environment, tool))''')
+                   (id INTEGER PRIMARY KEY, benchmarkRun INT, tool TEXT, version TEXT,
+                   UNIQUE(benchmarkRun, tool))''')
         # Benchmark
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS benchmark
-                   (id INTEGER PRIMARY KEY, environment INTEGER, benchmark_type TEXT, stage TEXT, algorithm INTEGER,
+                   (id INTEGER PRIMARY KEY, benchmarkRun INTEGER, benchmark_type TEXT, stage TEXT, algorithm INTEGER,
                     totalDuration INTEGER, startTimestamp INTEGER, stopTimestamp INTEGER)''')
         # Algorithm
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS algorithm
@@ -108,8 +115,8 @@ class Parse:
             stage = parts[1]
 
         self.cursor.execute(
-            "INSERT INTO benchmark(environment, benchmark_type, stage, algorithm, totalDuration, startTimestamp, stopTimestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (self.environment_id, benchmark_type, stage, self.algorithms[parts[0]], stop_timestamp - start_timestamp,
+            "INSERT INTO benchmark(benchmarkRun, benchmark_type, stage, algorithm, totalDuration, startTimestamp, stopTimestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (self.benchmark_run_id, benchmark_type, stage, self.algorithms[parts[0]], stop_timestamp - start_timestamp,
              start_timestamp, stop_timestamp))
         return self.cursor.lastrowid
 
@@ -149,12 +156,20 @@ class Parse:
         environment_connection = sqlite3.connect(environment_path)
         environment_cursor = environment_connection.cursor()
         environment_cursor.execute("SELECT * FROM environments")
-        result = environment_cursor.fetchone()
+        result = list(environment_cursor.fetchone())
+        # Replace the previous environment name
+        result[0] = self.environment_name
         self.cursor.execute(
-            "INSERT INTO environment(name, date, uname, cores, threads, memory,  memory_speed, cpu, cpu_features) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR IGNORE INTO environment(name, date, uname, cores, threads, memory,  memory_speed, cpu, cpu_features) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             result)
         environment_cursor.close()
         environment_connection.close()
+        self.cursor.execute("SELECT environment.id FROM environment WHERE environment.name = ?", (self.environment_name,))
+        (environment_id,) = self.cursor.fetchone()
+        return environment_id
+
+    def benchmark_run(self) -> int:
+        self.cursor.execute("INSERT INTO benchmarkRun(environment, runIndex) VALUES (?, ?)", (self.environment_id, self.run_index))
         return self.cursor.lastrowid
 
     def tool_versions(self):
@@ -166,8 +181,8 @@ class Parse:
             with open(file_path, "r") as file:
                 version = file.read()
                 self.cursor.execute(
-                    "INSERT OR IGNORE INTO tool(environment, tool, version) VALUES (?, ?, ?)",
-                    (self.environment_id, tool, version)
+                    "INSERT OR IGNORE INTO tool(benchmarkRun, tool, version) VALUES (?, ?, ?)",
+                    (self.benchmark_run_id, tool, version)
                 )
 
     def sequential(self):
@@ -412,29 +427,31 @@ class Parse:
         return traces
 
 
-def main(path: Path, database_path: Path):
-    parse = Parse(path, database_path)
-    try:
-        parse.initialize()
-        parse.tool_versions()
-        parse.sequential()
-        parse.parallel()
-        parse.micro()
-        parse.stack()
-        parse.heap()
-        parse.commit()
-        print("Comitted changes")
-    except Exception as exception:
-        print("Got exception while parsing")
-        print(exception)
-        print("Rolling back - no changes has been made to the database")
-        parse.rollback()
-    finally:
-        del parse
+def main(database_path: Path, environment_name: str, input_paths: List[Path]):
+    for i, path in enumerate(input_paths):
+        parse = Parse(path, environment_name, i, database_path)
+        try:
+            parse.initialize()
+            parse.tool_versions()
+            parse.sequential()
+            parse.parallel()
+            parse.micro()
+            parse.stack()
+            parse.heap()
+            parse.commit()
+            print("Comitted changes")
+        except Exception as exception:
+            print("Got exception while parsing")
+            print(exception)
+            print("Rolling back - no changes has been made to the database")
+            parse.rollback()
+            exit(1)
+        finally:
+            del parse
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("usage: {} <input_directory> <target_database.sqlite>".format(sys.argv[0]))
+    if len(sys.argv) < 3:
+        print("usage: {} <target_database.sqlite> <environment name> <run 1> [run 2] [run 3]".format(sys.argv[0]))
         exit(1)
-    main(Path(sys.argv[1]), Path(sys.argv[2]))
+    main(Path(sys.argv[1]), sys.argv[2], [Path(sys.argv[i + 3]) for i in range(len(sys.argv) - 3)])
