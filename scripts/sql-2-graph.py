@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import sys
 
@@ -10,13 +11,15 @@ from typing import List
 import pandas as pd
 
 
-def get_data(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, event: str, compiler: str, feature: str):
+def get_data(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, event: str, compiler: str, feature: str, environment_name: str):
     cursor.execute('''
     SELECT
         benchmark.stage, microBenchmarkMeasurement.region, AVG(microBenchmarkEvent.value)
     FROM
         algorithm
         INNER JOIN benchmark ON benchmark.algorithm = algorithm.id
+        INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+        INNER JOIN environment ON environment.id = benchmarkRun.environment
         INNER JOIN microBenchmark ON microBenchmark.benchmark = benchmark.id
         INNER JOIN microBenchmarkMeasurement ON microBenchmarkMeasurement.microBenchmark = microBenchmark.id
         INNER JOIN microBenchmarkEvent ON microBenchmarkEvent.microBenchmarkMeasurement = microBenchmarkMeasurement.id
@@ -26,9 +29,10 @@ def get_data(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, event
         algorithm.compiler = ? AND
         algorithm.features = ? AND
         microBenchmarkEvent.event = ? AND
+        environment.name = ? AND
         microBenchmarkEvent.value >= 0
     GROUP BY benchmark.stage, microBenchmarkMeasurement.region
-    ''', (algorithm_name, parameters, compiler, feature, event,))
+    ''', (algorithm_name, parameters, compiler, feature, event, environment_name, ))
 
     return cursor.fetchall()
 
@@ -40,6 +44,7 @@ def get_distinct_regions(cursor: sqlite3.Cursor, algorithm_name: str, parameters
     FROM
         algorithm
         INNER JOIN benchmark ON benchmark.algorithm = algorithm.id
+        INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
         INNER JOIN microBenchmark ON microBenchmark.benchmark = benchmark.id
         INNER JOIN microBenchmarkMeasurement ON microBenchmarkMeasurement.microBenchmark = microBenchmark.id
         INNER JOIN microBenchmarkEvent ON microBenchmarkEvent.microBenchmarkMeasurement = microBenchmarkMeasurement.id
@@ -55,7 +60,7 @@ def get_distinct_regions(cursor: sqlite3.Cursor, algorithm_name: str, parameters
     return [item[0] for item in cursor.fetchall()]
 
 
-def create_data_frames(path: Path, algorithm_name: str, parameters: str, event: str):
+def create_data_frames(path: Path, algorithm_name: str, parameters: str, event: str, environment_name: str):
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
     compilers = ["gcc", "clang"]
@@ -101,10 +106,10 @@ def create_data_frames(path: Path, algorithm_name: str, parameters: str, event: 
         if feature.endswith("-optimized"):
             for compiler in compilers:
                 index.append(compiler + " " + feature)
-                parse_data(get_data(cursor, algorithm_name, parameters, event, compiler, feature))
+                parse_data(get_data(cursor, algorithm_name, parameters, event, compiler, feature, environment_name))
         else:
             index.append("gcc " + feature)
-            parse_data(get_data(cursor, algorithm_name, parameters, event, "gcc", feature))
+            parse_data(get_data(cursor, algorithm_name, parameters, event, "gcc", feature, environment_name))
 
     connection.close()
 
@@ -153,30 +158,35 @@ H is the hatch used for identification of the different dataframe"""
                      zorder=-100)
         axes.text(pos[i * 3] - rectangle_width, 3.5, names[i], {'ha': 'left', 'va': 'bottom'}, rotation=90, fontsize=6)
 
-    legend = axes.legend(reversed(handles[:n_col]), reversed(labels[:n_col]), loc='upper left')
-    axes.add_artist(legend)
+    plot.legend(reversed(handles[:n_col]), reversed(labels[:n_col]), loc='upper left', bbox_to_anchor=(1.05, 1))
 
     return axes
 
 
 def main(path: Path):
+    environment_names = ["Modern Workstation", "Modern Laptop", "Old Mid-Range Laptop", "Old Low-Range Laptop",
+                         "Cloud Provider 1", "Cloud Provider 2", "IBM Community Cloud"]
     ntru_parameters = ["hps4096821", "hrss701"]
     mceliece_parameters = ["6960119", "6960119f", "8192128", "8192128f"]
     event = "task-clock"
 
-    for parameter in ntru_parameters:
-        keypair, encrypt, decrypt, index = create_data_frames(path, "ntru", parameter, event)
-        title = "NTRU " + parameter + " - " + event
-        plot_clustered_stacked([keypair, encrypt, decrypt], names=index, title=title)
-        plot.savefig(title + ".pdf", bbox_inches='tight')
-        plot.clf()
+    os.makedirs("build", exist_ok=True)
 
-    for parameter in mceliece_parameters:
-        keypair, encrypt, decrypt, index = create_data_frames(path, "mceliece", parameter, event)
-        title = "McEliece " + parameter + " - " + event
-        plot_clustered_stacked([keypair, encrypt, decrypt], names=index, title=title)
-        plot.savefig(title + ".pdf", bbox_inches='tight')
-        plot.clf()
+    for environment_name in environment_names:
+        os.makedirs("build/" + environment_name, exist_ok=True)
+        for parameter in ntru_parameters:
+            keypair, encrypt, decrypt, index = create_data_frames(path, "ntru", parameter, event, environment_name)
+            title = "NTRU " + parameter + " - " + event
+            plot_clustered_stacked([keypair, encrypt, decrypt], names=index, title=title)
+            plot.savefig("build/" + environment_name + "/" + title + ".pdf", bbox_inches='tight')
+            plot.close()
+
+        for parameter in mceliece_parameters:
+            keypair, encrypt, decrypt, index = create_data_frames(path, "mceliece", parameter, event, environment_name)
+            title = "McEliece " + parameter + " - " + event
+            plot_clustered_stacked([keypair, encrypt, decrypt], names=index, title=title)
+            plot.savefig("build/" + environment_name + "/" + title + ".pdf", bbox_inches='tight')
+            plot.close()
 
 
 if __name__ == "__main__":
