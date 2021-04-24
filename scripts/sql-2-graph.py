@@ -6,15 +6,49 @@ import numpy as np
 import matplotlib.pyplot as plot
 import matplotlib.ticker as ticker
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List
+from statistics import NormalDist, mean
 
 import pandas as pd
 
 
-def get_data(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, event: str, compiler: str, feature: str, environment_name: str):
+def calculate_confidence_interval(data_structure: Dict[str, List], confidence=0.95) -> Dict[str, List]:
+    confidence_interval = {}
+    for key in data_structure:
+        # print(key)
+        # if len(data_structure) < 5:
+        #     print(data_structure[key])
+        dist = NormalDist.from_samples(data_structure[key])
+        z = NormalDist().inv_cdf((1 + confidence) / 2.)
+        h = dist.stdev * z / ((len(data_structure[key]) - 1) ** .5)
+        confidence_interval[key] = [dist.mean - h, dist.mean + h]
+    return confidence_interval
+
+
+def parse_data_structure(data: List) -> Dict[str, List]:
+    data_structure = {}
+    for row in data:
+        key = row[1]
+        if key in data_structure:
+            data_structure[key].append(row[2])
+        else:
+            data_structure[key] = [row[2]]
+    return data_structure
+
+
+def calculate_average(data_structure: Dict[str, List], interval: Dict[str, List]):
+    for key in data_structure:
+        print(key)
+        print(interval[key][0])
+        print(interval[key][1])
+        print([value for value in data_structure[key] if interval[key][0] < value < interval[key][1]])
+        data_structure[key] = mean([value for value in data_structure[key] if interval[key][0] < value < interval[key][1]])
+
+
+def get_data(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, stage: str, event: str, compiler: str, feature: str, environment_name: str) -> List:
     cursor.execute('''
     SELECT
-        benchmark.stage, microBenchmarkMeasurement.region, AVG(microBenchmarkEvent.value)
+        benchmark.stage, microBenchmarkMeasurement.region, microBenchmarkEvent.value
     FROM
         algorithm
         INNER JOIN benchmark ON benchmark.algorithm = algorithm.id
@@ -28,16 +62,58 @@ def get_data(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, event
         algorithm.parameters = ? AND
         algorithm.compiler = ? AND
         algorithm.features = ? AND
+        benchmark.stage = ? AND
         microBenchmarkEvent.event = ? AND
         environment.name = ? AND
+        microBenchmarkMeasurement.region != "crypto_kem_keypair" AND
+        microBenchmarkMeasurement.region != "crypto_kem_enc" AND
+        microBenchmarkMeasurement.region != "crypto_kem_dec" AND
         microBenchmarkEvent.value >= 0
-    GROUP BY benchmark.stage, microBenchmarkMeasurement.region
-    ''', (algorithm_name, parameters, compiler, feature, event, environment_name, ))
+    ''', (algorithm_name, parameters, compiler, feature, stage, event, environment_name, ))
 
     return cursor.fetchall()
 
 
-def get_distinct_regions(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, event: str):
+def get_region_count(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, stage: str, event: str, compiler: str, feature: str, environment_name: str) -> Dict[str, float]:
+    cursor.execute('''
+    SELECT
+        microBenchmarkMeasurement.region,
+        COUNT(microBenchmarkMeasurement.region) as "region count"
+    FROM
+        benchmark
+        INNER JOIN algorithm ON algorithm.id = benchmark.algorithm
+        INNER JOIN benchmarkRun ON benchmarkRun.id = benchmark.benchmarkRun
+        INNER JOIN environment ON environment.id = benchmarkRun.environment
+        INNER JOIN microBenchmark ON microBenchmark.benchmark = benchmark.id
+        INNER JOIN microBenchmarkMeasurement ON microBenchmarkMeasurement.microBenchmark = microBenchmark.id
+        INNER JOIN microBenchmarkEvent ON microBenchmarkEvent.microBenchmarkMeasurement = microBenchmarkMeasurement.id
+    WHERE
+        algorithm.name = ?
+        AND algorithm.parameters = ?
+        AND algorithm.compiler = ?
+        AND algorithm.features = ?
+        AND benchmark.stage = ?
+        AND microBenchmarkEvent.event = ?
+        AND environment.name = ?
+    GROUP BY
+    microBenchmarkMeasurement.region
+    ''', (algorithm_name, parameters, compiler, feature, stage, event, environment_name, ))
+
+    region_count = {item[0]: item[1] for item in cursor.fetchall()}
+    if "crypto_kem_keypair" in region_count:
+        base_count = region_count["crypto_kem_keypair"]
+    elif "crypto_kem_enc" in region_count:
+        base_count = region_count["crypto_kem_enc"]
+    elif "crypto_kem_dec" in region_count:
+        base_count = region_count["crypto_kem_dec"]
+
+    for key in region_count:
+        region_count[key] = region_count[key] / base_count
+
+    return region_count
+
+
+def get_distinct_regions(cursor: sqlite3.Cursor, algorithm_name: str, parameters: str, event: str) -> List[str]:
     cursor.execute('''
     SELECT
         DISTINCT microBenchmarkMeasurement.region
@@ -53,8 +129,8 @@ def get_distinct_regions(cursor: sqlite3.Cursor, algorithm_name: str, parameters
         algorithm.parameters = ? AND
         microBenchmarkEvent.event = ? AND
         microBenchmarkMeasurement.region != "crypto_kem_keypair" AND
-        microBenchmarkMeasurement.region != "crypto_kem_enc"  AND
-        microBenchmarkMeasurement.region != "crypto_kem_dec" 
+        microBenchmarkMeasurement.region != "crypto_kem_enc" AND
+        microBenchmarkMeasurement.region != "crypto_kem_dec"
         
     ''', (algorithm_name, parameters, event,))
     return [item[0] for item in cursor.fetchall()]
@@ -65,53 +141,58 @@ def create_data_frames(path: Path, algorithm_name: str, parameters: str, event: 
     cursor = connection.cursor()
     compilers = ["gcc", "clang"]
     features = ["ref", "ref-optimized", "avx2", "avx2-optimized"]
+    stages = ["keypair", "encrypt", "decrypt"]
     regions = get_distinct_regions(cursor, algorithm_name, parameters, "cpu-cycles")
-    regions.append("other")
-    print(regions)
+    #regions.append("other")
 
-    index = []
+    index = set()
     keypair_data = []
     encrypt_data = []
     decrypt_data = []
 
-    def parse_data(data: List):
-        print(data)
-        other_index = regions.index("other")
+    def parse_data(data: Any, region_count: Dict[str, float], stage: str):
         temp_keypair_data = np.zeros(shape=(len(regions)))
         temp_encrypt_data = np.zeros(shape=(len(regions)))
         temp_decrypt_data = np.zeros(shape=(len(regions)))
-        for row in data:
-            if row[1] == "crypto_kem_keypair":
-                temp_keypair_data[other_index] = row[2]
-            elif row[1] == "crypto_kem_enc":
-                temp_encrypt_data[other_index] = row[2]
-            elif row[1] == "crypto_kem_dec":
-                temp_decrypt_data[other_index] = row[2]
-            elif row[0] == "keypair":
-                temp_keypair_data[regions.index(row[1])] = row[2]
-            elif row[0] == "encrypt":
-                temp_encrypt_data[regions.index(row[1])] = row[2]
-            elif row[0] == "decrypt":
-                temp_decrypt_data[regions.index(row[1])] = row[2]
+        for key in data:
+            if stage == "keypair":
+                temp_keypair_data[regions.index(key)] = data[key] * region_count[key]
+            elif stage == "encrypt":
+                temp_encrypt_data[regions.index(key)] = data[key] * region_count[key]
+            elif stage == "decrypt":
+                temp_decrypt_data[regions.index(key)] = data[key] * region_count[key]
 
-        temp_keypair_data[other_index] = (2 * temp_keypair_data[other_index]) - sum(temp_keypair_data.tolist())
-        temp_encrypt_data[other_index] = (2 * temp_encrypt_data[other_index]) - sum(temp_encrypt_data.tolist())
-        temp_decrypt_data[other_index] = (2 * temp_decrypt_data[other_index]) - sum(temp_decrypt_data.tolist())
+        if stage == "keypair":
+            keypair_data.append(temp_keypair_data)
+        elif stage == "encrypt":
+            encrypt_data.append(temp_encrypt_data)
+        elif stage == "decrypt":
+            decrypt_data.append(temp_decrypt_data)
 
-        keypair_data.append(temp_keypair_data)
-        encrypt_data.append(temp_encrypt_data)
-        decrypt_data.append(temp_decrypt_data)
+    for stage in stages:
+        for feature in features:
+            if feature.endswith("-optimized"):
+                for compiler in compilers:
+                    index.add(compiler + " " + feature)
+                    data = get_data(cursor, algorithm_name, parameters, stage, event, compiler, feature, environment_name)
+                    data_structure = parse_data_structure(data)
+                    confidence_interval = calculate_confidence_interval(data_structure)
+                    calculate_average(data_structure, confidence_interval)
 
-    for feature in features:
-        if feature.endswith("-optimized"):
-            for compiler in compilers:
-                index.append(compiler + " " + feature)
-                parse_data(get_data(cursor, algorithm_name, parameters, event, compiler, feature, environment_name))
-        else:
-            index.append("gcc " + feature)
-            parse_data(get_data(cursor, algorithm_name, parameters, event, "gcc", feature, environment_name))
+                    region_count = get_region_count(cursor, algorithm_name, parameters, stage, event, compiler, feature, environment_name)
+                    parse_data(data_structure, region_count, stage)
+            else:
+                index.add("gcc " + feature)
+                data = get_data(cursor, algorithm_name, parameters, stage, event, "gcc", feature, environment_name)
+                data_structure = parse_data_structure(data)
+                confidence_interval = calculate_confidence_interval(data_structure)
+                calculate_average(data_structure, confidence_interval)
+
+                region_count = get_region_count(cursor, algorithm_name, parameters, stage, event, "gcc", feature, environment_name)
+                parse_data(data_structure, region_count, stage)
 
     connection.close()
+    index = list(index)
 
     keypair = pd.DataFrame(keypair_data, index=index, columns=regions)
     encrypt = pd.DataFrame(encrypt_data, index=index, columns=regions)
@@ -124,6 +205,8 @@ def plot_clustered_stacked(dataframes, names=None, title="multiple stacked bar p
 labels is a list of the names of the dataframe, used for the legend
 title is a string for the title of the plot
 H is the hatch used for identification of the different dataframe"""
+    colors = ["#e6194B", "#3cb44b", "#4363d8", "#f58231",
+              "#800000", "#9A6324", "#000075", "#469990"]
 
     n_df = len(dataframes)
     n_col = len(dataframes[0].columns)
@@ -134,7 +217,7 @@ H is the hatch used for identification of the different dataframe"""
     axes = plot.subplot(111)
 
     for frame in dataframes:
-        axes = frame.plot(kind="bar", linewidth=0, stacked=True, ax=axes, legend=False, grid=False, **kwargs)
+        axes = frame.plot(kind="bar", linewidth=0, stacked=True, ax=axes, legend=False, grid=False, color=colors, **kwargs)
 
     pos = []
     handles, labels = axes.get_legend_handles_labels()
